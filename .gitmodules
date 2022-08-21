@@ -1,0 +1,3 @@
+[submodule "libs/gocv"]
+	path = libs/gocv
+	url = https://github.com/hybridgroup/gocv
