@@ -64,7 +64,7 @@ fn addPkg(exe: *std.build.LibExeObjStep) void {
             exe.addLibraryPath("c:/msys64/mingw64/lib");
             exe.addIncludePath("c:/opencv/build/install/include");
             exe.addLibraryPath("c:/opencv/build/install/x64/mingw/staticlib");
-            exe.addIncludePath("libs/gocv");
+            exe.addIncludePath(srcdir);
 
             exe.linkSystemLibrary("opencv4");
             exe.linkSystemLibrary("stdc++.dll");
@@ -136,7 +136,7 @@ fn addPkg(exe: *std.build.LibExeObjStep) void {
             exe.linkSystemLibrary("rt");
             // exe.linkSystemLibrary("quadmath");
 
-            exe.addIncludePath("libs/gocv");
+            exe.addIncludePath(srcdir);
 
             exe.addIncludePath("/usr/local/include");
             exe.addIncludePath("/usr/local/include/opencv4");
