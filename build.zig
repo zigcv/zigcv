@@ -73,71 +73,6 @@ fn addPkg(exe: *std.build.LibExeObjStep) void {
             exe.linkSystemLibrary("c");
         },
         else => {
-            exe.linkLibCpp();
-            exe.linkSystemLibrary("opencv_gapi");
-            exe.linkSystemLibrary("opencv_stitching");
-            exe.linkSystemLibrary("opencv_aruco");
-            exe.linkSystemLibrary("opencv_bgsegm");
-            exe.linkSystemLibrary("opencv_bioinspired");
-            exe.linkSystemLibrary("opencv_ccalib");
-            exe.linkSystemLibrary("opencv_dnn_objdetect");
-            exe.linkSystemLibrary("opencv_dpm");
-            exe.linkSystemLibrary("opencv_face");
-            exe.linkSystemLibrary("opencv_fuzzy");
-            exe.linkSystemLibrary("opencv_hfs");
-            exe.linkSystemLibrary("opencv_img_hash");
-            exe.linkSystemLibrary("opencv_line_descriptor");
-            exe.linkSystemLibrary("opencv_quality");
-            exe.linkSystemLibrary("opencv_reg");
-            exe.linkSystemLibrary("opencv_rgbd");
-            exe.linkSystemLibrary("opencv_saliency");
-            exe.linkSystemLibrary("opencv_stereo");
-            exe.linkSystemLibrary("opencv_structured_light");
-            exe.linkSystemLibrary("opencv_phase_unwrapping");
-            exe.linkSystemLibrary("opencv_superres");
-            exe.linkSystemLibrary("opencv_optflow");
-            exe.linkSystemLibrary("opencv_surface_matching");
-            exe.linkSystemLibrary("opencv_tracking");
-            exe.linkSystemLibrary("opencv_datasets");
-            exe.linkSystemLibrary("opencv_text");
-            exe.linkSystemLibrary("opencv_highgui");
-            exe.linkSystemLibrary("opencv_dnn");
-            exe.linkSystemLibrary("opencv_plot");
-            exe.linkSystemLibrary("opencv_videostab");
-            exe.linkSystemLibrary("opencv_video");
-            exe.linkSystemLibrary("opencv_videoio");
-            exe.linkSystemLibrary("opencv_xfeatures2d");
-            exe.linkSystemLibrary("opencv_shape");
-            exe.linkSystemLibrary("opencv_ml");
-            exe.linkSystemLibrary("opencv_ximgproc");
-            exe.linkSystemLibrary("opencv_xobjdetect");
-            exe.linkSystemLibrary("opencv_objdetect");
-            exe.linkSystemLibrary("opencv_calib3d");
-            exe.linkSystemLibrary("opencv_imgcodecs");
-            exe.linkSystemLibrary("opencv_features2d");
-            exe.linkSystemLibrary("opencv_flann");
-            exe.linkSystemLibrary("opencv_xphoto");
-            exe.linkSystemLibrary("opencv_wechat_qrcode");
-            exe.linkSystemLibrary("opencv_photo");
-            exe.linkSystemLibrary("opencv_imgproc");
-            exe.linkSystemLibrary("opencv_core");
-            exe.linkSystemLibrary("ittnotify");
-            // exe.linkSystemLibrary("libprotobuf");
-            // exe.linkSystemLibrary("IlmImf");
-            exe.linkSystemLibrary("quirc");
-            // exe.linkSystemLibrary("ippiw");
-            // exe.linkSystemLibrary("ippicv");
-            exe.linkSystemLibrary("ade");
-            exe.linkSystemLibrary("z");
-            exe.linkSystemLibrary("jpeg");
-            exe.linkSystemLibrary("dl");
-            exe.linkSystemLibrary("m");
-            exe.linkSystemLibrary("pthread");
-            exe.linkSystemLibrary("rt");
-            // exe.linkSystemLibrary("quadmath");
-
-            exe.addIncludePath(srcdir);
-
             exe.addIncludePath("/usr/local/include");
             exe.addIncludePath("/usr/local/include/opencv4");
             exe.addIncludePath("/opt/homebrew/include");
@@ -147,6 +82,13 @@ fn addPkg(exe: *std.build.LibExeObjStep) void {
             exe.addLibraryPath("/usr/local/lib/opencv4/3rdparty");
             exe.addLibraryPath("/opt/homebrew/lib");
             exe.addLibraryPath("/opt/homebrew/lib/opencv4/3rdparty");
+            exe.addIncludePath(srcdir);
+
+            exe.linkLibCpp();
+            exe.linkSystemLibrary("opencv4");
+            exe.linkSystemLibrary("unwind");
+            exe.linkSystemLibrary("m");
+            exe.linkSystemLibrary("c");
         },
     }
 }
