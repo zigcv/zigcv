@@ -10,12 +10,12 @@ pub fn build(b: *std.build.Builder) void {
     cv.force_pic = true;
     addPkg(cv);
     cv.addCSourceFiles(&.{
-        "libs/gocv/core.cpp",
-        "libs/gocv/videoio.cpp",
-        "libs/gocv/highgui.cpp",
-        "libs/gocv/imgcodecs.cpp",
-        "libs/gocv/objdetect.cpp",
-        "libs/gocv/imgproc.cpp",
+        srcdir ++ "/core.cpp",
+        srcdir ++ "/videoio.cpp",
+        srcdir ++ "/highgui.cpp",
+        srcdir ++ "/imgcodecs.cpp",
+        srcdir ++ "/objdetect.cpp",
+        srcdir ++ "/imgproc.cpp",
     }, &.{
         "--std=c++11",
     });
@@ -232,3 +232,5 @@ const Program = struct {
     path: []const u8,
     desc: []const u8,
 };
+
+const srcdir = thisDir() ++ "/libs/gocv";

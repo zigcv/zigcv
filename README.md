@@ -21,6 +21,11 @@ zig build examples
 ```
 <img width="400" alt="face detection" src="https://user-images.githubusercontent.com/1560508/185785932-404865df-d2d1-4f6a-b3ec-18632f77f7ae.png">
 
+## Technical restrictions
+
+Due to zig being a relatively new language it does [not have full C ABI support](https://github.com/ziglang/zig/issues/1481) at the moment.  
+For use that mainly means we can't use any functions that return structs that are less than 16 bytes large on x86, and passing structs to any functions may cause memory error on arm.
+
 ## License
 
 MIT
