@@ -1,9 +1,11 @@
 # ZIGCV
 
+still under development!
+
 
 ## How to execute
 
-At first, install openCV. (maybe you can read how to install from [here](https://github.com/hybridgroup/gocv#how-to-install)).
+At first, install openCV. (maybe you can read how to install from [here](https://github.com/hybridgroup/gocv#how-to-install)).  
 Then:
 
 ```sh
@@ -11,7 +13,7 @@ git clone https://github.com/ryoppippi/zig-tflite-mnist
 zig build 
 ```
 ## Demos 
-you can build some demos
+you can build some demos.  
 For example:
 ```sh
 zig build examples
