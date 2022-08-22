@@ -1,28 +1,8 @@
 const std = @import("std");
+const zigcv = @import("libs.zig");
 pub fn build(b: *std.build.Builder) void {
     const target = b.standardTargetOptions(.{});
     const mode = b.standardReleaseOptions();
-
-    const cv = b.addStaticLibrary("opencv", null);
-    cv.setTarget(target);
-    cv.setBuildMode(mode);
-    cv.force_pic = true;
-    addPkg(cv);
-    cv.addCSourceFiles(&.{
-        srcdir ++ "/core.cpp",
-        srcdir ++ "/videoio.cpp",
-        srcdir ++ "/highgui.cpp",
-        srcdir ++ "/imgcodecs.cpp",
-        srcdir ++ "/objdetect.cpp",
-        srcdir ++ "/imgproc.cpp",
-    }, &.{
-        "--std=c++11",
-    });
-
-    const cvPkg = std.build.Pkg{
-        .name = "zigcv",
-        .source = std.build.FileSource{ .path = "src/main.zig" },
-    };
 
     const examples = [_]Program{
         .{
@@ -31,6 +11,7 @@ pub fn build(b: *std.build.Builder) void {
             .desc = "Face Detection Demo",
         },
     };
+    ensureSubmodules(b.allocator) catch |err| @panic(@errorName(err));
 
     const examples_step = b.step("examples", "Builds all the examples");
 
@@ -40,56 +21,15 @@ pub fn build(b: *std.build.Builder) void {
         exe.setBuildMode(mode);
         exe.setTarget(target);
 
-        addPkg(exe);
-        exe.linkLibrary(cv);
-        exe.addPackage(cvPkg);
+        zigcv.link(exe);
+        zigcv.addAsPackage(exe);
+
         exe.install();
 
         const run_cmd = exe.run();
         const run_step = b.step(ex.name, ex.desc);
         run_step.dependOn(&run_cmd.step);
         examples_step.dependOn(&exe.step);
-    }
-}
-
-fn addPkg(exe: *std.build.LibExeObjStep) void {
-    // https://github.com/hybridgroup/gocv/blob/4597f3ddbb/cgo.go
-    // https://github.com/hybridgroup/gocv/blob/4597f3ddbb/cgo_static.go
-    const target_os = exe.target.toTarget().os.tag;
-    switch (target_os) {
-        .windows => {
-            exe.addIncludePath("c:/msys64/mingw64/include");
-            exe.addIncludePath("c:/msys64/mingw64/include/c++/12.2.0");
-            exe.addIncludePath("c:/msys64/mingw64/include/c++/12.2.0/x86_64-w64-mingw32");
-            exe.addLibraryPath("c:/msys64/mingw64/lib");
-            exe.addIncludePath("c:/opencv/build/install/include");
-            exe.addLibraryPath("c:/opencv/build/install/x64/mingw/staticlib");
-            exe.addIncludePath(srcdir);
-
-            exe.linkSystemLibrary("opencv4");
-            exe.linkSystemLibrary("stdc++.dll");
-            exe.linkSystemLibrary("unwind");
-            exe.linkSystemLibrary("m");
-            exe.linkSystemLibrary("c");
-        },
-        else => {
-            exe.addIncludePath("/usr/local/include");
-            exe.addIncludePath("/usr/local/include/opencv4");
-            exe.addIncludePath("/opt/homebrew/include");
-            exe.addIncludePath("/opt/homebrew/include/opencv4");
-
-            exe.addLibraryPath("/usr/local/lib");
-            exe.addLibraryPath("/usr/local/lib/opencv4/3rdparty");
-            exe.addLibraryPath("/opt/homebrew/lib");
-            exe.addLibraryPath("/opt/homebrew/lib/opencv4/3rdparty");
-            exe.addIncludePath(srcdir);
-
-            exe.linkLibCpp();
-            exe.linkSystemLibrary("opencv4");
-            exe.linkSystemLibrary("unwind");
-            exe.linkSystemLibrary("m");
-            exe.linkSystemLibrary("c");
-        },
     }
 }
 
@@ -113,5 +53,3 @@ const Program = struct {
     path: []const u8,
     desc: []const u8,
 };
-
-const srcdir = thisDir() ++ "/libs/gocv";
