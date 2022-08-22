@@ -17,12 +17,20 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
     cv.setBuildMode(mode);
     cv.force_pic = true;
     cv.addCSourceFiles(&.{
+        srcdir ++ "/asyncarray.cpp",
+        srcdir ++ "/calib3d.cpp",
         srcdir ++ "/core.cpp",
-        srcdir ++ "/videoio.cpp",
+        srcdir ++ "/dnn.cpp",
+        srcdir ++ "/features2d.cpp",
         srcdir ++ "/highgui.cpp",
         srcdir ++ "/imgcodecs.cpp",
-        srcdir ++ "/objdetect.cpp",
         srcdir ++ "/imgproc.cpp",
+        srcdir ++ "/objdetect.cpp",
+        srcdir ++ "/photo.cpp",
+        srcdir ++ "/svd.cpp",
+        srcdir ++ "/version.cpp",
+        srcdir ++ "/video.cpp",
+        srcdir ++ "/videoio.cpp",
     }, &.{
         "--std=c++11",
     });
