@@ -30,16 +30,18 @@ pub fn build(b: *std.build.Builder) void {
 
         exe.setBuildMode(mode);
         exe.setTarget(target);
+        exe.install();
 
         zigcv.link(exe);
         zigcv.addAsPackage(exe);
 
-        exe.install();
-
         const run_cmd = exe.run();
         const run_step = b.step(ex.name, ex.desc);
+        const artifact_step = &b.addInstallArtifact(exe).step;
+        run_step.dependOn(artifact_step);
         run_step.dependOn(&run_cmd.step);
         examples_step.dependOn(&exe.step);
+        examples_step.dependOn(artifact_step);
     }
 }
 

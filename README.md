@@ -21,6 +21,8 @@ zig build examples
 ```
 <img width="400" alt="face detection" src="https://user-images.githubusercontent.com/1560508/185785932-404865df-d2d1-4f6a-b3ec-18632f77f7ae.png">
 
+You can see the full demo list by `zig build --help`.
+
 ## Technical restrictions
 
 Due to zig being a relatively new language it does [not have full C ABI support](https://github.com/ziglang/zig/issues/1481) at the moment.  
