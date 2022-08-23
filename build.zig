@@ -10,6 +10,11 @@ pub fn build(b: *std.build.Builder) void {
             .path = "cmd/facedetect/main.zig",
             .desc = "Face Detection Demo",
         },
+        .{
+            .name = "show_image",
+            .path = "cmd/showimage/main.zig",
+            .desc = "Show Image Demo",
+        },
     };
     ensureSubmodules(b.allocator) catch |err| @panic(@errorName(err));
 

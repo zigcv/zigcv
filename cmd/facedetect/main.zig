@@ -68,4 +68,3 @@ pub fn main() anyerror!void {
         }
     }
 }
-// var ryoppippi_img = cv.Image_IMRead("ryoppippi.jpeg", -1);
