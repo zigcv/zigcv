@@ -9,7 +9,7 @@ At first, install openCV. (maybe you can read how to install from [here](https:/
 Then:
 
 ```sh
-git clone https://github.com/ryoppippi/zig-tflite-mnist
+git clone https://github.com/ryoppippi/zigcv
 zig build 
 ```
 ## Demos 
