@@ -15,6 +15,11 @@ pub fn build(b: *std.build.Builder) void {
             .path = "cmd/showimage/main.zig",
             .desc = "Show Image Demo",
         },
+        .{
+            .name = "hello",
+            .path = "cmd/hello/main.zig",
+            .desc = "Show Webcam",
+        },
     };
     ensureSubmodules(b.allocator) catch |err| @panic(@errorName(err));
 
