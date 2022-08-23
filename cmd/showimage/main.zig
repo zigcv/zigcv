@@ -15,7 +15,7 @@ pub fn main() anyerror!void {
     const window_name = "Show Image";
     _ = cv.Window_New(window_name, 0);
     defer cv.Window_Close(window_name);
-    var img = cv.Image_IMRead(img_PATH, -1);
+    var img = cv.Image_IMRead(@ptrCast([*]u8, img_PATH), -1);
     while (true) {
         _ = cv.Window_IMShow(window_name, img);
         if (cv.Window_WaitKey(1) >= 0) {
