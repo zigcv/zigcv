@@ -158,8 +158,8 @@ pub const Scalar = struct {
         };
     }
 
-    pub fn initFromC(s: c.Scalar) Scalar {
-        return Scalar{
+    pub fn initFromC(s: c.Scalar) Self {
+        return Self{
             .val1 = s.val1,
             .val2 = s.val2,
             .val3 = s.val3,
@@ -167,12 +167,48 @@ pub const Scalar = struct {
         };
     }
 
-    pub fn toC(self: Self) c.Scalar {
+    pub fn toC(self: *Self) c.Scalar {
         return c.Scalar{
             .val1 = self.val1,
             .val2 = self.val2,
             .val3 = self.val3,
             .val4 = self.val4,
+        };
+    }
+};
+
+pub const Rect = struct {
+    x: c_int,
+    y: c_int,
+    width: c_int,
+    height: c_int,
+
+    const Self = @This();
+
+    pub fn init(x: c_int, y: c_int, width: c_int, height: c_int) Self {
+        return Self{
+            .x = x,
+            .y = y,
+            .width = width,
+            .height = height,
+        };
+    }
+
+    pub fn initFromC(r: c.Rect) Self {
+        return Self{
+            .x = r.x,
+            .y = r.y,
+            .width = r.width,
+            .height = r.height,
+        };
+    }
+
+    pub fn toC(self: *Self) c.Rect {
+        return c.Rect{
+            .x = self.x,
+            .y = self.y,
+            .width = self.width,
+            .height = self.height,
         };
     }
 };
@@ -189,22 +225,23 @@ pub const Mat = struct {
         Divide,
     };
 
-    fn newMat(m: c.Mat) Self {
-        return Self{
-            .ptr = m,
-        };
-    }
-
     pub fn init() Self {
-        return Self.newMat(c.Mat_New());
+        return .{ .ptr = c.Mat_New() };
     }
 
     pub fn initWithSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
-        return Self.newMat(c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)));
+        return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
     }
 
     pub fn initFromScalar(s: Scalar) Self {
-        return Self.newMat(c.Mat_NewFromScalar(Scalar.initFromC(s)));
+        return .{c.Mat_NewFromScalar(Scalar.initFromC(s))};
+    }
+
+    pub fn initFromCMat(ptr: c.Mat) !Self {
+        if (ptr == null) {
+            return error.RuntimeError;
+        }
+        return .{ .ptr = ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -299,7 +336,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga186222c3919657890f88df5a1f64a7d7
     //
     pub fn sqrt(self: *Self) Mat {
-        return self.newMat(c.Mat_Sqrt(self.ptr));
+        return .{ .ptr = c.Mat_Sqrt(self.ptr) };
     }
 
     // Mean calculates the mean value M of array elements, independently for each channel, and return it as Scalar
@@ -312,27 +349,20 @@ pub const Mat = struct {
 
     pub fn calcValueInplace(self: *Self, v: anytype, op: OperationType) void {
         const T = @TypeOf(v);
-        return switch (op) {
-            .Add => switch (T) {
-                u8 => c.Mat_AddUChar(self.ptr, v, op),
-                f32 => c.Mat_AddFloat(self.ptr, v, op),
-                else => @compileError("not implemented for " ++ @typeName(T)),
+        return switch (T) {
+            u8 => switch (op) {
+                .Add => c.Mat_AddUChar(self.ptr, v, op),
+                .Subtract => c.Mat_SubtractUChar(self.ptr, v, op),
+                .Multiply => c.Mat_MultiplyUChar(self.ptr, v, op),
+                .Divide => c.Mat_DivideUChar(self.ptr, v, op),
             },
-            .Subtract => switch (T) {
-                u8 => c.Mat_SubtractUChar(self.ptr, v, op),
-                f32 => c.Mat_SubtractFloat(self.ptr, v, op),
-                else => @compileError("not implemented for " ++ @typeName(T)),
+            f32 => switch (op) {
+                .Add => c.Mat_AddFloat(self.ptr, v, op),
+                .Subtract => c.Mat_SubtractFloat(self.ptr, v, op),
+                .Multiply => c.Mat_MultiplyFloat(self.ptr, v, op),
+                .Divide => c.Mat_DivideFloat(self.ptr, v, op),
             },
-            .Multiply => switch (T) {
-                u8 => c.Mat_MultiplyUChar(self.ptr, v, op),
-                f32 => c.Mat_MultiplyFloat(self.ptr, v, op),
-                else => @compileError("not implemented for " ++ @typeName(T)),
-            },
-            .Divide => switch (T) {
-                u8 => c.Mat_DivideUChar(self.ptr, v, op),
-                f32 => c.Mat_DivideFloat(self.ptr, v, op),
-                else => @compileError("not implemented for " ++ @typeName(T)),
-            },
+            else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
 
