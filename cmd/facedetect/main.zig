@@ -6,16 +6,16 @@ pub fn main() anyerror!void {
     var args = try std.process.argsWithAllocator(std.heap.page_allocator);
     defer args.deinit();
     const prog = args.next();
-    const devicIDChar = args.next() orelse {
+    const devic_id_char = args.next() orelse {
         std.log.err("usage: {s} [cameraID]", .{prog.?});
         std.os.exit(1);
     };
-    const deviceID = try std.fmt.parseUnsigned(c_int, devicIDChar, 10);
+    const device_id = try std.fmt.parseUnsigned(c_int, devic_id_char, 10);
 
     // open webcam
-    var webcam = cv_c_api.VideoCapture_New();
-    _ = cv_c_api.VideoCapture_OpenDevice(webcam, deviceID);
-    defer cv_c_api.VideoCapture_Close(webcam);
+    var webcam = cv.VideoCapture.init();
+    try webcam.openDevice(device_id);
+    defer webcam.deinit();
 
     // open display window
     const window_name = "Face Detect";
@@ -44,11 +44,11 @@ pub fn main() anyerror!void {
     }
 
     while (true) {
-        if (cv_c_api.VideoCapture_Read(webcam, img.ptr) != 1) {
+        webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
             std.os.exit(1);
-        }
-        if (cv_c_api.Mat_Empty(img.ptr) == 1) {
+        };
+        if (img.isEmpty()) {
             continue;
         }
         const rects = cv_c_api.CascadeClassifier_DetectMultiScale(classifier, img.ptr);
