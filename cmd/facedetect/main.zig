@@ -27,11 +27,12 @@ pub fn main() anyerror!void {
     defer img.deinit();
 
     // color for the rect when faces detected
-    const blue = cv_c_api.Scalar{
-        .val1 = @as(f64, 0),
-        .val2 = @as(f64, 255),
-        .val3 = @as(f64, 0),
-        .val4 = @as(f64, 0),
+    // TODO: implement Color Struct
+    const blue = cv.Scalar{
+        .val1 = 255,
+        .val2 = 0,
+        .val3 = 0,
+        .val4 = 0,
     };
 
     // load classifier to recognize faces
@@ -58,7 +59,7 @@ pub fn main() anyerror!void {
             while (i < rects.length) : (i += 1) {
                 const r = rects.rects[0];
                 std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
-                cv_c_api.Rectangle(img.ptr, r, blue, 3);
+                cv_c_api.Rectangle(img.ptr, r, blue.toC(), 3);
             }
         }
 
