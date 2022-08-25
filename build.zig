@@ -11,6 +11,11 @@ pub fn build(b: *std.build.Builder) void {
             .desc = "Show Webcam",
         },
         .{
+            .name = "version",
+            .path = "cmd/version/main.zig",
+            .desc = "Print OpenCV Version",
+        },
+        .{
             .name = "show_image",
             .path = "cmd/showimage/main.zig",
             .desc = "Show Image Demo",
