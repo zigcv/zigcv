@@ -307,7 +307,7 @@ pub const VideoCapture = struct {
         }
     }
 
-    pub fn get(self: *Self, prop: VideoCaptureProperties) f64 {
+    pub fn get(self: Self, prop: VideoCaptureProperties) f64 {
         return c.VideoCapture_Get(self.ptr, @enumToInt(prop));
     }
 
@@ -315,17 +315,17 @@ pub const VideoCapture = struct {
         return c.VideoCapture_Set(self.ptr, @enumToInt(prop), param);
     }
 
-    pub fn grab(self: *Self, skip: i32) void {
+    pub fn grab(self: Self, skip: i32) void {
         c.VideoCapture_Grab(self.ptr, skip);
     }
 
-    pub fn read(self: *Self, buf: *core.Mat) !void {
+    pub fn read(self: Self, buf: *core.Mat) !void {
         if (c.VideoCapture_Read(self.ptr, buf.*.ptr) == 0) {
             return error.VideCaptureError;
         }
     }
 
-    pub fn isOpened(self: *Self) bool {
+    pub fn isOpened(self: Self) bool {
         return c.VideoCapture_IsOpened(self.ptr) != 0;
     }
 };

@@ -167,7 +167,7 @@ pub const Scalar = struct {
         };
     }
 
-    pub fn toC(self: *Self) c.Scalar {
+    pub fn toC(self: Self) c.Scalar {
         return c.Scalar{
             .val1 = self.val1,
             .val2 = self.val2,
@@ -203,7 +203,7 @@ pub const Rect = struct {
         };
     }
 
-    pub fn toC(self: *Self) c.Rect {
+    pub fn toC(self: Self) c.Rect {
         return c.Rect{
             .x = self.x,
             .y = self.y,
@@ -248,32 +248,32 @@ pub const Mat = struct {
         _ = c.Mat_Close(self.ptr);
     }
 
-    pub fn copy(self: *Self, dest: *Mat) void {
+    pub fn copy(self: Self, dest: *Mat) void {
         _ = c.Mat_CopyTo(self.ptr, dest.*.ptr);
     }
 
-    pub fn cols(self: *Self) i32 {
+    pub fn cols(self: Self) i32 {
         return c.Mat_Cols(self.ptr);
     }
 
-    pub fn rows(self: *Self) i32 {
+    pub fn rows(self: Self) i32 {
         return c.Mat_Rows(self.ptr);
     }
 
-    pub fn channels(self: *Self) MatChannels {
+    pub fn channels(self: Self) MatChannels {
         return @intToEnum(MatChannels, c.Mat_Channels(self.ptr));
     }
 
-    pub fn getType(self: *Self) MatType {
+    pub fn getType(self: Self) MatType {
         var t = c.Mat_Type(self.ptr);
         return @intToEnum(MatType, t);
     }
 
-    pub fn total(self: *Self) i32 {
+    pub fn total(self: Self) i32 {
         return c.Mat_Total(self.ptr);
     }
 
-    pub fn size(self: *Self) []i32 {
+    pub fn size(self: Self) []i32 {
         var return_v: c.IntVector = undefined;
         _ = c.Mat_Size(self.ptr, &return_v);
         return return_v;
@@ -286,7 +286,7 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn getAt(self: *Self, row: i32, col: i32, comptime T: type) T {
+    pub fn getAt(self: Self, row: i32, col: i32, comptime T: type) T {
         return switch (T) {
             u8 => c.Mat_GetUChar(self.ptr, row, col),
             i8 => c.Mat_GetSChar(self.ptr, row, col),
@@ -305,7 +305,7 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn getAt3(self: *Self, x: i32, y: i32, z: i32, comptime T: type) T {
+    pub fn getAt3(self: Self, x: i32, y: i32, z: i32, comptime T: type) T {
         return switch (T) {
             u8 => c.Mat_GetUChar3(self.ptr, x, y, z),
             i8 => c.Mat_GetSChar3(self.ptr, x, y, z),
@@ -322,11 +322,11 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa90cea495029c7d1ee0a41361ccecdf3
     //
-    pub fn isContinuous(self: *Self) bool {
+    pub fn isContinuous(self: Self) bool {
         return c.Mat_IsContinuous(self.ptr);
     }
 
-    pub fn isEmpty(self: *Self) bool {
+    pub fn isEmpty(self: Self) bool {
         return c.Mat_Empty(self.ptr) != 0;
     }
 
@@ -335,7 +335,7 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga186222c3919657890f88df5a1f64a7d7
     //
-    pub fn sqrt(self: *Self) Mat {
+    pub fn sqrt(self: Self) Mat {
         return .{ .ptr = c.Mat_Sqrt(self.ptr) };
     }
 
@@ -343,7 +343,7 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga191389f8a0e58180bb13a727782cd461
     //
-    pub fn mean(self: *Self) Scalar {
+    pub fn mean(self: Self) Scalar {
         return Scalar.initFromC(c.Mat_Mean(self.ptr));
     }
 
@@ -388,7 +388,7 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga6db555d30115642fedae0cda05604874
     //
-    pub fn calcMat(self: *Self, m: Mat, dest: *Mat, op: OperationType) void {
+    pub fn calcMat(self: Self, m: Mat, dest: *Mat, op: OperationType) void {
         return switch (op) {
             .Add => c.Mat_Add(self.ptr, m.ptr, dest.*.ptr),
             .Subtract => c.Mat_Subtract(self.ptr, m.ptr, dest.*.ptr),
@@ -402,13 +402,13 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gafafb2513349db3bcff51f54ee5592a19
     //
-    pub fn addMatWeighted(self: *Self, alpha: f64, m: Mat, beta: f64) Mat {
+    pub fn addMatWeighted(self: Self, alpha: f64, m: Mat, beta: f64) Mat {
         var dest = self.init();
         _ = c.Mat_AddWeighted(self.ptr, alpha, m.ptr, beta, dest.ptr);
         return dest;
     }
 
-    pub fn dataPtr(self: *Self, comptime T: type) ![]T {
+    pub fn dataPtr(self: Self, comptime T: type) ![]T {
         if (switch (T) {
             u8 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV8U) != @enumToInt(MatType.MatTypeCV8U),
             i8 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV8I) != @enumToInt(MatType.MatTypeCV8I),

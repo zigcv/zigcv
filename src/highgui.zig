@@ -54,11 +54,11 @@ pub const Window = struct {
 
     const Self = @This();
 
-    fn getCWindowName(self: *Self) [*]const u8 {
+    fn getCWindowName(self: Self) [*]const u8 {
         return castToC(self.name);
     }
 
-    fn getCTrackbarName(self: *Self) ![*]const u8 {
+    fn getCTrackbarName(self: Self) ![*]const u8 {
         if (self.trackbar_name) |tn| {
             return castToC(tn);
         } else {
@@ -80,7 +80,7 @@ pub const Window = struct {
         self.open = false;
     }
 
-    pub fn isOpen(self: *Self) bool {
+    pub fn isOpen(self: Self) bool {
         return self.open;
     }
 
@@ -103,7 +103,7 @@ pub const Window = struct {
     // https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaaf9504b8f9cf19024d9d44a14e461656
     //
 
-    pub fn getProperty(self: *Self, flag: WindowPropertyFlag) WindowFlag {
+    pub fn getProperty(self: Self, flag: WindowPropertyFlag) WindowFlag {
         const f: f64 = c.Window_GetProperty(
             self.getCWindowName(),
             @enumToInt(flag),
@@ -123,7 +123,7 @@ pub const Window = struct {
     // For further details, please see:
     // http://docs.opencv.org/master/d7/dfc/group__highgui.html#ga5628525ad33f52eab17feebcfba38bd7
     //
-    pub fn waitKey(self: *Self, delay: c_int) c_int {
+    pub fn waitKey(self: Self, delay: c_int) c_int {
         _ = self;
         return c.Window_WaitKey(delay);
     }
@@ -184,7 +184,7 @@ pub const Window = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga122632e9e91b9ec06943472c55d9cda8
     //
-    pub fn trackBarGetPos(self: *Self) !c_int {
+    pub fn trackBarGetPos(self: Self) !c_int {
         const trackbar_name = try self.getCTrackbarName();
         return c.Trackbar_GetPos(self.getCWindowName(), trackbar_name);
     }
