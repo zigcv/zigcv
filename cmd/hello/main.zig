@@ -10,8 +10,8 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "Hello";
-    _ = cv_c_api.Window_New(window_name, 0);
-    defer cv_c_api.Window_Close(window_name);
+    var window = cv.Window.init(window_name, .WindowNormal);
+    defer window.deinit();
 
     var img = cv.Mat.init();
     defer img.deinit();
@@ -22,8 +22,8 @@ pub fn main() anyerror!void {
             std.os.exit(1);
         };
 
-        _ = cv_c_api.Window_IMShow(window_name, img.ptr);
-        if (cv_c_api.Window_WaitKey(1) >= 0) {
+        window.imShow(img);
+        if (window.waitKey(1) >= 0) {
             break;
         }
     }

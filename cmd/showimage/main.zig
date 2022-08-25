@@ -13,12 +13,14 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "Show Image";
-    _ = cv_c_api.Window_New(window_name, 0);
-    defer cv_c_api.Window_Close(window_name);
-    var img = cv_c_api.Image_IMRead(@ptrCast([*]const u8, img_PATH), -1);
+    var window = cv.Window.init(window_name, .WindowNormal);
+    defer window.deinit();
+
+    var img = try cv.IMRead(img_PATH, .IMReadUnchanged);
+    defer img.deinit();
     while (true) {
-        _ = cv_c_api.Window_IMShow(window_name, img);
-        if (cv_c_api.Window_WaitKey(1) >= 0) {
+        window.imShow(img);
+        if (window.waitKey(1) >= 0) {
             break;
         }
     }

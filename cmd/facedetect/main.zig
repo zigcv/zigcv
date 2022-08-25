@@ -19,8 +19,8 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "Face Detect";
-    _ = cv_c_api.Window_New(window_name, 0);
-    defer cv_c_api.Window_Close(window_name);
+    var window = cv.Window.init(window_name, .WindowNormal);
+    defer window.deinit();
 
     // prepare image matrix
     var img = cv.Mat.init();
@@ -62,8 +62,8 @@ pub fn main() anyerror!void {
             }
         }
 
-        _ = cv_c_api.Window_IMShow(window_name, img.ptr);
-        if (cv_c_api.Window_WaitKey(1) >= 0) {
+        window.imShow(img);
+        if (window.waitKey(1) >= 0) {
             break;
         }
     }

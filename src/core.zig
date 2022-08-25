@@ -241,7 +241,7 @@ pub const Mat = struct {
         if (ptr == null) {
             return error.RuntimeError;
         }
-        return .{ .ptr = ptr };
+        return Self{ .ptr = ptr };
     }
 
     pub fn deinit(self: *Self) void {
