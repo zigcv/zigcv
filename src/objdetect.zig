@@ -1,0 +1,24 @@
+//*    implementation done
+//     pub const CascadeClassifier = ?*anyopaque;
+//     pub const HOGDescriptor = ?*anyopaque;
+//     pub const QRCodeDetector = ?*anyopaque;
+//     pub extern fn CascadeClassifier_New(...) CascadeClassifier;
+//     pub extern fn CascadeClassifier_Close(cs: CascadeClassifier) void;
+//     pub extern fn CascadeClassifier_Load(cs: CascadeClassifier, name: [*c]const u8) c_int;
+//     pub extern fn CascadeClassifier_DetectMultiScale(cs: CascadeClassifier, img: Mat) struct_Rects;
+//     pub extern fn CascadeClassifier_DetectMultiScaleWithParams(cs: CascadeClassifier, img: Mat, scale: f64, minNeighbors: c_int, flags: c_int, minSize: Size, maxSize: Size) struct_Rects;
+//     pub extern fn HOGDescriptor_New(...) HOGDescriptor;
+//     pub extern fn HOGDescriptor_Close(hog: HOGDescriptor) void;
+//     pub extern fn HOGDescriptor_Load(hog: HOGDescriptor, name: [*c]const u8) c_int;
+//     pub extern fn HOGDescriptor_DetectMultiScale(hog: HOGDescriptor, img: Mat) struct_Rects;
+//     pub extern fn HOGDescriptor_DetectMultiScaleWithParams(hog: HOGDescriptor, img: Mat, hitThresh: f64, winStride: Size, padding: Size, scale: f64, finalThreshold: f64, useMeanshiftGrouping: bool) struct_Rects;
+//     pub extern fn HOG_GetDefaultPeopleDetector(...) Mat;
+//     pub extern fn HOGDescriptor_SetSVMDetector(hog: HOGDescriptor, det: Mat) void;
+//     pub extern fn GroupRectangles(rects: struct_Rects, groupThreshold: c_int, eps: f64) struct_Rects;
+//     pub extern fn QRCodeDetector_New(...) QRCodeDetector;
+//     pub extern fn QRCodeDetector_DetectAndDecode(qr: QRCodeDetector, input: Mat, points: Mat, straight_qrcode: Mat) [*c]const u8;
+//     pub extern fn QRCodeDetector_Detect(qr: QRCodeDetector, input: Mat, points: Mat) bool;
+//     pub extern fn QRCodeDetector_Decode(qr: QRCodeDetector, input: Mat, inputPoints: Mat, straight_qrcode: Mat) [*c]const u8;
+//     pub extern fn QRCodeDetector_Close(qr: QRCodeDetector) void;
+//     pub extern fn QRCodeDetector_DetectMulti(qr: QRCodeDetector, input: Mat, points: Mat) bool;
+//     pub extern fn QRCodeDetector_DetectAndDecodeMulti(qr: QRCodeDetector, input: Mat, decoded: [*c]CStrings, points: Mat, mats: [*c]struct_Mats) bool;

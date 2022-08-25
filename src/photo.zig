@@ -1,0 +1,25 @@
+//*    implementation done
+//     pub const MergeMertens = ?*anyopaque;
+//     pub const AlignMTB = ?*anyopaque;
+//     pub extern fn ColorChange(src: Mat, mask: Mat, dst: Mat, red_mul: f32, green_mul: f32, blue_mul: f32) void;
+//     pub extern fn SeamlessClone(src: Mat, dst: Mat, mask: Mat, p: Point, blend: Mat, flags: c_int) void;
+//     pub extern fn IlluminationChange(src: Mat, mask: Mat, dst: Mat, alpha: f32, beta: f32) void;
+//     pub extern fn TextureFlattening(src: Mat, mask: Mat, dst: Mat, low_threshold: f32, high_threshold: f32, kernel_size: c_int) void;
+//     pub extern fn FastNlMeansDenoisingColoredMulti(src: struct_Mats, dst: Mat, imgToDenoiseIndex: c_int, temporalWindowSize: c_int) void;
+//     pub extern fn FastNlMeansDenoisingColoredMultiWithParams(src: struct_Mats, dst: Mat, imgToDenoiseIndex: c_int, temporalWindowSize: c_int, h: f32, hColor: f32, templateWindowSize: c_int, searchWindowSize: c_int) void;
+//     pub extern fn FastNlMeansDenoising(src: Mat, dst: Mat) void;
+//     pub extern fn FastNlMeansDenoisingWithParams(src: Mat, dst: Mat, h: f32, templateWindowSize: c_int, searchWindowSize: c_int) void;
+//     pub extern fn FastNlMeansDenoisingColored(src: Mat, dst: Mat) void;
+//     pub extern fn FastNlMeansDenoisingColoredWithParams(src: Mat, dst: Mat, h: f32, hColor: f32, templateWindowSize: c_int, searchWindowSize: c_int) void;
+//     pub extern fn MergeMertens_Create(...) MergeMertens;
+//     pub extern fn MergeMertens_CreateWithParams(contrast_weight: f32, saturation_weight: f32, exposure_weight: f32) MergeMertens;
+//     pub extern fn MergeMertens_Process(b: MergeMertens, src: struct_Mats, dst: Mat) void;
+//     pub extern fn MergeMertens_Close(b: MergeMertens) void;
+//     pub extern fn AlignMTB_Create(...) AlignMTB;
+//     pub extern fn AlignMTB_CreateWithParams(max_bits: c_int, exclude_range: c_int, cut: bool) AlignMTB;
+//     pub extern fn AlignMTB_Process(b: AlignMTB, src: struct_Mats, dst: [*c]struct_Mats) void;
+//     pub extern fn AlignMTB_Close(b: AlignMTB) void;
+//     pub extern fn DetailEnhance(src: Mat, dst: Mat, sigma_s: f32, sigma_r: f32) void;
+//     pub extern fn EdgePreservingFilter(src: Mat, dst: Mat, filter: c_int, sigma_s: f32, sigma_r: f32) void;
+//     pub extern fn PencilSketch(src: Mat, dst1: Mat, dst2: Mat, sigma_s: f32, sigma_r: f32, shade_factor: f32) void;
+//     pub extern fn Stylization(src: Mat, dst: Mat, sigma_s: f32, sigma_r: f32) void;
