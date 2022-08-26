@@ -48,11 +48,21 @@ pub fn build(b: *std.build.Builder) void {
         const run_cmd = exe.run();
         const run_step = b.step(ex.name, ex.desc);
         const artifact_step = &b.addInstallArtifact(exe).step;
+        if (b.args) |args| {
+            run_cmd.addArgs(args);
+        }
         run_step.dependOn(artifact_step);
         run_step.dependOn(&run_cmd.step);
         examples_step.dependOn(&exe.step);
         examples_step.dependOn(artifact_step);
     }
+
+    const exe_tests = b.addTest("src/main.zig");
+    exe_tests.setTarget(target);
+    exe_tests.setBuildMode(mode);
+
+    const test_step = b.step("test", "Run unit tests");
+    test_step.dependOn(&exe_tests.step);
 }
 
 fn ensureSubmodules(allocator: std.mem.Allocator) !void {
