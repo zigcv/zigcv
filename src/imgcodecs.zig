@@ -151,19 +151,28 @@ pub fn IMWrite(filename: []const u8, img: Mat) !void {
 //
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#gabbc7ef1aa2edfaa87772f1202d67e0ce
+// https://docs.opencv.org/4.6.0/d8/d6a/group__imgcodecs__flags.html
 //
-// pub fn IMWriteWithParams(filename: []const u8, img: Mat, comptime params: []const IMWriteFlag) !void {
-//     comptime var int_params: [params.len]i32 = undefined;
-//     for (params) |p, i| int_params[i] = @enumToInt(p);
-//     const c_params = c.IntVector{
-//         .val = @ptrCast([*]c_int, int_params),
-//         .len = params.len,
-//     };
-//     const result = c.Image_IMWrite_WithParams(castToC(filename), img.ptr, c_params);
-//     if (!result) {
-//         return error.IMWriteFailed;
-//     }
-// }
+pub fn IMWriteWithParams(filename: []const u8, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) !void {
+    comptime var int_params: [params.len * 2]i32 = undefined;
+    for (params) |p, i| {
+        int_params[2 * i] = @enumToInt(p.f);
+        int_params[2 * i + 1] = @enumToInt(p.v);
+    }
+    const c_params = c.IntVector{
+        .val = @ptrCast([*]c_int, int_params),
+        .len = params.len,
+    };
+    const result = c.Image_IMWrite_WithParams(castToC(filename), img.ptr, c_params);
+    if (!result) {
+        return error.IMWriteFailed;
+    }
+}
+
+pub fn IMDecode(buf: []u8, flags: IMReadFlag) !Mat {
+    var data = @ptrCast([*]u8, buf);
+    return try Mat.initFromCMat(c.Image_IMDecode(data, @enumToInt(flags)));
+}
 
 //*    implementation done
 //*    pub extern fn Image_IMRead(filename: [*c]const u8, flags: c_int) Mat;
@@ -171,4 +180,4 @@ pub fn IMWrite(filename: []const u8, img: Mat) !void {
 //*    pub extern fn Image_IMWrite_WithParams(filename: [*c]const u8, img: Mat, params: IntVector) bool;
 //     pub extern fn Image_IMEncode(fileExt: [*c]const u8, img: Mat, vector: ?*anyopaque) void;
 //     pub extern fn Image_IMEncode_WithParams(fileExt: [*c]const u8, img: Mat, params: IntVector, vector: ?*anyopaque) void;
-//     pub extern fn Image_IMDecode(buf: ByteArray, flags: c_int) Mat;
+//*    pub extern fn Image_IMDecode(buf: ByteArray, flags: c_int) Mat;

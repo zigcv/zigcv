@@ -27,13 +27,13 @@ pub fn main() anyerror!void {
     defer img.deinit();
 
     // load classifier to recognize faces
-    var classifier = cv_c_api.CascadeClassifier_New();
-    defer cv_c_api.CascadeClassifier_Close(classifier);
+    var classifier = cv.CascadeClassifier.init();
+    defer classifier.deinit();
 
-    if (cv_c_api.CascadeClassifier_Load(classifier, "./libs/gocv/data/haarcascade_frontalface_default.xml") != 1) {
+    classifier.load("./libs/gocv/data/haarcascade_frontalface_default.xml") catch {
         std.debug.print("no xml", .{});
         std.os.exit(1);
-    }
+    };
 
     while (true) {
         webcam.read(&img) catch {
@@ -43,18 +43,21 @@ pub fn main() anyerror!void {
         if (img.isEmpty()) {
             continue;
         }
-        const rects = cv_c_api.CascadeClassifier_DetectMultiScale(classifier, img.ptr);
-        std.debug.print("found {d} faces\n", .{rects.length});
+        var allocator = std.heap.page_allocator;
+        const rects = try classifier.detectMultiScale(img, allocator);
+        defer rects.deinit();
+        const found_num = rects.items.len;
+        std.debug.print("found {d} faces\n", .{found_num});
         {
-            var i: c_int = 0;
-            while (i < rects.length) : (i += 1) {
-                const r = rects.rects[0];
+            var i: usize = 0;
+            while (i < found_num) : (i += 1) {
+                const r = rects.items[i];
                 std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
-                var size = cv_c_api.Size{
+                var size = cv.Size{
                     .width = 75,
                     .height = 75,
                 };
-                cv_c_api.GaussianBlur(img.ptr, img.ptr, size, 0, 0, 4);
+                cv_c_api.GaussianBlur(img.ptr, img.ptr, size.toC(), 0, 0, 4);
             }
         }
 

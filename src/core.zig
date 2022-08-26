@@ -141,78 +141,6 @@ pub const CompareType = enum(i32) {
     CompareNE = 5,
 };
 
-pub const Scalar = struct {
-    val1: f64,
-    val2: f64,
-    val3: f64,
-    val4: f64,
-
-    const Self = @This();
-
-    pub fn init(val1: f64, val2: f64, val3: f64, val4: f64) Self {
-        return Self{
-            .val1 = val1,
-            .val2 = val2,
-            .val3 = val3,
-            .val4 = val4,
-        };
-    }
-
-    pub fn initFromC(s: c.Scalar) Self {
-        return Self{
-            .val1 = s.val1,
-            .val2 = s.val2,
-            .val3 = s.val3,
-            .val4 = s.val4,
-        };
-    }
-
-    pub fn toC(self: Self) c.Scalar {
-        return c.Scalar{
-            .val1 = self.val1,
-            .val2 = self.val2,
-            .val3 = self.val3,
-            .val4 = self.val4,
-        };
-    }
-};
-
-pub const Rect = struct {
-    x: c_int,
-    y: c_int,
-    width: c_int,
-    height: c_int,
-
-    const Self = @This();
-
-    pub fn init(x: c_int, y: c_int, width: c_int, height: c_int) Self {
-        return Self{
-            .x = x,
-            .y = y,
-            .width = width,
-            .height = height,
-        };
-    }
-
-    pub fn initFromC(r: c.Rect) Self {
-        return Self{
-            .x = r.x,
-            .y = r.y,
-            .width = r.width,
-            .height = r.height,
-        };
-    }
-
-    pub fn toC(self: Self) c.Rect {
-        return c.Rect{
-            .x = self.x,
-            .y = self.y,
-            .width = self.width,
-            .height = self.height,
-        };
-    }
-};
-
 pub const Mat = struct {
     ptr: c.Mat,
 
@@ -250,6 +178,10 @@ pub const Mat = struct {
 
     pub fn copy(self: Self, dest: *Mat) void {
         _ = c.Mat_CopyTo(self.ptr, dest.*.ptr);
+    }
+
+    pub fn clone(self: Self) Self {
+        return .{ .ptr = c.Mat_Clone(self.ptr) };
     }
 
     pub fn cols(self: Self) i32 {
@@ -429,6 +361,111 @@ pub const Mat = struct {
     }
 };
 
+pub const Scalar = struct {
+    val1: f64,
+    val2: f64,
+    val3: f64,
+    val4: f64,
+
+    const Self = @This();
+
+    pub fn init(val1: f64, val2: f64, val3: f64, val4: f64) Self {
+        return .{
+            .val1 = val1,
+            .val2 = val2,
+            .val3 = val3,
+            .val4 = val4,
+        };
+    }
+
+    pub fn initFromC(s: c.Scalar) Self {
+        return .{
+            .val1 = s.val1,
+            .val2 = s.val2,
+            .val3 = s.val3,
+            .val4 = s.val4,
+        };
+    }
+
+    pub fn toC(self: Self) c.Scalar {
+        return .{
+            .val1 = self.val1,
+            .val2 = self.val2,
+            .val3 = self.val3,
+            .val4 = self.val4,
+        };
+    }
+};
+
+pub const Rect = struct {
+    x: c_int,
+    y: c_int,
+    width: c_int,
+    height: c_int,
+
+    const Self = @This();
+
+    pub fn init(
+        x: c_int,
+        y: c_int,
+        width: c_int,
+        height: c_int,
+    ) Self {
+        return .{
+            .x = x,
+            .y = y,
+            .width = width,
+            .height = height,
+        };
+    }
+
+    pub fn initFromC(r: c.Rect) Self {
+        return .{
+            .x = r.x,
+            .y = r.y,
+            .width = r.width,
+            .height = r.height,
+        };
+    }
+
+    pub fn toC(self: Self) c.Rect {
+        return .{
+            .x = self.x,
+            .y = self.y,
+            .width = self.width,
+            .height = self.height,
+        };
+    }
+};
+
+pub const Size = struct {
+    width: c_int,
+    height: c_int,
+
+    const Self = @This();
+
+    pub fn init(width: c_int, height: c_int) Self {
+        return .{
+            .width = width,
+            .height = height,
+        };
+    }
+
+    pub fn initFromC(r: c.Size) Self {
+        return .{
+            .width = r.width,
+            .height = r.height,
+        };
+    }
+
+    pub fn toC(self: Self) c.Size {
+        return .{
+            .width = self.width,
+            .height = self.height,
+        };
+    }
+};
+
 //*    implementation done
 //     pub extern fn Mats_get(mats: struct_Mats, i: c_int) Mat;
 //     pub extern fn MultiDMatches_get(mds: struct_MultiDMatches, index: c_int) struct_DMatches;
@@ -454,7 +491,7 @@ pub const Mat = struct {
 //*    pub extern fn Mat_Close(m: Mat) void;
 //*    pub extern fn Mat_Empty(m: Mat) c_int;
 //*    pub extern fn Mat_IsContinuous(m: Mat) bool;
-//     pub extern fn Mat_Clone(m: Mat) Mat;
+//*    pub extern fn Mat_Clone(m: Mat) Mat;
 //*    pub extern fn Mat_CopyTo(m: Mat, dst: Mat) void;
 //*    pub extern fn Mat_Total(m: Mat) c_int;
 //*    pub extern fn Mat_Size(m: Mat, res: [*c]IntVector) void;
