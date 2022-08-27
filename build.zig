@@ -30,6 +30,11 @@ pub fn build(b: *std.build.Builder) void {
             .path = "cmd/faceblur/main.zig",
             .desc = "Face Detection and Blur Demo",
         },
+        .{
+            .name = "dnn_detection",
+            .path = "cmd/dnndetection/main.zig",
+            .desc = "DNN Detection Demo",
+        },
     };
     ensureSubmodules(b.allocator) catch |err| @panic(@errorName(err));
 

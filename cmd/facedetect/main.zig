@@ -27,13 +27,7 @@ pub fn main() anyerror!void {
     defer img.deinit();
 
     // color for the rect when faces detected
-    // TODO: implement Color Struct
-    const blue = cv.Scalar{
-        .val1 = 255,
-        .val2 = 0,
-        .val3 = 0,
-        .val4 = 0,
-    };
+    const blue = cv.Color{ .b = 255 };
 
     // load classifier to recognize faces
     var classifier = cv.CascadeClassifier.init();
@@ -52,19 +46,14 @@ pub fn main() anyerror!void {
         if (img.isEmpty()) {
             continue;
         }
-        // const rects = cv_c_api.CascadeClassifier_DetectMultiScale(classifier, img.ptr);
         var allocator = std.heap.page_allocator;
         const rects = try classifier.detectMultiScale(img, allocator);
         defer rects.deinit();
         const found_num = rects.items.len;
         std.debug.print("found {d} faces\n", .{found_num});
-        {
-            var i: usize = 0;
-            while (i < found_num) : (i += 1) {
-                const r = rects.items[i];
-                std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
-                cv_c_api.Rectangle(img.ptr, r.toC(), blue.toC(), 3);
-            }
+        for (rects.items) |r| {
+            std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
+            cv.rectangle(&img, r, blue, 3);
         }
 
         window.imShow(img);

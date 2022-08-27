@@ -179,7 +179,7 @@ pub const HOGDescriptor = struct {
     // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
     //
     pub fn getDefaultPeopleDetector() !Mat {
-        return Mat.initFromCMat(c.HOG_GetDefaultPeopleDetector());
+        return Mat.initFromC(c.HOG_GetDefaultPeopleDetector());
     }
 
     // SetSVMDetector sets the data for the HOGDescriptor.
@@ -303,7 +303,7 @@ pub const QRCodeDetector = struct {
             var i: usize = 0;
             while (i < c_qr_codes.length) {
                 const cmm: c.Mat = c_qr_codes.mats[i];
-                const mm: Mat = try Mat.initFromCMat(cmm);
+                const mm: Mat = try Mat.initFromC(cmm);
                 try qr_codes.append(Mat.clone(mm));
             }
         }

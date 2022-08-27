@@ -48,17 +48,13 @@ pub fn main() anyerror!void {
         defer rects.deinit();
         const found_num = rects.items.len;
         std.debug.print("found {d} faces\n", .{found_num});
-        {
-            var i: usize = 0;
-            while (i < found_num) : (i += 1) {
-                const r = rects.items[i];
-                std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
-                var size = cv.Size{
-                    .width = 75,
-                    .height = 75,
-                };
-                cv_c_api.GaussianBlur(img.ptr, img.ptr, size.toC(), 0, 0, 4);
-            }
+        for (rects.items) |r| {
+            std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
+            var size = cv.Size{
+                .width = 75,
+                .height = 75,
+            };
+            cv.gaussianBlur(img, &img, size, 0, 0, cv.BorderTypeDefault);
         }
 
         window.imShow(img);

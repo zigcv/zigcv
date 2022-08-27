@@ -1,4 +1,5 @@
 const c = @import("c_api.zig");
+const std = @import("std");
 
 pub const MatChannels = enum(i32) {
     // MatChannels1 is a single channel Mat.
@@ -141,6 +142,41 @@ pub const CompareType = enum(i32) {
     CompareNE = 5,
 };
 
+pub const SolveDecompositionFlags = enum(i32) {
+    // Gaussian elimination with the optimal pivot element chosen.
+    SolveDecompositionLu = 0,
+
+    // Singular value decomposition (SVD) method. The system can be over-defined and/or the matrix src1 can be singular.
+    SolveDecompositionSvd = 1,
+
+    // Eigenvalue decomposition. The matrix src1 must be symmetrical.
+    SolveDecompositionEing = 2,
+
+    // Cholesky LL^T factorization. The matrix src1 must be symmetrical and positively defined.
+    SolveDecompositionCholesky = 3,
+
+    // QR factorization. The system can be over-defined and/or the matrix src1 can be singular.
+    SolveDecompositionQr = 4,
+
+    // While all the previous flags are mutually exclusive, this flag can be used together with any of the previous.
+    // It means that the normal equations 𝚜𝚛𝚌𝟷^T⋅𝚜𝚛𝚌𝟷⋅𝚍𝚜𝚝=𝚜𝚛𝚌𝟷^T𝚜𝚛𝚌𝟸 are solved instead of the original system
+    // 𝚜𝚛𝚌𝟷⋅𝚍𝚜𝚝=𝚜𝚛𝚌𝟸.
+    SolveDecompositionNormal = 5,
+};
+
+pub const TermCriteriaType = enum(i32) {
+
+    // Count is the maximum number of iterations or elements to compute.
+    Count = 1,
+
+    // MaxIter is the maximum number of iterations or elements to compute.
+    MaxIter = 1,
+
+    // EPS is the desired accuracy or change in parameters at which the
+    // iterative algorithm stops.
+    EPS = 2,
+};
+
 pub const Mat = struct {
     ptr: c.Mat,
 
@@ -165,7 +201,7 @@ pub const Mat = struct {
         return .{c.Mat_NewFromScalar(Scalar.initFromC(s))};
     }
 
-    pub fn initFromCMat(ptr: c.Mat) !Self {
+    pub fn initFromC(ptr: c.Mat) !Self {
         if (ptr == null) {
             return error.RuntimeError;
         }
@@ -174,6 +210,10 @@ pub const Mat = struct {
 
     pub fn deinit(self: *Self) void {
         _ = c.Mat_Close(self.ptr);
+    }
+
+    pub fn toC(self: Self) c.Mat {
+        return self.ptr;
     }
 
     pub fn copy(self: Self, dest: *Mat) void {
@@ -218,7 +258,7 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn getAt(self: Self, row: i32, col: i32, comptime T: type) T {
+    pub fn at(self: Self, row: i32, col: i32, comptime T: type) T {
         return switch (T) {
             u8 => c.Mat_GetUChar(self.ptr, row, col),
             i8 => c.Mat_GetSChar(self.ptr, row, col),
@@ -237,7 +277,7 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn getAt3(self: Self, x: i32, y: i32, z: i32, comptime T: type) T {
+    pub fn at3(self: Self, x: i32, y: i32, z: i32, comptime T: type) T {
         return switch (T) {
             u8 => c.Mat_GetUChar3(self.ptr, x, y, z),
             i8 => c.Mat_GetSChar3(self.ptr, x, y, z),
@@ -361,6 +401,173 @@ pub const Mat = struct {
     }
 };
 
+pub fn matsToCMats(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
+    var c_mats = std.ArrayList(c.Mat).init(allocator);
+    for (mats) |mat| try c_mats.append(mat.ptr);
+    return .{
+        .mats = @ptrCast([*]c.Mat, c_mats.items),
+        .length = mats.len,
+    };
+}
+
+pub const Point = struct {
+    x: c_int,
+    y: c_int,
+
+    const Self = @This();
+
+    pub fn int(x: c_int, y: c_int) Self {
+        return .{ .x = x, .y = y };
+    }
+
+    pub fn initfromC(p: c.Point) Self {
+        return .{ .x = p.x, .y = p.y };
+    }
+
+    pub fn toC(self: Self) c.Point {
+        return .{ .x = self.x, .y = self.y };
+    }
+};
+
+pub const Point2f = struct {
+    x: f32,
+    y: f32,
+
+    const Self = @This();
+
+    pub fn int(x: f32, y: f32) Self {
+        return .{ .x = x, .y = y };
+    }
+
+    pub fn initfromC(p: c.Point2f) Self {
+        return .{ .x = p.x, .y = p.y };
+    }
+
+    pub fn toC(self: Self) c.Point2f {
+        return .{ .x = self.x, .y = self.y };
+    }
+};
+
+pub const Point3f = struct {
+    x: f32,
+    y: f32,
+    z: f32,
+
+    const Self = @This();
+
+    pub fn int(x: f32, y: f32, z: f32) Self {
+        return .{ .x = x, .y = y, .z = z };
+    }
+
+    pub fn initfromC(p: c.Point3f) Self {
+        return .{ .x = p.x, .y = p.y, .z = p.z };
+    }
+
+    pub fn toC(self: Self) c.Point3f {
+        return .{ .x = self.x, .y = self.y, .z = self.z };
+    }
+};
+
+pub const PointVector = struct {
+    ptr: c.PointVector,
+
+    const Self = @This();
+
+    pub fn init() Self {
+        return .{ .ptr = c.PointVector_New() };
+    }
+
+    pub fn initFromMat(mat: Mat) !Self {
+        if (mat.ptr == null) {
+            return error.RuntimeError;
+        }
+        return .{ .ptr = c.PointVector_NewFromMat(mat.ptr) };
+    }
+
+    pub fn initFromPoints(points: []const Point) Self {
+        var c_points: [points.len]c.Point = undefined;
+        for (points) |p, i| c_points[i] = p.toC();
+        return .{
+            .ptr = c.PointVector_NewFromPoints(
+                c.Points{
+                    .length = points.len,
+                    .points = @ptrCast([*]c.Point, c_points),
+                },
+            ),
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        _ = c.PointVector_Close(self.ptr);
+    }
+
+    pub fn toC(self: Self) c.PointVector {
+        return self.ptr;
+    }
+
+    pub fn at(self: Self, idx: c_int) Point {
+        return c.PointVector_At(self.ptr, idx);
+    }
+
+    pub fn size(self: Self) c_int {
+        return c.PointVector_Size(self.ptr);
+    }
+
+    pub fn append(self: *Self, p: Point) void {
+        c.PointVector_Append(self.ptr, p);
+    }
+};
+
+pub const Point2fVector = struct {
+    ptr: c.Point2fVector,
+
+    const Self = @This();
+
+    pub fn init() Self {
+        return .{ .ptr = c.Point2fVector_New() };
+    }
+
+    pub fn initFromMat(mat: Mat) !Self {
+        if (mat.ptr == null) {
+            return error.RuntimeError;
+        }
+        return .{ .ptr = c.Point2fVector_NewFromMat(mat.ptr) };
+    }
+
+    pub fn initFromPoints(points: []const Point) Self {
+        var c_points: [points.len]c.Point = undefined;
+        for (points) |p, i| c_points[i] = p.toC();
+        return .{
+            .ptr = c.Point2fVector_NewFromPoints(
+                c.Points{
+                    .length = points.len,
+                    .points = @ptrCast([*]c.Point, c_points),
+                },
+            ),
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        _ = c.Point2fVector_Close(self.ptr);
+    }
+
+    pub fn toC(self: Self) c.Point2fVector {
+        return self.ptr;
+    }
+
+    pub fn at(self: Self, idx: c_int) Point {
+        return c.Point2fVector_At(self.ptr, idx);
+    }
+
+    pub fn size(self: Self) c_int {
+        return c.Point2fVector_Size(self.ptr);
+    }
+
+    pub fn append(self: *Self, p: Point) void {
+        c.Point2fVector_Append(self.ptr, p);
+    }
+};
+
 pub const Scalar = struct {
     val1: f64,
     val2: f64,
@@ -369,7 +576,12 @@ pub const Scalar = struct {
 
     const Self = @This();
 
-    pub fn init(val1: f64, val2: f64, val3: f64, val4: f64) Self {
+    pub fn init(
+        val1: f64,
+        val2: f64,
+        val3: f64,
+        val4: f64,
+    ) Self {
         return .{
             .val1 = val1,
             .val2 = val2,
@@ -438,6 +650,52 @@ pub const Rect = struct {
     }
 };
 
+pub const RotatedRect = extern struct {
+    pts: c.Points,
+    boundingRect: Rect,
+    center: Point,
+    size: Size,
+    angle: f64,
+
+    const Self = @This();
+
+    pub fn init(
+        pts: c.Points,
+        boundingRect: Rect,
+        center: Point,
+        size: Size,
+        angle: f64,
+    ) Self {
+        return .{
+            .pts = pts,
+            .boundingRect = boundingRect,
+            .center = center,
+            .size = size,
+            .angle = angle,
+        };
+    }
+
+    pub fn initFromC(r: c.RotatedRect) Self {
+        return .{
+            .pts = r.pts,
+            .boundingRect = r.boundingRect,
+            .center = Point.initfromC(r.center),
+            .size = Size.initFromC(r.size),
+            .angle = r.angle,
+        };
+    }
+
+    pub fn toC(self: Self) c.RotatedRect {
+        return .{
+            .pts = self.pts,
+            .boundingRect = self.boundingRect.toC(),
+            .center = self.center.toC(),
+            .size = self.size.toC(),
+            .angle = self.angle,
+        };
+    }
+};
+
 pub const Size = struct {
     width: c_int,
     height: c_int,
@@ -465,6 +723,17 @@ pub const Size = struct {
         };
     }
 };
+
+pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
+    var list = std.ArrayList([]const u8).init(allocator);
+    {
+        var i: usize = 0;
+        while (i < cstr.length) : (i += 1) {
+            try list.append(cstr.strs[i]);
+        }
+    }
+    return list;
+}
 
 //*    implementation done
 //     pub extern fn Mats_get(mats: struct_Mats, i: c_int) Mat;
@@ -635,25 +904,25 @@ pub const Size = struct {
 //     pub extern fn GetTickFrequency(...) f64;
 //     pub extern fn Mat_rowRange(m: Mat, startrow: c_int, endrow: c_int) Mat;
 //     pub extern fn Mat_colRange(m: Mat, startrow: c_int, endrow: c_int) Mat;
-//     pub extern fn PointVector_New(...) PointVector;
+//*    pub extern fn PointVector_New(...) PointVector;
 //     pub extern fn PointVector_NewFromPoints(points: Contour) PointVector;
-//     pub extern fn PointVector_NewFromMat(mat: Mat) PointVector;
-//     pub extern fn PointVector_At(pv: PointVector, idx: c_int) Point;
-//     pub extern fn PointVector_Append(pv: PointVector, p: Point) void;
-//     pub extern fn PointVector_Size(pv: PointVector) c_int;
-//     pub extern fn PointVector_Close(pv: PointVector) void;
+//*    pub extern fn PointVector_NewFromMat(mat: Mat) PointVector;
+//*    pub extern fn PointVector_At(pv: PointVector, idx: c_int) Point;
+//*    pub extern fn PointVector_Append(pv: PointVector, p: Point) void;
+//*    pub extern fn PointVector_Size(pv: PointVector) c_int;
+//*    pub extern fn PointVector_Close(pv: PointVector) void;
 //     pub extern fn PointsVector_New(...) PointsVector;
 //     pub extern fn PointsVector_NewFromPoints(points: Contours) PointsVector;
 //     pub extern fn PointsVector_At(psv: PointsVector, idx: c_int) PointVector;
 //     pub extern fn PointsVector_Append(psv: PointsVector, pv: PointVector) void;
 //     pub extern fn PointsVector_Size(psv: PointsVector) c_int;
 //     pub extern fn PointsVector_Close(psv: PointsVector) void;
-//     pub extern fn Point2fVector_New(...) Point2fVector;
-//     pub extern fn Point2fVector_Close(pfv: Point2fVector) void;
-//     pub extern fn Point2fVector_NewFromPoints(pts: Contour2f) Point2fVector;
-//     pub extern fn Point2fVector_NewFromMat(mat: Mat) Point2fVector;
-//     pub extern fn Point2fVector_At(pfv: Point2fVector, idx: c_int) Point2f;
-//     pub extern fn Point2fVector_Size(pfv: Point2fVector) c_int;
+//*    pub extern fn Point2fVector_New(...) Point2fVector;
+//*    pub extern fn Point2fVector_Close(pfv: Point2fVector) void;
+//*    pub extern fn Point2fVector_NewFromPoints(pts: Contour2f) Point2fVector;
+//*    pub extern fn Point2fVector_NewFromMat(mat: Mat) Point2fVector;
+//*    pub extern fn Point2fVector_At(pfv: Point2fVector, idx: c_int) Point2f;
+//*    pub extern fn Point2fVector_Size(pfv: Point2fVector) c_int;
 //     pub extern fn IntVector_Close(ivec: struct_IntVector) void;
 //     pub extern fn CStrings_Close(cstrs: struct_CStrings) void;
 //     pub extern fn TheRNG(...) RNG;

@@ -131,7 +131,7 @@ pub const IMWriteFlag = enum(i32) {
 //
 pub fn IMRead(filename: []const u8, flags: IMReadFlag) !Mat {
     var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
-    return try Mat.initFromCMat(cMat);
+    return try Mat.initFromC(cMat);
 }
 
 // IMWrite writes a Mat to an image file.
@@ -171,7 +171,7 @@ pub fn IMWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
 
 pub fn IMDecode(buf: []u8, flags: IMReadFlag) !Mat {
     var data = @ptrCast([*]u8, buf);
-    return try Mat.initFromCMat(c.Image_IMDecode(data, @enumToInt(flags)));
+    return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
 
 //*    implementation done

@@ -1,10 +1,9 @@
-const c = @cimport({
-    @cInclude("stdlib.h");
-    @cInclude("video.h");
-});
+const c = @import("c_api.zig");
 const core = @import("core.zig");
 const Mat = core.Mat;
 const Rect = core.Rect;
+const Size = core.Size;
+const TermCriteria = core.TermCriteria;
 const Tracker = c.Tracker;
 
 // cv::OPTFLOW_USE_INITIAL_FLOW = 4,
@@ -27,9 +26,9 @@ pub const MotionHomography = 3;
 
 // BackgroundSubtractorMOG2 is a wrapper around the cv::BackgroundSubtractorMOG2.
 const BackgroundSubtractorMOG2 = struct {
-    ptr = c.BackgroundSubtractorMOG2,
+    ptr: c.BackgroundSubtractorMOG2,
 
-    const self = @This();
+    const Self = @This();
 
     // NewBackgroundSubtractorMOG2 returns a new BackgroundSubtractor algorithm
     // of type MOG2. MOG2 is a Gaussian Mixture-based Background/Foreground
@@ -39,7 +38,7 @@ const BackgroundSubtractorMOG2 = struct {
     // https://docs.opencv.org/master/de/de1/group__video__motion.html#ga2beb2dee7a073809ccec60f145b6b29c
     // https://docs.opencv.org/master/d7/d7b/classcv_1_1BackgroundSubtractorMOG2.html
     //
-    pub fn init(self: *Self) Self {
+    pub fn init() Self {
         return Self{
             .ptr = c.BackgroundSubtractorMOG2_Create(),
         };
@@ -53,7 +52,7 @@ const BackgroundSubtractorMOG2 = struct {
     // https://docs.opencv.org/master/de/de1/group__video__motion.html#ga2beb2dee7a073809ccec60f145b6b29c
     // https://docs.opencv.org/master/d7/d7b/classcv_1_1BackgroundSubtractorMOG2.html
     //
-    pub fn initWithPatams(self: *Self, history: c_int, varThreshold: f64, detectShadows: bool) BackgroundSubtractorMOG2 {
+    pub fn initWithPatams(history: c_int, varThreshold: f64, detectShadows: bool) BackgroundSubtractorMOG2 {
         return Self{
             .ptr = c.BackgroundSubtractorMOG2_CreateWithParams(history, varThreshold, detectShadows),
         };
@@ -78,7 +77,7 @@ const BackgroundSubtractorMOG2 = struct {
 pub const BackgroundSubtractorKNN = struct {
     ptr: c.BackgroundSubtractorKNN,
 
-    const self = @This();
+    const Self = @This();
 
     // NewBackgroundSubtractorKNN returns a new BackgroundSubtractor algorithm
     // of type KNN. K-Nearest Neighbors (KNN) uses a Background/Foreground
@@ -88,9 +87,9 @@ pub const BackgroundSubtractorKNN = struct {
     // https://docs.opencv.org/master/de/de1/group__video__motion.html#gac9be925771f805b6fdb614ec2292006d
     // https://docs.opencv.org/master/db/d88/classcv_1_1BackgroundSubtractorKNN.html
     //
-    pub fn init(self: *Self) Self {
+    pub fn init() Self {
         return BackgroundSubtractorKNN{
-            .ptr = C.BackgroundSubtractorKNN_Create(),
+            .ptr = c.BackgroundSubtractorKNN_Create(),
         };
     }
 
@@ -102,7 +101,7 @@ pub const BackgroundSubtractorKNN = struct {
     // https://docs.opencv.org/master/de/de1/group__video__motion.html#gac9be925771f805b6fdb614ec2292006d
     // https://docs.opencv.org/master/db/d88/classcv_1_1BackgroundSubtractorKNN.html
     //
-    pub fn initWithPatams(self: *Self, history: c_int, dist2Threshold: f64, detectShadows: bool) Self {
+    pub fn initWithPatams(history: c_int, dist2Threshold: f64, detectShadows: bool) Self {
         return Self{
             .p = c.BackgroundSubtractorKNN_CreateWithParams(history, dist2Threshold, detectShadows),
         };
@@ -130,27 +129,27 @@ pub const BackgroundSubtractorKNN = struct {
 // https://docs.opencv.org/master/dc/d6b/group__video__track.html#ga5d10ebbd59fe09c5f650289ec0ece5af
 //
 pub fn CalcOpticalFlowFarneback(
-    prevImg: Mat,
-    nextImg: Mat,
+    prev_img: Mat,
+    next_img: Mat,
     flow: *Mat,
-    pyrScale: f64,
+    pyr_scale: f64,
     levels: c_int,
     winsize: c_int,
     iterations: c_int,
-    polyN: c_int,
-    polySigma: f64,
+    poly_n: c_int,
+    poly_sigma: f64,
     flags: c_int,
 ) void {
     _ = c.CalcOpticalFlowFarneback(
-        prevImg.ptr,
-        nextImg.ptr,
+        prev_img.ptr,
+        next_img.ptr,
         flow.*.ptr,
-        pyrScale,
+        pyr_scale,
         levels,
         winsize,
         iterations,
-        polyN,
-        polySigma,
+        poly_n,
+        poly_sigma,
         flags,
     );
 }
@@ -162,18 +161,18 @@ pub fn CalcOpticalFlowFarneback(
 // https://docs.opencv.org/master/dc/d6b/group__video__track.html#ga473e4b886d0bcc6b65831eb88ed93323
 //
 pub fn calcOpticalFlowPyrLK(
-    prevImg: Mat,
-    nextImg: Mat,
-    prevPts: Mat,
-    nextPts: Mat,
+    prev_img: Mat,
+    next_img: Mat,
+    prev_pts: Mat,
+    next_pts: Mat,
     status: *Mat,
     err: *Mat,
 ) void {
     _ = c.CalcOpticalFlowPyrLK(
-        prevImg.ptr,
-        nextImg.ptr,
-        prevPts.ptr,
-        nextPts.ptr,
+        prev_img.ptr,
+        next_img.ptr,
+        prev_pts.ptr,
+        next_pts.ptr,
         status.*.ptr,
         err.*.ptr,
     );
@@ -186,34 +185,30 @@ pub fn calcOpticalFlowPyrLK(
 // https://docs.opencv.org/master/dc/d6b/group__video__track.html#ga473e4b886d0bcc6b65831eb88ed93323
 //
 pub fn calcOpticalFlowPyrLKWithParams(
-    prevImg: Mat,
-    nextImg: Mat,
-    prevPts: Mat,
-    nextPts: Mat,
+    prev_img: Mat,
+    next_img: Mat,
+    prev_pts: Mat,
+    next_pts: Mat,
     status: *Mat,
     err: *Mat,
-    winSize: Size,
-    maxLevel: c_int,
+    win_size: Size,
+    max_level: c_int,
     criteria: TermCriteria,
     flags: c_int,
-    minEigThreshold: f64,
+    min_eig_threshold: f64,
 ) void {
-    const winSz = Size{
-        .width = winSize.X,
-        .height = winSize.Y,
-    };
     _ = c.CalcOpticalFlowPyrLKWithParams(
-        prevImg.ptr,
-        nextImg.ptr,
-        prevPts.ptr,
-        nextPts.ptr,
+        prev_img.ptr,
+        next_img.ptr,
+        prev_pts.ptr,
+        next_pts.ptr,
         status.*.ptr,
         err.*.ptr,
-        winSize,
-        maxLevel,
+        win_size.toC(),
+        max_level,
         criteria.ptr,
         flags,
-        minEigThreshold,
+        min_eig_threshold,
     );
 }
 
@@ -223,61 +218,27 @@ pub fn calcOpticalFlowPyrLKWithParams(
 // https://docs.opencv.org/4.x/dc/d6b/group__video__track.html#ga1aa357007eaec11e9ed03500ecbcbe47
 //
 pub fn findTransformECC(
-    templateImage: Mat,
-    inputImage: Mat,
-    warpMatrix: *Mat,
-    motionType: int,
+    template_image: Mat,
+    input_image: Mat,
+    warp_matrix: *Mat,
+    motion_type: c_int,
     criteria: TermCriteria,
-    inputMask: Mat,
-    gaussFiltSize: c_int,
+    input_mask: Mat,
+    gauss_filt_size: c_int,
 ) f64 {
     return @as(
         f64,
         c.FindTransformECC(
-            templateImage.ptr,
-            inputImage.ptr,
-            warpMatrix.*.ptr,
-            C.int(motionType),
+            template_image.ptr,
+            input_image.ptr,
+            warp_matrix.*.ptr,
+            motion_type,
             criteria.ptr,
-            inputMask.ptr,
-            gaussFiltSize,
+            input_mask.ptr,
+            gauss_filt_size,
         ),
     );
 }
-
-// // Tracker
-// //
-// // see: https://docs.opencv.org/master/d0/d0a/classcv_1_1Tracker.html
-// //
-// pub const TrackerVTable = struct {
-//     // Close closes, as Trackers need to be Closed manually.
-//     //
-//     Close: fn () void,
-//
-//     // Init initializes the tracker with a known bounding box that surrounded the target.
-//     // Note: this can only be called once. If you lose the object, you have to Close() the instance,
-//     // create a new one, and call Init() on it again.
-//     //
-//     // see: https://docs.opencv.org/master/d0/d0a/classcv_1_1Tracker.html#a4d285747589b1bdd16d2e4f00c3255dc
-//     //
-//     Init: fn (image: Mat, boundingBox: Rect) bool,
-//
-//     // Update updates the tracker, returns a new bounding box and a boolean determining whether the tracker lost the target.
-//     //
-//     // see: https://docs.opencv.org/master/d0/d0a/classcv_1_1Tracker.html#a549159bd0553e6a8de356f3866df1f18
-//     //
-//     Update: fn (image: Mat) bool,
-// };
-//
-// pub fn trackerInit(trk: Tracker, img: Mat, boundwingBox: Rect) bool {
-//     const ret = c.Tracker_Init(trk, img.ptr, boundwingBox);
-//     return ret;
-// }
-//
-// pub fn trackerUpdate(trk: Tracker, img: Mat, new_rect: *Rect) bool {
-//     const ret = C.Tracker_Update(trk, img.ptr, new_rect.*);
-//     return ret;
-// }
 
 //*    implementation done
 //*    pub const BackgroundSubtractorMOG2 = ?*anyopaque;
@@ -297,7 +258,7 @@ pub fn findTransformECC(
 //*    pub extern fn CalcOpticalFlowPyrLKWithParams(prevImg: Mat, nextImg: Mat, prevPts: Mat, nextPts: Mat, status: Mat, err: Mat, winSize: Size, maxLevel: c_int, criteria: TermCriteria, flags: c_int, minEigThreshold: f64) void;
 //*    pub extern fn CalcOpticalFlowFarneback(prevImg: Mat, nextImg: Mat, flow: Mat, pyrScale: f64, levels: c_int, winsize: c_int, iterations: c_int, polyN: c_int, polySigma: f64, flags: c_int) void;
 //*    pub extern fn FindTransformECC(templateImage: Mat, inputImage: Mat, warpMatrix: Mat, motionType: c_int, criteria: TermCriteria, inputMask: Mat, gaussFiltSize: c_int) f64;
-//*    pub extern fn Tracker_Init(self: Tracker, image: Mat, boundingBox: Rect) bool;
-//*    pub extern fn Tracker_Update(self: Tracker, image: Mat, boundingBox: [*c]Rect) bool;
+//     pub extern fn Tracker_Init(self: Tracker, image: Mat, boundingBox: Rect) bool;
+//     pub extern fn Tracker_Update(self: Tracker, image: Mat, boundingBox: [*c]Rect) bool;
 //     pub extern fn TrackerMIL_Create(...) TrackerMIL;
 //     pub extern fn TrackerMIL_Close(self: TrackerMIL) void;
