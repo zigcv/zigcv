@@ -129,7 +129,7 @@ pub const IMWriteFlag = enum(i32) {
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
 //
-pub fn IMRead(filename: []const u8, flags: IMReadFlag) !Mat {
+pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
     var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
     return try Mat.initFromC(cMat);
 }
@@ -139,7 +139,7 @@ pub fn IMRead(filename: []const u8, flags: IMReadFlag) !Mat {
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#gabbc7ef1aa2edfaa87772f1202d67e0ce
 //
-pub fn IMWrite(filename: []const u8, img: Mat) !void {
+pub fn imWrite(filename: []const u8, img: Mat) !void {
     const result = c.Image_IMWrite(castToC(filename), img.ptr);
     if (!result) {
         return error.IMWriteFailed;
@@ -153,7 +153,7 @@ pub fn IMWrite(filename: []const u8, img: Mat) !void {
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#gabbc7ef1aa2edfaa87772f1202d67e0ce
 // https://docs.opencv.org/4.6.0/d8/d6a/group__imgcodecs__flags.html
 //
-pub fn IMWriteWithParams(filename: []const u8, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) !void {
+pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) !void {
     comptime var int_params: [params.len * 2]i32 = undefined;
     for (params) |p, i| {
         int_params[2 * i] = @enumToInt(p.f);
@@ -169,7 +169,7 @@ pub fn IMWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
     }
 }
 
-pub fn IMDecode(buf: []u8, flags: IMReadFlag) !Mat {
+pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
     var data = @ptrCast([*]u8, buf);
     return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }

@@ -16,7 +16,7 @@ pub fn main() anyerror!void {
     var window = cv.Window.init(window_name, .WindowNormal);
     defer window.deinit();
 
-    var img = try cv.IMRead(img_PATH, .IMReadUnchanged);
+    var img = try cv.imRead(img_PATH, .IMReadUnchanged);
     defer img.deinit();
     while (true) {
         window.imShow(img);

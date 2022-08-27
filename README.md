@@ -1,7 +1,12 @@
 # ZIGCV
 
-still under development!
+## Caution
+Still under development, so the zig APIs will be dynamically changed.
+
 Tested on zig version:0.10.0-dev.3024+47c58cba5
+
+You can use `const c_api = @import("zigcv").c_api;` to call c bindings directly.  
+This C-API is currently fixed.
 
 ## How to execute
 
