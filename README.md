@@ -1,7 +1,7 @@
 # ZIGCV
 
 still under development!
-
+Tested on zig version:0.10.0-dev.3024+47c58cba5
 
 ## How to execute
 
