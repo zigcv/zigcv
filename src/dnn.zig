@@ -5,6 +5,7 @@ const utils = @import("utils.zig");
 const Mat = core.Mat;
 const Size = core.Size;
 const Scalar = core.Scalar;
+const AsyncArray = @import("asyncarray.zig").AsyncArray;
 
 pub const NetBackendType = enum(i32) {
     // NetBackendDefault is the default backend.
@@ -137,6 +138,11 @@ pub const Net = struct {
     pub fn forward(self: *Self, output_name: []const u8) !Mat {
         if (self.ptr == null) return error.nullPointerError;
         return Mat.initFromC(c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name)));
+    }
+
+    pub fn forwardAsync(self: *Self, output_name: []const u8) !AsyncArray {
+        if (self.ptr == null) return error.nullPointerError;
+        return AsyncArray.initFromC(c.Net_ForwardAsync(self.*.ptr, utils.castZigU8ToC(output_name)));
     }
 
     // SetPreferableBackend ask network to use specific computation backend.
