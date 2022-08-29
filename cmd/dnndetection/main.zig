@@ -37,7 +37,7 @@ pub fn main() anyerror!void {
 
     // open DNN object tracking model
     var net = cv.Net.readNet(model_path, config_path) catch |err| {
-        std.debug.print("Error: {s}\n", .{err});
+        std.debug.print("Error: {}\n", .{err});
         std.os.exit(1);
     };
     defer net.deinit();
