@@ -427,6 +427,10 @@ pub const Point = struct {
     pub fn toC(self: Self) c.Point {
         return .{ .x = self.x, .y = self.y };
     }
+
+    pub fn deinit(self: *Self) void {
+        _ = c.Point_Close(self.*.ptr);
+    }
 };
 
 pub const Point2f = struct {
@@ -724,6 +728,60 @@ pub const Size = struct {
     }
 };
 
+pub const RNG = struct {
+    ptr: c.RNG,
+
+    const Self = @This();
+
+    // TheRNG Returns the default random number generator.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga75843061d150ad6564b5447e38e57722
+    //
+    pub fn init() Self {
+        .{ .ptr = c.TheRNG() };
+    }
+
+    // TheRNG Sets state of default random number generator.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga757e657c037410d9e19e819569e7de0f
+    //
+    pub fn setRNGSeed(self: Self, seed: c_int) void {
+        _ = self;
+        c.SetRNGSeed(seed);
+    }
+
+    // Fill Fills arrays with random numbers.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d1/dd6/classcv_1_1RNG.html#ad26f2b09d9868cf108e84c9814aa682d
+    //
+    pub fn fill(self: *Self, mat: *Mat, dist_type: c_int, a: f64, b: f64, saturate_range: bool) void {
+        _ = c.RNG_Fill(self.ptr, mat.*.ptr, dist_type, a, b, saturate_range);
+    }
+
+    // Gaussian Returns the next random number sampled from
+    // the Gaussian distribution.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d1/dd6/classcv_1_1RNG.html#a8df8ce4dc7d15916cee743e5a884639d
+    //
+    pub fn gaussian(self: *Self, sigma: f64) f64 {
+        return c.RNG_Gaussian(self.ptr, sigma);
+    }
+
+    // Gaussian Returns the next random number sampled from
+    // the Gaussian distribution.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d1/dd6/classcv_1_1RNG.html#a8df8ce4dc7d15916cee743e5a884639d
+    //
+    pub fn next(self: *Self) c_uint {
+        return c.RNG_Next(self.ptr);
+    }
+};
+
 pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
     var list = std.ArrayList([]const u8).init(allocator);
     {
@@ -744,7 +802,7 @@ pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.Ar
 //     pub extern fn KeyPoints_Close(ks: struct_KeyPoints) void;
 //     pub extern fn Rects_Close(rs: struct_Rects) void;
 //     pub extern fn Mats_Close(mats: struct_Mats) void;
-//     pub extern fn Point_Close(p: struct_Point) void;
+//*    pub extern fn Point_Close(p: struct_Point) void;
 //     pub extern fn Points_Close(ps: struct_Points) void;
 //     pub extern fn DMatches_Close(ds: struct_DMatches) void;
 //     pub extern fn MultiDMatches_Close(mds: struct_MultiDMatches) void;
@@ -753,7 +811,7 @@ pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.Ar
 //     pub extern fn Mat_NewWithSizes(sizes: struct_IntVector, @"type": c_int) Mat;
 //     pub extern fn Mat_NewWithSizesFromScalar(sizes: IntVector, @"type": c_int, ar: Scalar) Mat;
 //     pub extern fn Mat_NewWithSizesFromBytes(sizes: IntVector, @"type": c_int, buf: struct_ByteArray) Mat;
-//     pub extern fn Mat_NewFromScalar(ar: Scalar, @"type": c_int) Mat;
+//*    pub extern fn Mat_NewFromScalar(ar: Scalar, @"type": c_int) Mat;
 //     pub extern fn Mat_NewWithSizeFromScalar(ar: Scalar, rows: c_int, cols: c_int, @"type": c_int) Mat;
 //     pub extern fn Mat_NewFromBytes(rows: c_int, cols: c_int, @"type": c_int, buf: struct_ByteArray) Mat;
 //     pub extern fn Mat_FromPtr(m: Mat, rows: c_int, cols: c_int, @"type": c_int, prows: c_int, pcols: c_int) Mat;
@@ -925,11 +983,11 @@ pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.Ar
 //*    pub extern fn Point2fVector_Size(pfv: Point2fVector) c_int;
 //     pub extern fn IntVector_Close(ivec: struct_IntVector) void;
 //     pub extern fn CStrings_Close(cstrs: struct_CStrings) void;
-//     pub extern fn TheRNG(...) RNG;
-//     pub extern fn SetRNGSeed(seed: c_int) void;
-//     pub extern fn RNG_Fill(rng: RNG, mat: Mat, distType: c_int, a: f64, b: f64, saturateRange: bool) void;
-//     pub extern fn RNG_Gaussian(rng: RNG, sigma: f64) f64;
-//     pub extern fn RNG_Next(rng: RNG) c_uint;
+//*    pub extern fn TheRNG(...) RNG;
+//*    pub extern fn SetRNGSeed(seed: c_int) void;
+//*    pub extern fn RNG_Fill(rng: RNG, mat: Mat, distType: c_int, a: f64, b: f64, saturateRange: bool) void;
+//*    pub extern fn RNG_Gaussian(rng: RNG, sigma: f64) f64;
+//*    pub extern fn RNG_Next(rng: RNG) c_uint;
 //     pub extern fn RandN(mat: Mat, mean: Scalar, stddev: Scalar) void;
 //     pub extern fn RandShuffle(mat: Mat) void;
 //     pub extern fn RandShuffleWithParams(mat: Mat, iterFactor: f64, rng: RNG) void;
