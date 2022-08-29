@@ -399,6 +399,22 @@ pub const Mat = struct {
         var p: c.ByteArray = c.Mat_DataPtr(self.ptr);
         return @ptrCast([*]T, @alignCast(@alignOf(f32), p.data))[0 .. p.length / (@sizeOf(T) / @sizeOf(u8))];
     }
+
+    pub fn randN(self: *Self, mean: Scalar, stddev: Scalar) void {
+        _ = c.Mat_RandN(self.ptr, mean.toC(), stddev.toC());
+    }
+
+    pub fn randShuffle(self: *Self) void {
+        _ = c.RandShuffle(self.ptr);
+    }
+
+    pub fn randShuffleWithParams(self: *Self, iter_factor: f64, rng: RNG) void {
+        _ = c.RandShuffleWithParams(self.ptr, iter_factor, rng.toC());
+    }
+
+    pub fn randU(self: *Self, low: Scalar, high: Scalar) void {
+        _ = c.RandU(self.ptr, low.toC(), high.toC());
+    }
 };
 
 pub fn matsToCMats(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
@@ -613,6 +629,73 @@ pub const Scalar = struct {
     }
 };
 
+pub const KeyPoint = struct {
+    x: f64,
+    y: f64,
+    size: f64,
+    angle: f64,
+    response: f64,
+    octave: c_int,
+    class_id: c_int,
+
+    const Self = @This();
+
+    pub fn init(
+        x: f64,
+        y: f64,
+        size: f64,
+        angle: f64,
+        response: f64,
+        octave: c_int,
+        class_id: c_int,
+    ) Self {
+        return .{
+            .x = x,
+            .y = y,
+            .size = size,
+            .angle = angle,
+            .response = response,
+            .octave = octave,
+            .class_id = class_id,
+        };
+    }
+
+    pub fn initFromC(kp: c.KeyPoint) Self {
+        return .{
+            .x = kp.x,
+            .y = kp.y,
+            .size = kp.size,
+            .angle = kp.angle,
+            .response = kp.response,
+            .octave = kp.octave,
+            .class_id = kp.class_id,
+        };
+    }
+
+    pub fn toC(self: Self) c.KeyPoint {
+        return .{
+            .x = self.x,
+            .y = self.y,
+            .size = self.size,
+            .angle = self.angle,
+            .response = self.response,
+            .octave = self.octave,
+            .class_id = self.class_id,
+        };
+    }
+
+    pub fn arrayFromC(kps: c.KeyPoints, allocator: std.mem.Allocator) ![]Self {
+        var arr = try std.ArrayList(Self).init(allocator);
+        {
+            var i: usize = 0;
+            while (i < kps.length) : (i += 1) {
+                try arr.append(Self.initFromC(kps.keypoints[i]));
+            }
+        }
+        return arr;
+    }
+};
+
 pub const Rect = struct {
     x: c_int,
     y: c_int,
@@ -742,6 +825,14 @@ pub const RNG = struct {
         .{ .ptr = c.TheRNG() };
     }
 
+    pub fn initFromC(ptr: c.RNG) Self {
+        return .{ .ptr = ptr };
+    }
+
+    pub fn toC(self: Self) c.RNG {
+        return self.ptr;
+    }
+
     // TheRNG Sets state of default random number generator.
     //
     // For further details, please see:
@@ -781,17 +872,6 @@ pub const RNG = struct {
         return c.RNG_Next(self.ptr);
     }
 };
-
-pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
-    var list = std.ArrayList([]const u8).init(allocator);
-    {
-        var i: usize = 0;
-        while (i < cstr.length) : (i += 1) {
-            try list.append(cstr.strs[i]);
-        }
-    }
-    return list;
-}
 
 //*    implementation done
 //     pub extern fn Mats_get(mats: struct_Mats, i: c_int) Mat;
@@ -988,10 +1068,10 @@ pub fn cStringsToU8Array(cstr: c.CStrings, allocator: std.mem.Allocator) !std.Ar
 //*    pub extern fn RNG_Fill(rng: RNG, mat: Mat, distType: c_int, a: f64, b: f64, saturateRange: bool) void;
 //*    pub extern fn RNG_Gaussian(rng: RNG, sigma: f64) f64;
 //*    pub extern fn RNG_Next(rng: RNG) c_uint;
-//     pub extern fn RandN(mat: Mat, mean: Scalar, stddev: Scalar) void;
-//     pub extern fn RandShuffle(mat: Mat) void;
-//     pub extern fn RandShuffleWithParams(mat: Mat, iterFactor: f64, rng: RNG) void;
-//     pub extern fn RandU(mat: Mat, low: Scalar, high: Scalar) void;
+//*    pub extern fn RandN(mat: Mat, mean: Scalar, stddev: Scalar) void;
+//*    pub extern fn RandShuffle(mat: Mat) void;
+//*    pub extern fn RandShuffleWithParams(mat: Mat, iterFactor: f64, rng: RNG) void;
+//*    pub extern fn RandU(mat: Mat, low: Scalar, high: Scalar) void;
 //     pub extern fn copyPointVectorToPoint2fVector(src: PointVector, dest: Point2fVector) void;
 //     pub extern fn StdByteVectorInitialize(data: ?*anyopaque) void;
 //     pub extern fn StdByteVectorFree(data: ?*anyopaque) void;

@@ -194,7 +194,7 @@ pub const Net = struct {
         const c_strs = c.CStrings{};
         defer c.CStrings_Close(c_strs);
         _ = c.Net_GetLayerNames(self.ptr, &c_strs);
-        return try core.cStringsToU8Array(c_strs, allocator);
+        return try utils.cStringsToU8Array(c_strs, allocator);
     }
 
     pub fn getLayer(self: Self, layerid: c_int) !Layer {
