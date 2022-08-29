@@ -1,3 +1,45 @@
+const std = @import("std");
+const c = @import("c_api.zig");
+const core = @import("core.zig");
+const Keypoin = core.KeyPoint;
+
+pub const SIFT = struct {
+    ptr: c.SIFT,
+
+    const Self = @This();
+
+    // NewSIFT returns a new SIFT algorithm.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d5/d3c/classcv_1_1xfeatures2d_1_1SIFT.html
+    //
+    pub fn init() Self {
+        return .{ .ptr = c.SIFT_Create() };
+    }
+
+    pub fn initFromC(ptr: c.SIFT) Self {
+        return .{ .ptr = ptr };
+    }
+
+    pub fn toC(self: Self) c.SIFT {
+        return self.ptr;
+    }
+
+    pub fn deinit(self: *Self) void {
+        _ = c.SIFT_Close(self.ptr);
+    }
+
+    pub fn detect(self: Self, src: Mat) KeyPoints {
+        return KeyPoints.initFromC(c.SIFT_Detect(self.ptr, src.toC()));
+    }
+
+    pub fn detectAndCompute(self: Self, src: Mat, mask: Mat, desc: *Mat, allocator) !KeyPoints {
+        const return_keypoints: c.KeyPoints = c.SIFT_DetectAndCompute(self.ptr, src.ptr, mask.ptr, desc.*.ptr);
+        defer c.KeyPoints_Close(return_keypoints);
+        return Keypoint.arrayFromC(return_keypoints, allocator);
+    }
+};
+
 //*    implementation done
 //     pub const AKAZE = ?*anyopaque;
 //     pub const AgastFeatureDetector = ?*anyopaque;
@@ -10,7 +52,7 @@
 //     pub const SimpleBlobDetector = ?*anyopaque;
 //     pub const BFMatcher = ?*anyopaque;
 //     pub const FlannBasedMatcher = ?*anyopaque;
-//     pub const SIFT = ?*anyopaque;
+//*    pub const SIFT = ?*anyopaque;
 //     pub extern fn AKAZE_Create(...) AKAZE;
 //     pub extern fn AKAZE_Close(a: AKAZE) void;
 //     pub extern fn AKAZE_Detect(a: AKAZE, src: Mat) struct_KeyPoints;
@@ -54,8 +96,8 @@
 //     pub extern fn FlannBasedMatcher_Close(f: FlannBasedMatcher) void;
 //     pub extern fn FlannBasedMatcher_KnnMatch(f: FlannBasedMatcher, query: Mat, train: Mat, k: c_int) struct_MultiDMatches;
 //     pub extern fn DrawKeyPoints(src: Mat, kp: struct_KeyPoints, dst: Mat, s: Scalar, flags: c_int) void;
-//     pub extern fn SIFT_Create(...) SIFT;
-//     pub extern fn SIFT_Close(f: SIFT) void;
-//     pub extern fn SIFT_Detect(f: SIFT, src: Mat) struct_KeyPoints;
-//     pub extern fn SIFT_DetectAndCompute(f: SIFT, src: Mat, mask: Mat, desc: Mat) struct_KeyPoints;
+//*    pub extern fn SIFT_Create(...) SIFT;
+//*    pub extern fn SIFT_Close(f: SIFT) void;
+//*    pub extern fn SIFT_Detect(f: SIFT, src: Mat) struct_KeyPoints;
+//*    pub extern fn SIFT_DetectAndCompute(f: SIFT, src: Mat, mask: Mat, desc: Mat) struct_KeyPoints;
 //     pub extern fn DrawMatches(img1: Mat, kp1: struct_KeyPoints, img2: Mat, kp2: struct_KeyPoints, matches1to2: struct_DMatches, outImg: Mat, matchesColor: Scalar, pointColor: Scalar, matchesMask: struct_ByteArray, flags: c_int) void;
