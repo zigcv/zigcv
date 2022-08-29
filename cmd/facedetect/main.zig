@@ -3,14 +3,16 @@ const cv = @import("zigcv");
 const cv_c_api = cv.c_api;
 
 pub fn main() anyerror!void {
-    var args = try std.process.argsWithAllocator(std.heap.page_allocator);
-    defer args.deinit();
+    var allocator = std.heap.page_allocator;
+    var args = try std.process.argsWithAllocator(allocator);
     const prog = args.next();
-    const devic_id_char = args.next() orelse {
+    const device_id_char = args.next() orelse {
         std.log.err("usage: {s} [cameraID]", .{prog.?});
         std.os.exit(1);
     };
-    const device_id = try std.fmt.parseUnsigned(c_int, devic_id_char, 10);
+    args.deinit();
+
+    const device_id = try std.fmt.parseUnsigned(c_int, device_id_char, 10);
 
     // open webcam
     var webcam = cv.VideoCapture.init();
@@ -46,7 +48,6 @@ pub fn main() anyerror!void {
         if (img.isEmpty()) {
             continue;
         }
-        var allocator = std.heap.page_allocator;
         const rects = try classifier.detectMultiScale(img, allocator);
         defer rects.deinit();
         const found_num = rects.items.len;
