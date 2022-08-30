@@ -28,9 +28,6 @@ pub fn main() anyerror!void {
     var img = cv.Mat.init();
     defer img.deinit();
 
-    // color for the rect when faces detected
-    const blue = cv.Color{ .b = 255 };
-
     // load classifier to recognize faces
     var classifier = cv.CascadeClassifier.init();
     defer classifier.deinit();
@@ -40,6 +37,7 @@ pub fn main() anyerror!void {
         std.os.exit(1);
     };
 
+    const blue = cv.Color{ .b = 255 };
     while (true) {
         webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
@@ -53,7 +51,7 @@ pub fn main() anyerror!void {
         const found_num = rects.items.len;
         std.debug.print("found {d} faces\n", .{found_num});
         for (rects.items) |r| {
-            std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
+            std.debug.print("x:\t{}, y:\t{}, w:\t{}, h:\t{}\n", .{ r.x, r.y, r.width, r.height });
             cv.rectangle(&img, r, blue, 3);
         }
 

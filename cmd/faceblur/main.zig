@@ -36,6 +36,7 @@ pub fn main() anyerror!void {
         std.os.exit(1);
     };
 
+    const size = cv.Size{ .width = 75, .height = 75 };
     while (true) {
         webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
@@ -49,11 +50,7 @@ pub fn main() anyerror!void {
         const found_num = rects.items.len;
         std.debug.print("found {d} faces\n", .{found_num});
         for (rects.items) |r| {
-            std.debug.print("x:\t{}, y:\t{}, w\t{}, h\t{}\n", .{ r.x, r.y, r.width, r.height });
-            var size = cv.Size{
-                .width = 75,
-                .height = 75,
-            };
+            std.debug.print("x:\t{}, y:\t{}, w:\t{}, h:\t{}\n", .{ r.x, r.y, r.width, r.height });
             cv.gaussianBlur(img, &img, size, 0, 0, cv.BorderTypeDefault);
         }
 

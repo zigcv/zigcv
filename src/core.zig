@@ -400,8 +400,8 @@ pub const Mat = struct {
         return @ptrCast([*]T, @alignCast(@alignOf(f32), p.data))[0 .. p.length / (@sizeOf(T) / @sizeOf(u8))];
     }
 
-    pub fn randN(self: *Self, mean: Scalar, stddev: Scalar) void {
-        _ = c.Mat_RandN(self.ptr, mean.toC(), stddev.toC());
+    pub fn randN(self: *Self, mean_: Scalar, stddev: Scalar) void {
+        _ = c.Mat_RandN(self.ptr, mean_.toC(), stddev.toC());
     }
 
     pub fn randShuffle(self: *Self) void {
