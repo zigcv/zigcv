@@ -189,12 +189,12 @@ pub const Net = struct {
         return return_res;
     }
 
-    pub fn getLayerNames(self: *Self, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
+    pub fn getLayerNames(self: *Self) []const u8 {
         if (self.ptr == null) return error.nullPointerError;
         const c_strs = c.CStrings{};
         defer c.CStrings_Close(c_strs);
         _ = c.Net_GetLayerNames(self.ptr, &c_strs);
-        return try utils.cStringsToU8Array(c_strs, allocator);
+        return std.mem.span(c_strs);
     }
 
     pub fn getLayer(self: Self, layerid: c_int) !Layer {
