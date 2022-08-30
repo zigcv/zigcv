@@ -25,25 +25,25 @@ pub const NetBackendType = enum(i32) {
 
     // NetBackendCUDA is the Cuda backend.
     NetBackendCUDA = 5,
-};
 
-// ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
-// - halide
-// - openvino
-// - opencv
-// - vulkan
-// - cuda
-// - default
-pub fn ParseNetBackend(backend: []const u8) NetBackendType {
-    return switch (backend) {
-        "halide" => .NetBackendHalide,
-        "openvino" => .NetBackendOpenVINO,
-        "opencv" => .NetBackendOpenCV,
-        "vulkan" => .NetBackendVKCOM,
-        "cuda" => .NetBackendCUDA,
-        else => .NetBackendDefault,
-    };
-}
+    // ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
+    // - halide
+    // - openvino
+    // - opencv
+    // - vulkan
+    // - cuda
+    // - default
+    pub fn parse(backend: []const u8) @This() {
+        return switch (backend) {
+            "halide" => .NetBackendHalide,
+            "openvino" => .NetBackendOpenVINO,
+            "opencv" => .NetBackendOpenCV,
+            "vulkan" => .NetBackendVKCOM,
+            "cuda" => .NetBackendCUDA,
+            else => .NetBackendDefault,
+        };
+    }
+};
 
 pub const NetTargetType = enum(i32) {
     // NetTargetCPU is the default CPU device target.
@@ -69,21 +69,21 @@ pub const NetTargetType = enum(i32) {
 
     // NetTargetCUDAFP16 is the CUDA target.
     NetTargetCUDAFP16 = 7,
-};
 
-pub fn ParseNetTarget(target: []const u8) NetTargetType {
-    return switch (target) {
-        "fp32" => .NetTargetFP32,
-        "fp16" => .NetTargetFP16,
-        "vpu" => .NetTargetVPU,
-        "vulkan" => .NetTargetVulkan,
-        "fpga" => .NetTargetFPGA,
-        "cuda" => .NetTargetCUDA,
-        "cuda_fp16" => .NetTargetCUDAFP16,
-        "cpu" => .NetTargetCPU,
-        else => .NetTargetCPU,
-    };
-}
+    pub fn parse(target: []const u8) @This() {
+        return switch (target) {
+            "fp32" => .NetTargetFP32,
+            "fp16" => .NetTargetFP16,
+            "vpu" => .NetTargetVPU,
+            "vulkan" => .NetTargetVulkan,
+            "fpga" => .NetTargetFPGA,
+            "cuda" => .NetTargetCUDA,
+            "cuda_fp16" => .NetTargetCUDAFP16,
+            "cpu" => .NetTargetCPU,
+            else => .NetTargetCPU,
+        };
+    }
+};
 
 pub const Net = struct {
     ptr: c.Net,
