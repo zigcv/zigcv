@@ -19,6 +19,27 @@ pub const WindowFlag = enum {
 
     // WindowKeepRatio indicates always maintain an aspect ratio that matches the contents.
     WindowKeepRatio,
+
+    fn windowFlagToNum(wf: WindowFlag, comptime T: type) T {
+        return switch (wf) {
+            .WindowNormal => 0x00000000,
+            .WindowAutosize => 0x00000001,
+            .WindowFullscreen => 1,
+            .WindowFreeRatio => 0x00000100,
+            .WindowKeepRatio => 0x00000000,
+        };
+    }
+
+    fn numToWindowFlag(wf: anytype) WindowFlag {
+        return switch (wf) {
+            0x00000000 => .WindowNormal,
+            0x00000001 => .WindowAutosize,
+            1 => .WindowFullscreen,
+            0x00000100 => .WindowFreeRatio,
+            0x00000000 => .WindowKeepRatio,
+            else => @panic("invalid number"),
+        };
+    }
 };
 
 pub const WindowPropertyFlag = enum(i32) {
@@ -67,7 +88,7 @@ pub const Window = struct {
     }
 
     pub fn init(window_name: []const u8, flags: WindowFlag) Self {
-        c.Window_New(@ptrCast([*]const u8, window_name), Self.windowFlagToNum(flags, c_int));
+        c.Window_New(@ptrCast([*]const u8, window_name), WindowFlag.windowFlagToNum(flags, c_int));
         return .{
             .name = window_name,
             .open = true,
@@ -93,7 +114,7 @@ pub const Window = struct {
         _ = c.Window_SetProperty(
             self.getCWindowName(),
             @enumToInt(flag),
-            self.windowFlagToNum(value, f64),
+            WindowFlag.windowFlagToNum(value, f64),
         );
     }
 
@@ -108,7 +129,7 @@ pub const Window = struct {
             self.getCWindowName(),
             @enumToInt(flag),
         );
-        return self.numToWindowFlag(f);
+        return WindowFlag.numToWindowFlag(f);
     }
 
     pub fn setTitle(self: *Self, title: []const u8) void {
@@ -217,27 +238,6 @@ pub const Window = struct {
     pub fn trackBarSetMax(self: *Self, pos: c_int) !void {
         const trackbar_name = try self.getCTrackbarName();
         _ = c.Trackbar_SetMax(self.getCWindowName(), trackbar_name, pos);
-    }
-
-    fn windowFlagToNum(wf: WindowFlag, comptime T: type) T {
-        return switch (wf) {
-            .WindowNormal => 0x00000000,
-            .WindowAutosize => 0x00000001,
-            .WindowFullscreen => 1,
-            .WindowFreeRatio => 0x00000100,
-            .WindowKeepRatio => 0x00000000,
-        };
-    }
-
-    fn numToWindowFlag(wf: anytype) WindowFlag {
-        return switch (wf) {
-            0x00000000 => .WindowNormal,
-            0x00000001 => .WindowAutosize,
-            1 => .WindowFullscreen,
-            0x00000100 => .WindowFreeRatio,
-            0x00000000 => .WindowKeepRatio,
-            else => @panic("invalid number"),
-        };
     }
 };
 

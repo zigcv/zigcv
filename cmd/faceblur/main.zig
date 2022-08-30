@@ -51,7 +51,7 @@ pub fn main() anyerror!void {
         std.debug.print("found {d} faces\n", .{found_num});
         for (rects.items) |r| {
             std.debug.print("x:\t{}, y:\t{}, w:\t{}, h:\t{}\n", .{ r.x, r.y, r.width, r.height });
-            cv.gaussianBlur(img, &img, size, 0, 0, cv.BorderTypeDefault);
+            cv.gaussianBlur(img, &img, size, 0, 0, cv.BorderType.default);
         }
 
         window.imShow(img);

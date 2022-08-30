@@ -66,8 +66,9 @@ pub const BorderType = enum(i32) {
 
     // BorderIsolated border type
     BorderIsolated = 16,
+
+    pub const default = BorderType.BorderReflect101;
 };
-pub const BorderTypeDefault = BorderType.BorderReflect101;
 
 pub const MorphType = enum(i32) {
     // MorphErode operation
@@ -185,8 +186,9 @@ pub const InterpolationFlag = enum(i32) {
 
     // WarpInverseMap, inverse transformation.
     WarpInverseMap = 16,
+
+    pub const default = InterpolationFlag.InterpolationLinear;
 };
-pub const InterpolationFlagDefault = InterpolationFlag.InterpolationLinear;
 
 pub const ColormapType = enum(i32) {
     ColormapAutumn = 0,
