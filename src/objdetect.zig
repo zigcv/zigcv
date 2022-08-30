@@ -43,6 +43,7 @@ pub const CascadeClassifier = struct {
     //
     pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(Rect) {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScale(self.ptr, img.ptr);
+        defer c.Rects_Close(rec);
 
         var return_rects = std.ArrayList(Rect).init(allocator);
         {
@@ -124,6 +125,7 @@ pub const HOGDescriptor = struct {
     //
     pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(Rect) {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScale(self.ptr, img.ptr);
+        defer c.Rects_Close(rec);
 
         var return_rects = std.ArrayList(Rect).init(allocator);
         {
@@ -162,6 +164,7 @@ pub const HOGDescriptor = struct {
             final_threshold,
             use_meanshift_grouping,
         );
+        defer c.Rects_Close(rec);
 
         var return_rects = std.ArrayList(Rect).init(allocator);
         {
