@@ -44,15 +44,7 @@ pub const CascadeClassifier = struct {
     pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(Rect) {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScale(self.ptr, img.ptr);
         defer c.Rects_Close(rec);
-
-        var return_rects = std.ArrayList(Rect).init(allocator);
-        {
-            var i: usize = 0;
-            while (i < rec.length) : (i += 1) {
-                try return_rects.append(Rect.initFromC(rec.rects[i]));
-            }
-        }
-        return return_rects;
+        return try Rect.cArrayToArrayList(rec, allocator);
     }
 
     // DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
@@ -80,15 +72,7 @@ pub const CascadeClassifier = struct {
             min_size.toC(),
             max_size.toC(),
         );
-
-        var return_rects = std.ArrayList(Rect).init(allocator);
-        {
-            var i: usize = 0;
-            while (i < rec.length) : (i += 1) {
-                try return_rects.append(Rect.initFromC(rec.rects[i]));
-            }
-        }
-        return return_rects;
+        return try Rect.cArrayToArrayList(rec, allocator);
     }
 };
 
@@ -126,15 +110,7 @@ pub const HOGDescriptor = struct {
     pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(Rect) {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScale(self.ptr, img.ptr);
         defer c.Rects_Close(rec);
-
-        var return_rects = std.ArrayList(Rect).init(allocator);
-        {
-            var i: usize = 0;
-            while (i < rec.length) : (i += 1) {
-                try return_rects.append(Rect.initFromC(rec.rects[i]));
-            }
-        }
-        return return_rects;
+        return try Rect.cArrayToArrayList(rec, allocator);
     }
 
     // DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
@@ -165,15 +141,7 @@ pub const HOGDescriptor = struct {
             use_meanshift_grouping,
         );
         defer c.Rects_Close(rec);
-
-        var return_rects = std.ArrayList(Rect).init(allocator);
-        {
-            var i: usize = 0;
-            while (i < rec.length) : (i += 1) {
-                try return_rects.append(Rect.initFromC(rec.rects[i]));
-            }
-        }
-        return return_rects;
+        return try Rect.cArrayToArrayList(rec, allocator);
     }
 
     // HOGDefaultPeopleDetector returns a new Mat with the HOG DefaultPeopleDetector.
@@ -301,15 +269,8 @@ pub const QRCodeDetector = struct {
             }
         }
 
-        var qr_codes: std.ArrayList(Mat) = undefined;
-        {
-            var i: usize = 0;
-            while (i < c_qr_codes.length) {
-                const cmm: c.Mat = c_qr_codes.mats[i];
-                const mm: Mat = try Mat.initFromC(cmm);
-                try qr_codes.append(Mat.clone(mm));
-            }
-        }
+        var qr_codes = std.ArrayList(Mat).initCapacity(Mat, @intCast(usize, c_qr_codes.length));
+        for (return_rects) |_, i| qr_codes[i] = Rect.initFromC(c_rects.rects[i]);
 
         return .{
             .is_detected = result,

@@ -415,6 +415,13 @@ pub const Mat = struct {
     pub fn randU(self: *Self, low: Scalar, high: Scalar) void {
         _ = c.RandU(self.ptr, low.toC(), high.toC());
     }
+
+    pub fn cArrayToArrayList(c_mats: c.Mats, allocator: std.mem.Allocator) !std.ArrayList(Self) {
+        const len = @intCast(usize, c_mats.length);
+        var return_rects = std.ArrayList(Rect).initCapacity(allocator, len);
+        for (return_rects) |_, i| return_rects[i] = Rect.initFromC(c_mats.rects[i]);
+        return return_rects;
+    }
 };
 
 pub fn matsToCMats(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
@@ -734,6 +741,13 @@ pub const Rect = struct {
             .width = self.width,
             .height = self.height,
         };
+    }
+
+    pub fn cArrayToArrayList(c_rects: c.Rects, allocator: std.mem.Allocator) !std.ArrayList(Self) {
+        const len = @intCast(usize, c_rects.length);
+        var return_rects = std.ArrayList(Rect).initCapacity(allocator, len);
+        for (return_rects) |_, i| return_rects[i] = Rect.initFromC(c_rects.rects[i]);
+        return return_rects;
     }
 };
 
