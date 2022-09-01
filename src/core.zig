@@ -691,17 +691,20 @@ pub const KeyPoint = struct {
         };
     }
 
-    pub fn arrayFromC(kps: c.KeyPoints, allocator: std.mem.Allocator) ![]Self {
-        var arr = try std.ArrayList(Self).init(allocator);
+    pub fn toArrayList(c_kps: c.KeyPoints, allocator: std.mem.Allocator) !KeyPoints {
+        const len = @intCast(usize, c_kps.length);
+        var arr = try std.MultiArrayList(Self).initCapacity(allocator, len);
         {
             var i: usize = 0;
-            while (i < kps.length) : (i += 1) {
-                try arr.append(Self.initFromC(kps.keypoints[i]));
+            while (i < len) : (i += 1) {
+                try arr.append(Self.initFromC(c_kps.keypoints[i]));
             }
         }
         return arr;
     }
 };
+
+pub const KeyPoints = std.ArrayList(KeyPoint);
 
 pub const Rect = struct {
     x: c_int,

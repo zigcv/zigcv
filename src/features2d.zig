@@ -1,7 +1,8 @@
 const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
-const Keypoin = core.KeyPoint;
+const Keypoint = core.KeyPoint;
+const Keypoints = core.KeyPoints;
 
 pub const SIFT = struct {
     ptr: c.SIFT,
@@ -36,7 +37,7 @@ pub const SIFT = struct {
     pub fn detectAndCompute(self: Self, src: Mat, mask: Mat, desc: *Mat, allocator) !KeyPoints {
         const return_keypoints: c.KeyPoints = c.SIFT_DetectAndCompute(self.ptr, src.ptr, mask.ptr, desc.*.ptr);
         defer c.KeyPoints_Close(return_keypoints);
-        return Keypoint.arrayFromC(return_keypoints, allocator);
+        return try Keypoint.toArrayList(return_keypoints, allocator);
     }
 };
 
