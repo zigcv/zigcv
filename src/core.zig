@@ -397,7 +397,7 @@ pub const Mat = struct {
         }
 
         var p: c.ByteArray = c.Mat_DataPtr(self.ptr);
-        return @ptrCast([*]T, @alignCast(@alignOf(f32), p.data))[0 .. p.length / (@sizeOf(T) / @sizeOf(u8))];
+        return @ptrCast([*]T, @alignCast(@alignOf(T), p.data))[0 .. p.length / (@sizeOf(T) / @sizeOf(u8))];
     }
 
     pub fn randN(self: *Self, mean_: Scalar, stddev: Scalar) void {
