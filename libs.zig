@@ -9,10 +9,13 @@ pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u
 }
 
 pub fn link(exe: *std.build.LibExeObjStep) void {
+    ensureSubmodules(exe);
+
     const target = exe.target;
     const mode = exe.build_mode;
+    const builder = exe.builder;
 
-    const cv = exe.builder.addStaticLibrary("opencv", null);
+    const cv = builder.addStaticLibrary("opencv", null);
     cv.setTarget(target);
     cv.setBuildMode(mode);
     cv.force_pic = true;
@@ -89,12 +92,15 @@ pub const contrib = struct {
     }
 
     pub fn link(exe: *std.build.LibExeObjStep) void {
+        ensureSubmodules(exe);
+
         const target = exe.target;
         const mode = exe.build_mode;
+        const builder = exe.builder;
 
         const contrib_dir = srcdir ++ "contrib/";
 
-        const cv_contrib = exe.builder.addStaticLibrary("opencv_contrib", null);
+        const cv_contrib = builder.addStaticLibrary("opencv_contrib", null);
         cv_contrib.setTarget(target);
         cv_contrib.setBuildMode(mode);
         cv_contrib.force_pic = true;
@@ -129,12 +135,15 @@ pub const cuda = struct {
     }
 
     pub fn link(exe: *std.build.LibExeObjStep) void {
+        ensureSubmodules(exe);
+
         const target = exe.target;
         const mode = exe.build_mode;
+        const builder = exe.builder;
 
         const cuda_dir = srcdir ++ "cuda/";
 
-        const cv_cuda = exe.builder.addStaticLibrary("opencv_cuda", null);
+        const cv_cuda = builder.addStaticLibrary("opencv_cuda", null);
         cv_cuda.setTarget(target);
         cv_cuda.setBuildMode(mode);
         cv_cuda.force_pic = true;
@@ -161,6 +170,15 @@ pub const cuda = struct {
 
 inline fn getThisDir() []const u8 {
     return comptime std.fs.path.dirname(@src().file) orelse ".";
+}
+
+var ensure_submodule: bool = false;
+fn ensureSubmodules(exe: *std.build.LibExeObjStep) void {
+    const b = exe.builder;
+    if (!ensure_submodule) {
+        exe.step.dependOn(&b.addSystemCommand(&.{ "git", "submodule", "update", "--init", "--recursive" }).step);
+        ensure_submodule = true;
+    }
 }
 
 const srcdir = getThisDir() ++ "/libs/gocv/";

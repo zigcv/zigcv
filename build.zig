@@ -36,12 +36,12 @@ pub fn build(b: *std.build.Builder) void {
             .desc = "DNN Detection Demo",
         },
     };
-    ensureSubmodules(b.allocator) catch |err| @panic(@errorName(err));
 
     const examples_step = b.step("examples", "Builds all the examples");
 
     for (examples) |ex| {
         const exe = b.addExecutable(ex.name, ex.path);
+        const exe_step = &exe.step;
 
         exe.setBuildMode(mode);
         exe.setTarget(target);
@@ -58,7 +58,7 @@ pub fn build(b: *std.build.Builder) void {
         }
         run_step.dependOn(artifact_step);
         run_step.dependOn(&run_cmd.step);
-        examples_step.dependOn(&exe.step);
+        examples_step.dependOn(exe_step);
         examples_step.dependOn(artifact_step);
     }
 
@@ -68,17 +68,6 @@ pub fn build(b: *std.build.Builder) void {
 
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&exe_tests.step);
-}
-
-fn ensureSubmodules(allocator: std.mem.Allocator) !void {
-    if (std.process.getEnvVarOwned(allocator, "NO_ENSURE_SUBMODULES")) |no_ensure_submodules| {
-        if (std.mem.eql(u8, no_ensure_submodules, "true")) return;
-    } else |_| {}
-    var child = std.ChildProcess.init(&.{ "git", "submodule", "update", "--init", "--recursive" }, allocator);
-    child.cwd = thisDir();
-    child.stderr = std.io.getStdErr();
-    child.stdout = std.io.getStdOut();
-    _ = try child.spawnAndWait();
 }
 
 inline fn thisDir() []const u8 {
