@@ -9,22 +9,22 @@ const AsyncArray = @import("asyncarray.zig").AsyncArray;
 
 pub const NetBackendType = enum(i32) {
     // NetBackendDefault is the default backend.
-    NetBackendDefault = 0,
+    default = 0,
 
     // NetBackendHalide is the Halide backend.
-    NetBackendHalide = 1,
+    halide = 1,
 
     // NetBackendOpenVINO is the OpenVINO backend.
-    NetBackendOpenVINO = 2,
+    open_vino = 2,
 
     // NetBackendOpenCV is the OpenCV backend.
-    NetBackendOpenCV = 3,
+    open_cv = 3,
 
     // NetBackendVKCOM is the Vulkan backend.
-    NetBackendVKCOM = 4,
+    vkcom = 4,
 
     // NetBackendCUDA is the Cuda backend.
-    NetBackendCUDA = 5,
+    cuda = 5,
 
     // ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
     // - halide
@@ -35,52 +35,52 @@ pub const NetBackendType = enum(i32) {
     // - default
     pub fn parse(backend: []const u8) @This() {
         return switch (backend) {
-            "halide" => .NetBackendHalide,
-            "openvino" => .NetBackendOpenVINO,
-            "opencv" => .NetBackendOpenCV,
-            "vulkan" => .NetBackendVKCOM,
-            "cuda" => .NetBackendCUDA,
-            else => .NetBackendDefault,
+            "halide" => .halide,
+            "openvino" => .open_vino,
+            "opencv" => .open_cv,
+            "vulkan" => .vkcom,
+            "cuda" => .cuda,
+            else => .default,
         };
     }
 };
 
 pub const NetTargetType = enum(i32) {
     // NetTargetCPU is the default CPU device target.
-    NetTargetCPU = 0,
+    cpu = 0,
 
     // NetTargetFP32 is the 32-bit OpenCL target.
-    NetTargetFP32 = 1,
+    fp32 = 1,
 
     // NetTargetFP16 is the 16-bit OpenCL target.
-    NetTargetFP16 = 2,
+    fp16 = 2,
 
     // NetTargetVPU is the Movidius VPU target.
-    NetTargetVPU = 3,
+    vpu = 3,
 
     // NetTargetVulkan is the NVIDIA Vulkan target.
-    NetTargetVulkan = 4,
+    vulkan = 4,
 
     // NetTargetFPGA is the FPGA target.
-    NetTargetFPGA = 5,
+    fpga = 5,
 
     // NetTargetCUDA is the CUDA target.
-    NetTargetCUDA = 6,
+    cuda = 6,
 
     // NetTargetCUDAFP16 is the CUDA target.
-    NetTargetCUDAFP16 = 7,
+    cuda_fp16 = 7,
 
     pub fn parse(target: []const u8) @This() {
         return switch (target) {
-            "fp32" => .NetTargetFP32,
-            "fp16" => .NetTargetFP16,
-            "vpu" => .NetTargetVPU,
-            "vulkan" => .NetTargetVulkan,
-            "fpga" => .NetTargetFPGA,
-            "cuda" => .NetTargetCUDA,
-            "cuda_fp16" => .NetTargetCUDAFP16,
-            "cpu" => .NetTargetCPU,
-            else => .NetTargetCPU,
+            "fp32" => .fp32,
+            "fp16" => .fp16,
+            "vpu" => .vpu,
+            "vulkan" => .vkcom,
+            "fpga" => .fpga,
+            "cuda" => .cuda,
+            "cuda_fp16" => .cuda_fp16,
+            "cpu" => .cpu,
+            else => .cpu,
         };
     }
 };

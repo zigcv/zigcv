@@ -47,8 +47,8 @@ pub fn main() anyerror!void {
         std.os.exit(1);
     }
 
-    try net.setPreferableBackend(.NetBackendDefault);
-    try net.setPreferableTarget(.NetTargetCPU);
+    try net.setPreferableBackend(.default);
+    try net.setPreferableTarget(.cpu);
 
     const ratio: f64 = 1;
     const mean = cv.Scalar.init(104, 177, 123, 0);
