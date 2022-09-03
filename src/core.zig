@@ -209,6 +209,16 @@ pub const Mat = struct {
         return Self{ .ptr = ptr };
     }
 
+    pub fn eye(rows_: c_int, cols_: c_int, mt: MatType) Self {
+        return .{ .ptr = c.Eye(rows_, cols_, @enumToInt(mt)) };
+    }
+    pub fn zeros(rows_: c_int, cols_: c_int, mt: MatType) Self {
+        return .{ .ptr = c.Zeros(rows_, cols_, @enumToInt(mt)) };
+    }
+    pub fn ones(rows_: c_int, cols_: c_int, mt: MatType) Self {
+        return .{ .ptr = c.Ones(rows_, cols_, @enumToInt(mt)) };
+    }
+
     pub fn deinit(self: *Self) void {
         _ = c.Mat_Close(self.ptr);
     }
@@ -221,8 +231,19 @@ pub const Mat = struct {
         _ = c.Mat_CopyTo(self.ptr, dest.*.ptr);
     }
 
+    pub fn copyToWithMask(self: Self, dest: *Mat, mask: Mat) void {
+        _ = c.Mat_CopyToWithMask(self.ptr, dest.*.ptr, mask.ptr);
+    }
+
     pub fn clone(self: Self) Self {
         return .{ .ptr = c.Mat_Clone(self.ptr) };
+    }
+
+    pub fn converTo(self: Self, dst: *Mat, mt: MatType) void {
+        _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @enumToInt(mt));
+    }
+    pub fn convertToWithParams(self: Self, dst: *Mat, mt: MatType, alpha: f32, beta: f32) void {
+        _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
     pub fn cols(self: Self) i32 {
@@ -238,8 +259,16 @@ pub const Mat = struct {
     }
 
     pub fn getType(self: Self) MatType {
-        var t = c.Mat_Type(self.ptr);
-        return @intToEnum(MatType, t);
+        var type_ = c.Mat_Type(self.ptr);
+        return @intToEnum(MatType, type_);
+    }
+
+    pub fn step(self: Self) i32 {
+        return c.Mat_Step(self.ptr);
+    }
+
+    pub fn elemSize(self: Self) c_int {
+        return c.Mat_ElemSize(self.ptr);
     }
 
     pub fn total(self: Self) i32 {
@@ -320,7 +349,15 @@ pub const Mat = struct {
         return Scalar.fromC(c.Mat_Mean(self.ptr));
     }
 
-    pub fn calcValueInplace(self: *Self, v: anytype, op: OperationType) void {
+    // MeanWithMask calculates the mean value M of array elements,independently for each channel,
+    // and returns it as Scalar vector while applying the mask.
+    // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga191389f8a0e58180bb13a727782cd461
+    //
+    pub fn meanWithMask(self: Self, mask: Mat) Scalar {
+        return Scalar.fromC(c.Mat_MeanWithMask(self.ptr, mask.ptr));
+    }
+
+    pub fn calcValueInplace(self: *Self, v: anytype, comptime op: OperationType) void {
         const T = @TypeOf(v);
         return switch (T) {
             u8 => switch (op) {
@@ -337,6 +374,22 @@ pub const Mat = struct {
             },
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
+    }
+
+    pub fn addValueInplace(self: *Self, v: anytype) void {
+        return self.calcValueInplace(v, .Add);
+    }
+
+    pub fn subtractValueInplace(self: *Self, v: anytype) void {
+        return self.calcValueInplace(v, .Subtract);
+    }
+
+    pub fn multiplyValueInplace(self: *Self, v: anytype) void {
+        return self.calcValueInplace(v, .Multiply);
+    }
+
+    pub fn divideValueInplace(self: *Self, v: anytype) void {
+        return self.calcValueInplace(v, .Divide);
     }
 
     // Add calculates the per-element sum of two arrays or an array and a scalar.
@@ -370,6 +423,22 @@ pub const Mat = struct {
         };
     }
 
+    pub fn addMat(self: Self, m: Mat, dest: *Mat) void {
+        return self.calcMat(m, dest, .Add);
+    }
+
+    pub fn subtractMat(self: Self, m: Mat, dest: *Mat) void {
+        return self.calcMat(m, dest, .Subtract);
+    }
+
+    pub fn multiplyMat(self: Self, m: Mat, dest: *Mat) void {
+        return self.calcMat(m, dest, .Multiply);
+    }
+
+    pub fn divideMat(self: Self, m: Mat, dest: *Mat) void {
+        return self.calcMat(m, dest, .Divide);
+    }
+
     // AddWeighted calculates the weighted sum of two arrays.
     //
     // For further details, please see:
@@ -383,12 +452,12 @@ pub const Mat = struct {
 
     pub fn dataPtr(self: Self, comptime T: type) ![]T {
         if (switch (T) {
-            u8 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV8U) != @enumToInt(MatType.MatTypeCV8U),
-            i8 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV8I) != @enumToInt(MatType.MatTypeCV8I),
-            u16 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV16U) != @enumToInt(MatType.MatTypeCV16U),
-            i16 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV16S) != @enumToInt(MatType.MatTypeCV16S),
-            f32 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV32F) != @enumToInt(MatType.MatTypeCV32F),
-            f64 => @enumToInt(self.getType()) & @enumToInt(MatType.MatTypeCV64F) != @enumToInt(MatType.MatTypeCV64F),
+            u8 => @enumToInt(self.getType()) & @enumToInt(MatType.CV8U) != @enumToInt(MatType.CV8U),
+            i8 => @enumToInt(self.getType()) & @enumToInt(MatType.CV8I) != @enumToInt(MatType.CV8I),
+            u16 => @enumToInt(self.getType()) & @enumToInt(MatType.CV16U) != @enumToInt(MatType.CV16U),
+            i16 => @enumToInt(self.getType()) & @enumToInt(MatType.CV16S) != @enumToInt(MatType.CV16S),
+            f32 => @enumToInt(self.getType()) & @enumToInt(MatType.CV32F) != @enumToInt(MatType.CV32F),
+            f64 => @enumToInt(self.getType()) & @enumToInt(MatType.CV64F) != @enumToInt(MatType.CV64F),
         }) {
             return error.RuntimeError;
         }
@@ -399,6 +468,22 @@ pub const Mat = struct {
 
         var p: c.ByteArray = c.Mat_DataPtr(self.ptr);
         return @ptrCast([*]T, @alignCast(@alignOf(T), p.data))[0 .. p.length / (@sizeOf(T) / @sizeOf(u8))];
+    }
+
+    pub fn reshape(self: Self, cn: c_int, rows_: c_int) Self {
+        return .{ .ptr = c.Mat_Reshape(self.ptr, cn, rows_) };
+    }
+
+    pub fn region(self: Self, r: Rect) Self {
+        return .{ .ptr = c.Mat_Region(self.ptr, r.toC()) };
+    }
+
+    pub fn t(self: Self) Self {
+        return .{ .ptr = c.Mat_T(self.ptr) };
+    }
+
+    pub fn transpose(self: Self, dst: *Mat) Self {
+        _ = c.Mat_Transpose(self.ptr, dst.*.ptr);
     }
 
     pub fn randN(self: *Self, mean_: Scalar, stddev: Scalar) void {
@@ -417,22 +502,35 @@ pub const Mat = struct {
         _ = c.RandU(self.ptr, low.toC(), high.toC());
     }
 
-    pub fn cArrayToArrayList(c_mats: c.Mats, allocator: std.mem.Allocator) !std.ArrayList(Self) {
-        const len = @intCast(usize, c_mats.length);
-        var return_rects = std.ArrayList(Rect).initCapacity(allocator, len);
-        for (return_rects) |_, i| return_rects[i] = Rect.initFromC(c_mats.rects[i]);
-        return return_rects;
+    pub fn toArrayList(c_mats: c.Mats, allocator: std.mem.Allocator) !Mats {
+        return try utils.fromCStructsToArrayList(c_mats.mats, c_mats.length, Self, allocator);
+    }
+
+    pub fn deinitArrayList(mats: *Mats) void {
+        mats.deinit();
+    }
+
+    pub fn toCStructs(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
+        const len = @intCast(usize, mats.len);
+        var c_mats = try std.ArrayList(c.Mat).initCapacity(allocator, len);
+        {
+            var i: usize = 0;
+            while (i < len) : (i += 1) {
+                c_mats[i] = mats[i].ptr;
+            }
+        }
+        return .{
+            .mats = c_mats.toOwnedSliceSentinel(0),
+            .length = mats.len,
+        };
+    }
+
+    pub fn deinitCStructs(c_mats: c.Mats, allocator: std.mem.Allocator) void {
+        allocator.free(c_mats.mats);
     }
 };
 
-pub fn matsToCMats(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
-    var c_mats = std.ArrayList(c.Mat).init(allocator);
-    for (mats) |mat| try c_mats.append(mat.ptr);
-    return .{
-        .mats = @ptrCast([*]c.Mat, c_mats.items),
-        .length = mats.len,
-    };
-}
+pub const Mats = std.ArrayList(Mat);
 
 pub const Point = struct {
     x: c_int,
@@ -494,6 +592,7 @@ pub const Point3f = struct {
 
 pub const PointVector = struct {
     ptr: c.PointVector,
+    allocator: ?std.mem.Allocator = null,
 
     const Self = @This();
 
@@ -524,15 +623,16 @@ pub const PointVector = struct {
                     .points = arr.toOwnedSliceSentinel(0),
                 },
             ),
+            .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.PointVector_Close(self.ptr);
-    }
-
-    pub fn toC(self: Self) c.PointVector {
-        return self.ptr;
+        if (self.allocator) |allocator| {
+            allocator.free(self.ptr.points);
+        } else {
+            _ = c.PointVector_Close(self.ptr);
+        }
     }
 
     pub fn at(self: Self, idx: c_int) Point {
@@ -549,6 +649,10 @@ pub const PointVector = struct {
 
     pub fn toC(self: Self) c.PointVector {
         return self.ptr;
+    }
+
+    pub fn toArrayList(self: Self, allocator: std.mem.Allocator) !std.ArrayList(Point) {
+        return try utils.fromCStructsToArrayList(self.ptr, self.size(), Point, allocator);
     }
 };
 
@@ -590,11 +694,11 @@ pub const Point2fVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.Point2fVector_Close(self.ptr);
-    }
-
-    pub fn toC(self: Self) c.Point2fVector {
-        return self.ptr;
+        if (self.allocator) |allocator| {
+            allocator.free(self.ptr.points);
+        } else {
+            _ = c.PointVector_Close(self.ptr);
+        }
     }
 
     pub fn at(self: Self, idx: c_int) Point {
@@ -607,6 +711,14 @@ pub const Point2fVector = struct {
 
     pub fn append(self: *Self, p: Point) void {
         c.Point2fVector_Append(self.ptr, p);
+    }
+
+    pub fn toC(self: Self) c.Point2fVector {
+        return self.ptr;
+    }
+
+    pub fn toArrayList(self: Self, allocator: std.mem.Allocator) !std.ArrayList(Point2f) {
+        return try utils.fromCStructsToArrayList(self.ptr, self.size(), Point2f, allocator);
     }
 };
 
@@ -707,15 +819,7 @@ pub const KeyPoint = struct {
     }
 
     pub fn toArrayList(c_kps: c.KeyPoints, allocator: std.mem.Allocator) !KeyPoints {
-        const len = @intCast(usize, c_kps.length);
-        var arr = try std.MultiArrayList(Self).initCapacity(allocator, len);
-        {
-            var i: usize = 0;
-            while (i < len) : (i += 1) {
-                try arr.append(Self.initFromC(c_kps.keypoints[i]));
-            }
-        }
-        return arr;
+        return try utils.fromCStructsToArrayList(c_kps.keypoints, c_kps.length, Self, allocator);
     }
 };
 
@@ -761,13 +865,16 @@ pub const Rect = struct {
         };
     }
 
-    pub fn cArrayToArrayList(c_rects: c.Rects, allocator: std.mem.Allocator) !std.ArrayList(Self) {
-        const len = @intCast(usize, c_rects.length);
-        var return_rects = std.ArrayList(Rect).initCapacity(allocator, len);
-        for (return_rects) |_, i| return_rects[i] = Rect.initFromC(c_rects.rects[i]);
-        return return_rects;
+    pub fn toArrayList(c_rects: c.Rects, allocator: std.mem.Allocator) !Rects {
+        return try utils.fromCStructsToArrayList(c_rects.rects, c_rects.length, Self, allocator);
+    }
+
+    pub fn deinitRects(rects: c.Rects) void {
+        _ = c.Rects_Close(rects);
     }
 };
+
+pub const Rects = std.ArrayList(Rect);
 
 pub const RotatedRect = extern struct {
     pts: c.Points,
@@ -912,7 +1019,7 @@ pub const RNG = struct {
 //     pub extern fn ByteArray_Release(buf: struct_ByteArray) void;
 //     pub extern fn Contours_Close(cs: struct_Contours) void;
 //     pub extern fn KeyPoints_Close(ks: struct_KeyPoints) void;
-//     pub extern fn Rects_Close(rs: struct_Rects) void;
+//*    pub extern fn Rects_Close(rs: struct_Rects) void;
 //     pub extern fn Mats_Close(mats: struct_Mats) void;
 //*    pub extern fn Point_Close(p: struct_Point) void;
 //     pub extern fn Points_Close(ps: struct_Points) void;
@@ -934,27 +1041,27 @@ pub const RNG = struct {
 //*    pub extern fn Mat_CopyTo(m: Mat, dst: Mat) void;
 //*    pub extern fn Mat_Total(m: Mat) c_int;
 //*    pub extern fn Mat_Size(m: Mat, res: [*c]IntVector) void;
-//     pub extern fn Mat_CopyToWithMask(m: Mat, dst: Mat, mask: Mat) void;
-//     pub extern fn Mat_ConvertTo(m: Mat, dst: Mat, @"type": c_int) void;
-//     pub extern fn Mat_ConvertToWithParams(m: Mat, dst: Mat, @"type": c_int, alpha: f32, beta: f32) void;
+//*    pub extern fn Mat_CopyToWithMask(m: Mat, dst: Mat, mask: Mat) void;
+//*    pub extern fn Mat_ConvertTo(m: Mat, dst: Mat, @"type": c_int) void;
+//*    pub extern fn Mat_ConvertToWithParams(m: Mat, dst: Mat, @"type": c_int, alpha: f32, beta: f32) void;
 //     pub extern fn Mat_ToBytes(m: Mat) struct_ByteArray;
 //*    pub extern fn Mat_DataPtr(m: Mat) struct_ByteArray;
-//     pub extern fn Mat_Region(m: Mat, r: Rect) Mat;
-//     pub extern fn Mat_Reshape(m: Mat, cn: c_int, rows: c_int) Mat;
+//*    pub extern fn Mat_Region(m: Mat, r: Rect) Mat;
+//*    pub extern fn Mat_Reshape(m: Mat, cn: c_int, rows: c_int) Mat;
 //     pub extern fn Mat_PatchNaNs(m: Mat) void;
 //     pub extern fn Mat_ConvertFp16(m: Mat) Mat;
 //*    pub extern fn Mat_Mean(m: Mat) Scalar;
-//     pub extern fn Mat_MeanWithMask(m: Mat, mask: Mat) Scalar;
-//     pub extern fn Mat_Sqrt(m: Mat) Mat;
+//*    pub extern fn Mat_MeanWithMask(m: Mat, mask: Mat) Scalar;
+//*    pub extern fn Mat_Sqrt(m: Mat) Mat;
 //*    pub extern fn Mat_Rows(m: Mat) c_int;
 //*    pub extern fn Mat_Cols(m: Mat) c_int;
 //*    pub extern fn Mat_Channels(m: Mat) c_int;
 //*    pub extern fn Mat_Type(m: Mat) c_int;
-//     pub extern fn Mat_Step(m: Mat) c_int;
-//     pub extern fn Mat_ElemSize(m: Mat) c_int;
-//     pub extern fn Eye(rows: c_int, cols: c_int, @"type": c_int) Mat;
-//     pub extern fn Zeros(rows: c_int, cols: c_int, @"type": c_int) Mat;
-//     pub extern fn Ones(rows: c_int, cols: c_int, @"type": c_int) Mat;
+//*    pub extern fn Mat_Step(m: Mat) c_int;
+//*    pub extern fn Mat_ElemSize(m: Mat) c_int;
+//*    pub extern fn Eye(rows: c_int, cols: c_int, @"type": c_int) Mat;
+//*    pub extern fn Zeros(rows: c_int, cols: c_int, @"type": c_int) Mat;
+//*    pub extern fn Ones(rows: c_int, cols: c_int, @"type": c_int) Mat;
 //*    pub extern fn Mat_GetUChar(m: Mat, row: c_int, col: c_int) u8;
 //*    pub extern fn Mat_GetUChar3(m: Mat, x: c_int, y: c_int, z: c_int) u8;
 //*    pub extern fn Mat_GetSChar(m: Mat, row: c_int, col: c_int) i8;
@@ -989,7 +1096,7 @@ pub const RNG = struct {
 //*    pub extern fn Mat_MultiplyFloat(m: Mat, val: f32) void;
 //*    pub extern fn Mat_DivideFloat(m: Mat, val: f32) void;
 //*    pub extern fn Mat_MultiplyMatrix(x: Mat, y: Mat) Mat;
-//     pub extern fn Mat_T(x: Mat) Mat;
+//*    pub extern fn Mat_T(x: Mat) Mat;
 //     pub extern fn LUT(src: Mat, lut: Mat, dst: Mat) void;
 //     pub extern fn Mat_AbsDiff(src1: Mat, src2: Mat, dst: Mat) void;
 //*    pub extern fn Mat_Add(src1: Mat, src2: Mat, dst: Mat) void;
@@ -1064,7 +1171,7 @@ pub const RNG = struct {
 //     pub extern fn Mat_Split(src: Mat, mats: [*c]struct_Mats) void;
 //     pub extern fn Mat_Trace(src: Mat) Scalar;
 //     pub extern fn Mat_Transform(src: Mat, dst: Mat, tm: Mat) void;
-//     pub extern fn Mat_Transpose(src: Mat, dst: Mat) void;
+//*    pub extern fn Mat_Transpose(src: Mat, dst: Mat) void;
 //     pub extern fn Mat_PolarToCart(magnitude: Mat, degree: Mat, x: Mat, y: Mat, angleInDegrees: bool) void;
 //     pub extern fn Mat_Pow(src: Mat, power: f64, dst: Mat) void;
 //     pub extern fn Mat_Phase(x: Mat, y: Mat, angle: Mat, angleInDegrees: bool) void;

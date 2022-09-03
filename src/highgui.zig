@@ -178,6 +178,38 @@ pub const Window = struct {
         _ = c.Window_Resize(self.getCWindowName(), width, height);
     }
 
+    // SelectROI selects a Region Of Interest (ROI) on the given image.
+    // It creates a window and allows user to select a ROI using mouse.
+    //
+    // Controls:
+    // use space or enter to finish selection,
+    // use key c to cancel selection (function will return a zero Rect).
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga8daf4730d3adf7035b6de9be4c469af5
+    //
+    pub fn window_SelectROI(self: *Self, img: Mat) Rect {
+        const c_rects = c.Window_SelectROI(self.getCWindowName(), img.ptr);
+        defer c.Rects_Close(c_rects);
+        return Rect.fromC(c_rects);
+    }
+
+    // SelectROIs selects multiple Regions Of Interest (ROI) on the given image.
+    // It creates a window and allows user to select ROIs using mouse.
+    //
+    // Controls:
+    // use space or enter to finish current selection and start a new one
+    // use esc to terminate multiple ROI selection process
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga0f11fad74a6432b8055fb21621a0f893
+    //
+    pub fn window_SelectROIs(self: *Self, img: Mat, allocator: std.mem.Allocator) !Rects {
+        const c_rects: c.Rects = c.Window_SelectROIs(self.getCWindowName(), img.ptr);
+        defer c.Rects_Close(c_rects);
+        return try Rect.toArrayList(c_rects, allocator);
+    }
+
     // CreateTrackbar creates a trackbar and attaches it to the specified window.
     //
     // For further details, please see:
@@ -194,7 +226,7 @@ pub const Window = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
     //
-    pub fn createTrackbarWithValue(self: *Self, trackbar_name: []const u8, value: []i32, max: i32) void {
+    pub fn createTrackbarWithValue(self: *Self, trackbar_name: []const u8, value: []c_int, max: i32) void {
         var c_value = @ptrCast([*]const c_int, value);
         _ = c.Trackbar_CreateWithValue(self.getCWindowName(), trackbar_name, c_value, max);
         self.trackbar_name = trackbar_name;
@@ -251,8 +283,8 @@ pub const Window = struct {
 //*    pub extern fn Window_WaitKey(c_int) c_int;
 //*    pub extern fn Window_Move(winname: [*c]const u8, x: c_int, y: c_int) void;
 //*    pub extern fn Window_Resize(winname: [*c]const u8, width: c_int, height: c_int) void;
-//     pub extern fn Window_SelectROI(winname: [*c]const u8, img: Mat) struct_Rect;
-//     pub extern fn Window_SelectROIs(winname: [*c]const u8, img: Mat) struct_Rects;
+//*    pub extern fn Window_SelectROI(winname: [*c]const u8, img: Mat) struct_Rect;
+//*    pub extern fn Window_SelectROIs(winname: [*c]const u8, img: Mat) struct_Rects;
 //*    pub extern fn Trackbar_Create(winname: [*c]const u8, trackname: [*c]const u8, max: c_int) void;
 //*    pub extern fn Trackbar_CreateWithValue(winname: [*c]const u8, trackname: [*c]const u8, value: [*c]c_int, max: c_int) void;
 //*    pub extern fn Trackbar_GetPos(winname: [*c]const u8, trackname: [*c]const u8) c_int;

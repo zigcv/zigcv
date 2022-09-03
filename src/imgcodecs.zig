@@ -3,7 +3,6 @@ const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
 const castToC = utils.castZigU8ToC;
-
 const Mat = core.Mat;
 
 pub const IMReadFlag = enum(i9) {
@@ -112,15 +111,15 @@ pub const IMWriteFlag = enum(u32) {
 };
 
 pub const FileExt = enum(u4) {
-    PNG,
-    JPG,
-    GIF,
+    png,
+    jpg,
+    gif,
 
     pub fn toString(fe: @This()) []const u8 {
         return switch (fe) {
-            .PNG => "png",
-            .JPG => "jpg",
-            .GIF => "gif",
+            .png => "png",
+            .jpg => "jpg",
+            .gif => "gif",
         };
     }
 };
@@ -135,7 +134,7 @@ pub const FileExt = enum(u4) {
 //
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
     var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
-    return try Mat.initFromC(cMat);
+    return try Mat.fromC(cMat);
 }
 
 // IMWrite writes a Mat to an image file.
@@ -150,7 +149,6 @@ pub fn imWrite(filename: []const u8, img: Mat) !void {
     }
 }
 
-// TODO: More zig way using packed structs.
 // IMWriteWithParams writes a Mat to an image file. With that func you can
 // pass compression parameters.
 //
@@ -159,14 +157,14 @@ pub fn imWrite(filename: []const u8, img: Mat) !void {
 // https://docs.opencv.org/4.6.0/d8/d6a/group__imgcodecs__flags.html
 //
 pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) !void {
-    comptime var int_params: [params.len * 2]i32 = undefined;
+    comptime var int_params: [params.len * 2]c_int = undefined;
     for (params) |p, i| {
         int_params[2 * i] = @enumToInt(p.f);
         int_params[2 * i + 1] = @enumToInt(p.v);
     }
-    comptime const c_params = c.IntVector{
+    comptime var c_params = c.IntVector{
         .val = @ptrCast([*]c_int, int_params),
-        .len = params.len,
+        .length = params.len,
     };
     const result = c.Image_IMWrite_WithParams(castToC(filename), img.ptr, c_params);
     if (!result) {
@@ -184,7 +182,7 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
 //
 pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
     var data = @ptrCast([*]u8, buf);
-    return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
+    return try Mat.fromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
 
 // IMEncode encodes an image Mat into a memory buffer.
@@ -211,14 +209,14 @@ pub fn imEncode(file_ext: FileExt, img: Mat) ![]c_int {
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 //
 pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) []c_int {
-    comptime var int_params: [params.len * 2]i32 = undefined;
+    comptime var int_params: [params.len * 2]c_int = undefined;
     for (params) |p, i| {
         int_params[2 * i] = @enumToInt(p.f);
         int_params[2 * i + 1] = @enumToInt(p.v);
     }
-    comptime const c_params = c.IntVector{
+    comptime var c_params = c.IntVector{
         .val = @ptrCast([*]c_int, int_params),
-        .len = params.len,
+        .length = params.len,
     };
     var c_vector = c.IntVector;
     c.Image_IMEncode_WithParams(file_ext.toString(), img.ptr, c_params, c_vector);

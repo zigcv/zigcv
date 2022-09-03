@@ -12,7 +12,7 @@ pub const AsyncArray = struct {
         return .{ .ptr = c.AsyncArray_New() };
     }
 
-    pub fn initFromC(ptr: c.AsyncArray) Self {
+    pub fn fromC(ptr: c.AsyncArray) Self {
         return Self{ .ptr = ptr };
     }
 

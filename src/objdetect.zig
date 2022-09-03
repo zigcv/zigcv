@@ -4,6 +4,7 @@ const core = @import("core.zig");
 const utils = @import("utils.zig");
 const Mat = core.Mat;
 const Rect = core.Rect;
+const Rects = core.Rects;
 const Size = core.Size;
 
 // CascadeClassifier is a cascade classifier class for object detection.
@@ -41,10 +42,10 @@ pub const CascadeClassifier = struct {
     // For further details, please see:
     // http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#aaf8181cb63968136476ec4204ffca498
     //
-    pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(Rect) {
+    pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !Rects {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScale(self.ptr, img.ptr);
-        defer c.Rects_Close(rec);
-        return try Rect.cArrayToArrayList(rec, allocator);
+        defer Rect.deinitRects(rec);
+        return try Rect.toArrayList(rec, allocator);
     }
 
     // DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
@@ -62,7 +63,7 @@ pub const CascadeClassifier = struct {
         min_size: Size,
         max_size: Size,
         allocator: std.mem.Allocator,
-    ) !std.ArrayList(Rect) {
+    ) !Rects {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScaleWithParams(
             self.ptr,
             img.ptr,
@@ -72,7 +73,8 @@ pub const CascadeClassifier = struct {
             min_size.toC(),
             max_size.toC(),
         );
-        return try Rect.cArrayToArrayList(rec, allocator);
+        defer Rect.deinitRects(rec);
+        return try Rect.toArrayList(rec, allocator);
     }
 };
 
@@ -107,10 +109,10 @@ pub const HOGDescriptor = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
     //
-    pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(Rect) {
+    pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !Rects {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScale(self.ptr, img.ptr);
-        defer c.Rects_Close(rec);
-        return try Rect.cArrayToArrayList(rec, allocator);
+        defer Rect.deinitRects(rec);
+        return try Rect.toArrayList(rec, allocator);
     }
 
     // DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
@@ -129,7 +131,7 @@ pub const HOGDescriptor = struct {
         final_threshold: f64,
         use_meanshift_grouping: bool,
         allocator: std.mem.Allocator,
-    ) !std.ArrayList(Rect) {
+    ) !Rects {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScaleWithParams(
             self.ptr,
             img.ptr,
@@ -140,8 +142,8 @@ pub const HOGDescriptor = struct {
             final_threshold,
             use_meanshift_grouping,
         );
-        defer c.Rects_Close(rec);
-        return try Rect.cArrayToArrayList(rec, allocator);
+        defer Rect.deinitRects(rec);
+        return try Rect.toArrayList(rec, allocator);
     }
 
     // HOGDefaultPeopleDetector returns a new Mat with the HOG DefaultPeopleDetector.
@@ -150,7 +152,7 @@ pub const HOGDescriptor = struct {
     // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
     //
     pub fn getDefaultPeopleDetector() !Mat {
-        return Mat.initFromC(c.HOG_GetDefaultPeopleDetector());
+        return Mat.fromC(c.HOG_GetDefaultPeopleDetector());
     }
 
     // SetSVMDetector sets the data for the HOGDescriptor.
@@ -269,8 +271,13 @@ pub const QRCodeDetector = struct {
             }
         }
 
-        var qr_codes = std.ArrayList(Mat).initCapacity(Mat, @intCast(usize, c_qr_codes.length));
-        for (return_rects) |_, i| qr_codes[i] = Rect.initFromC(c_rects.rects[i]);
+        var qr_codes = try std.ArrayList(Mat).initCapacity(Mat, @intCast(usize, c_qr_codes.length));
+        {
+            var i: usize = 0;
+            while (i < c_qr_codes.length) : (i += 1) {
+                qr_codes[i] = Rect.fromC(c_qr_codes.mats[i]);
+            }
+        }
 
         return .{
             .is_detected = result,
