@@ -3,69 +3,69 @@ const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
 const castToC = utils.castZigU8ToC;
+const Mat = core.Mat;
+const Rect = core.Rect;
+const Rects = core.Rects;
 
 pub const WindowFlag = enum {
     // WindowNormal indicates a normal window.
-    WindowNormal,
+    normal,
 
     // WindowAutosize indicates a window sized based on the contents.
-    WindowAutosize,
+    autosize,
 
     // WindowFullscreen indicates a full-screen window.
-    WindowFullscreen,
+    fullscreen,
 
     // WindowFreeRatio indicates allow the user to resize without maintaining aspect ratio.
-    WindowFreeRatio,
+    free_ratio,
 
     // WindowKeepRatio indicates always maintain an aspect ratio that matches the contents.
-    WindowKeepRatio,
+    keep_ratio,
 
     fn windowFlagToNum(wf: WindowFlag, comptime T: type) T {
         return switch (wf) {
-            .WindowNormal => 0x00000000,
-            .WindowAutosize => 0x00000001,
-            .WindowFullscreen => 1,
-            .WindowFreeRatio => 0x00000100,
-            .WindowKeepRatio => 0x00000000,
+            .normal => 0x00000000,
+            .autosize => 0x00000001,
+            .fullscreen => 1,
+            .free_ratio => 0x00000100,
+            .keep_ratio => 0x00000000,
         };
     }
 
     fn numToWindowFlag(wf: anytype) WindowFlag {
         return switch (wf) {
-            0x00000000 => .WindowNormal,
-            0x00000001 => .WindowAutosize,
-            1 => .WindowFullscreen,
-            0x00000100 => .WindowFreeRatio,
-            0x00000000 => .WindowKeepRatio,
+            0x00000000 => .normal,
+            0x00000001 => .autosize,
+            1 => .fullscreen,
+            0x00000100 => .free_ratio,
+            0x00000000 => .keep_ratio,
             else => @panic("invalid number"),
         };
     }
 };
 
-pub const WindowPropertyFlag = enum(i32) {
+pub const WindowPropertyFlag = enum(u3) {
     // WindowPropertyFullscreen fullscreen property
     // (can be WINDOW_NORMAL or WINDOW_FULLSCREEN).
-    WindowPropertyFullscreen = 0,
+    fullscreen = 0,
 
     // WindowPropertyAutosize is autosize property
     // (can be WINDOW_NORMAL or WINDOW_AUTOSIZE).
-    WindowPropertyAutosize = 1,
+    autosize = 1,
 
     // WindowPropertyAspectRatio window's aspect ration
     // (can be set to WINDOW_FREERATIO or WINDOW_KEEPRATIO).
-    WindowPropertyAspectRatio = 2,
+    aspect_ratio = 2,
 
     // WindowPropertyOpenGL opengl support.
-    WindowPropertyOpenGL = 3,
+    opengl = 3,
 
     // WindowPropertyVisible or not.
-    WindowPropertyVisible = 4,
+    visible = 4,
 
     // WindowPropertyTopMost status bar and tool bar
-    WindowPropertyTopMost = 5,
-
-    // WindowPropertyTopMost to toggle normal window being topmost or not
-    WindowPropertyTopMost = 5,
+    top_most = 5,
 };
 
 pub const Window = struct {

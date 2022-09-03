@@ -6,119 +6,109 @@ const castToC = utils.castZigU8ToC;
 
 const Mat = core.Mat;
 
-pub const IMReadFlag = enum(i32) {
+pub const IMReadFlag = enum(i9) {
     // https://docs.opencv.org/4.6.0/d6/d87/imgcodecs_8hpp.html
     // IMReadUnchanged return the loaded image as is (with alpha channel,
     // otherwise it gets cropped).
-    Unchanged = -1,
+    unchanged = -1,
 
     // IMReadGrayScale always convert image to the single channel
     // grayscale image.
-    GrayScale = 0,
+    gray_scale = 0,
 
     // IMReadColor always converts image to the 3 channel BGR color image.
-    Color = 1,
+    color = 1,
 
     // IMReadAnyDepth returns 16-bit/32-bit image when the input has the corresponding
     // depth, otherwise convert it to 8-bit.
-    AnyDepth = 2,
+    any_depth = 2,
 
     // IMReadAnyColor the image is read in any possible color format.
-    AnyColor = 4,
+    any_color = 4,
 
     // IMReadLoadGDAL uses the gdal driver for loading the image.
-    LoadGDAL = 8,
+    load_GDAL = 8,
 
     // IMReadReducedGrayscale2 always converts image to the single channel grayscale image
     // and the image size reduced 1/2.
-    ReducedGrayscale2 = 16,
+    reduced_grayscale2 = 16,
 
     // IMReadReducedColor2 always converts image to the 3 channel BGR color image and the
     // image size reduced 1/2.
-    ReducedColor2 = 17,
+    reduced_color2 = 17,
 
     // IMReadReducedGrayscale4 always converts image to the single channel grayscale image and
     // the image size reduced 1/4.
-    ReducedGrayscale4 = 32,
+    reduced_grayscale4 = 32,
 
     // IMReadReducedColor4 always converts image to the 3 channel BGR color image and
     // the image size reduced 1/4.
-    ReducedColor4 = 33,
+    reduced_color4 = 33,
 
     // IMReadReducedGrayscale8 always convert image to the single channel grayscale image and
     // the image size reduced 1/8.
-    ReducedGrayscale8 = 64,
+    reduced_grayscale8 = 64,
 
     // IMReadReducedColor8 always convert image to the 3 channel BGR color image and the
     // image size reduced 1/8.
-    ReducedColor8 = 65,
+    reduced_color8 = 65,
 
     // IMReadIgnoreOrientation do not rotate the image according to EXIF's orientation flag.
-    IgnoreOrientation = 128,
+    ignore_orientation = 128,
 };
 
-pub const IMWriteFlag = enum(i32) {
+pub const IMWriteFlag = enum(u32) {
     //IMWriteJpegQuality is the quality from 0 to 100 for JPEG (the higher is the better). Default value is 95.
-    JpegQuality = 1,
+    jpeg_quality = 1,
 
     // IMWriteJpegProgressive enables JPEG progressive feature, 0 or 1, default is False.
-    JpegProgressive = 2,
+    jpeg_progressive = 2,
 
     // IMWriteJpegOptimize enables JPEG optimization, 0 or 1, default is False.
-    JpegOptimize = 3,
+    jpeg_optimize = 3,
 
     // IMWriteJpegRstInterval is the JPEG restart interval, 0 - 65535, default is 0 - no restart.
-    JpegRstInterval = 4,
+    jpeg_rst_interval = 4,
 
     // IMWriteJpegLumaQuality separates luma quality level, 0 - 100, default is 0 - don't use.
-    JpegLumaQuality = 5,
+    jpeg_luma_quality = 5,
 
     // IMWriteJpegChromaQuality separates chroma quality level, 0 - 100, default is 0 - don't use.
-    JpegChromaQuality = 6,
+    jpeg_chroma_quality = 6,
 
     // IMWritePngCompression is the compression level from 0 to 9 for PNG. A
     // higher value means a smaller size and longer compression time.
     // If specified, strategy is changed to IMWRITE_PNG_STRATEGY_DEFAULT (Z_DEFAULT_STRATEGY).
     // Default value is 1 (best speed setting).
-    PngCompression = 16,
+    png_compression = 16,
 
     // IMWritePngStrategy is one of cv::IMWritePNGFlags, default is IMWRITE_PNG_STRATEGY_RLE.
-    PngStrategy = 17,
+    png_strategy = 17,
 
     // IMWritePngBilevel is the binary level PNG, 0 or 1, default is 0.
-    PngBilevel = 18,
+    png_bilevel = 18,
 
     // IMWritePxmBinary for PPM, PGM, or PBM can be a binary format flag, 0 or 1. Default value is 1.
-    PxmBinary = 32,
+    pxm_binary = 32,
 
     // IMWriteWebpQuality is the quality from 1 to 100 for WEBP (the higher is
     // the better). By default (without any parameter) and for quality above
     // 100 the lossless compression is used.
-    WebpQuality = 64,
+    webp_quality = 64,
 
     // IMWritePamTupletype sets the TUPLETYPE field to the corresponding string
     // value that is defined for the format.
-    PamTupletype = 128,
+    pam_tupletype = 128,
 
-    // IMWritePngStrategyDefault is the value to use for normal data.
-    PngStrategyDefault = 0,
+    tiff_resunit = 256,
 
-    // IMWritePngStrategyFiltered is the value to use for data produced by a
-    // filter (or predictor). Filtered data consists mostly of small values
-    // with a somewhat random distribution. In this case, the compression
-    // algorithm is tuned to compress them better.
-    PngStrategyFiltered = 1,
+    tiff_xres = 257,
 
-    // IMWritePngStrategyHuffmanOnly forces Huffman encoding only (no string match).
-    PngStrategyHuffmanOnly = 2,
+    tiff_ydpi = 258,
 
-    // IMWritePngStrategyRle is the value to use to limit match distances to
-    // one (run-length encoding).
-    PngStrategyRle = 3,
+    tiff_compression = 259,
 
-    // IMWritePngStrategyFixed is the value to prevent the use of dynamic
-    // Huffman codes, allowing for a simpler decoder for special applications.
-    PngStrategyFixed = 4,
+    jpeg2000_compression_x1000 = 272,
 };
 
 pub const FileExt = enum(u4) {

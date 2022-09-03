@@ -1,167 +1,168 @@
 const c = @import("c_api.zig");
 const std = @import("std");
+const utils = @import("utils.zig");
 
 pub const MatChannels = enum(i32) {
-    // MatChannels1 is a single channel Mat.
-    MatChannels1 = 0,
+    // Channels1 is a single channel Mat.
+    Channels1 = 0,
 
-    // MatChannels2 is 2 channel Mat.
-    MatChannels2 = 8,
+    // Channels2 is 2 channel Mat.
+    Channels2 = 8,
 
-    // MatChannels3 is 3 channel Mat.
-    MatChannels3 = 16,
+    // Channels3 is 3 channel Mat.
+    Channels3 = 16,
 
-    // MatChannels4 is 4 channel Mat.
-    MatChannels4 = 24,
+    // Channels4 is 4 channel Mat.
+    Channels4 = 24,
 };
 
 pub const MatType = enum(i32) {
     // MatTypeCV8U is a Mat of 8-bit unsigned int
-    MatTypeCV8U = 0,
+    CV8U = 0,
 
     // MatTypeCV8S is a Mat of 8-bit signed int
-    MatTypeCV8S = 1,
+    CV8S = 1,
 
     // MatTypeCV16U is a Mat of 16-bit unsigned int
-    MatTypeCV16U = 2,
+    CV16U = 2,
 
     // MatTypeCV16S is a Mat of 16-bit signed int
-    MatTypeCV16S = 3,
+    CV16S = 3,
 
     // MatTypeCV16SC2 is a Mat of 16-bit signed int with 2 channels
-    MatTypeCV16SC2 = MatType.MatTypeCV16S + MatChannels.MatChannels2,
+    CV16SC2 = MatType.CV16S + MatChannels.Channels2,
 
     // MatTypeCV32S is a Mat of 32-bit signed int
-    MatTypeCV32S = 4,
+    CV32S = 4,
 
     // MatTypeCV32F is a Mat of 32-bit float
-    MatTypeCV32F = 5,
+    CV32F = 5,
 
     // MatTypeCV64F is a Mat of 64-bit float
-    MatTypeCV64F = 6,
+    CV64F = 6,
 
     // MatTypeCV8UC1 is a Mat of 8-bit unsigned int with a single channel
-    MatTypeCV8UC1 = MatType.MatTypeCV8U + MatChannels.MatChannels1,
+    CV8UC1 = MatType.CV8U + MatChannels.Channels1,
 
     // MatTypeCV8UC2 is a Mat of 8-bit unsigned int with 2 channels
-    MatTypeCV8UC2 = MatType.MatTypeCV8U + MatChannels.MatChannels2,
+    CV8UC2 = MatType.CV8U + MatChannels.Channels2,
 
     // MatTypeCV8UC3 is a Mat of 8-bit unsigned int with 3 channels
-    MatTypeCV8UC3 = MatType.MatTypeCV8U + MatChannels.MatChannels3,
+    CV8UC3 = MatType.CV8U + MatChannels.Channels3,
 
     // MatTypeCV8UC4 is a Mat of 8-bit unsigned int with 4 channels
-    MatTypeCV8UC4 = MatType.MatTypeCV8U + MatChannels.MatChannels4,
+    CV8UC4 = MatType.CV8U + MatChannels.Channels4,
 
     // MatTypeCV8SC1 is a Mat of 8-bit signed int with a single channel
-    MatTypeCV8SC1 = MatType.MatTypeCV8S + MatChannels.MatChannels1,
+    CV8SC1 = MatType.CV8S + MatChannels.Channels1,
 
     // MatTypeCV8SC2 is a Mat of 8-bit signed int with 2 channels
-    MatTypeCV8SC2 = MatType.MatTypeCV8S + MatChannels.MatChannels2,
+    CV8SC2 = MatType.CV8S + MatChannels.Channels2,
 
     // MatTypeCV8SC3 is a Mat of 8-bit signed int with 3 channels
-    MatTypeCV8SC3 = MatType.MatTypeCV8S + MatChannels.MatChannels3,
+    CV8SC3 = MatType.CV8S + MatChannels.Channels3,
 
     // MatTypeCV8SC4 is a Mat of 8-bit signed int with 4 channels
-    MatTypeCV8SC4 = MatType.MatTypeCV8S + MatChannels.MatChannels4,
+    CV8SC4 = MatType.CV8S + MatChannels.Channels4,
 
     // MatTypeCV16UC1 is a Mat of 16-bit unsigned int with a single channel
-    MatTypeCV16UC1 = MatType.MatTypeCV16U + MatChannels.MatChannels1,
+    CV16UC1 = MatType.CV16U + MatChannels.Channels1,
 
     // MatTypeCV16UC2 is a Mat of 16-bit unsigned int with 2 channels
-    MatTypeCV16UC2 = MatType.MatTypeCV16U + MatChannels.MatChannels2,
+    CV16UC2 = MatType.CV16U + MatChannels.Channels2,
 
     // MatTypeCV16UC3 is a Mat of 16-bit unsigned int with 3 channels
-    MatTypeCV16UC3 = MatType.MatTypeCV16U + MatChannels.MatChannels3,
+    CV16UC3 = MatType.CV16U + MatChannels.Channels3,
 
     // MatTypeCV16UC4 is a Mat of 16-bit unsigned int with 4 channels
-    MatTypeCV16UC4 = MatType.MatTypeCV16U + MatChannels.MatChannels4,
+    CV16UC4 = MatType.CV16U + MatChannels.Channels4,
 
     // MatTypeCV16SC1 is a Mat of 16-bit signed int with a single channel
-    MatTypeCV16SC1 = MatType.MatTypeCV16S + MatChannels.MatChannels1,
+    CV16SC1 = MatType.CV16S + MatChannels.Channels1,
 
     // MatTypeCV16SC3 is a Mat of 16-bit signed int with 3 channels
-    MatTypeCV16SC3 = MatType.MatTypeCV16S + MatChannels.MatChannels3,
+    CV16SC3 = MatType.CV16S + MatChannels.Channels3,
 
     // MatTypeCV16SC4 is a Mat of 16-bit signed int with 4 channels
-    MatTypeCV16SC4 = MatType.MatTypeCV16S + MatChannels.MatChannels4,
+    CV16SC4 = MatType.CV16S + MatChannels.Channels4,
 
     // MatTypeCV32SC1 is a Mat of 32-bit signed int with a single channel
-    MatTypeCV32SC1 = MatType.MatTypeCV32S + MatChannels.MatChannels1,
+    CV32SC1 = MatType.CV32S + MatChannels.Channels1,
 
     // MatTypeCV32SC2 is a Mat of 32-bit signed int with 2 channels
-    MatTypeCV32SC2 = MatType.MatTypeCV32S + MatChannels.MatChannels2,
+    CV32SC2 = MatType.CV32S + MatChannels.Channels2,
 
     // MatTypeCV32SC3 is a Mat of 32-bit signed int with 3 channels
-    MatTypeCV32SC3 = MatType.MatTypeCV32S + MatChannels.MatChannels3,
+    CV32SC3 = MatType.CV32S + MatChannels.Channels3,
 
     // MatTypeCV32SC4 is a Mat of 32-bit signed int with 4 channels
-    MatTypeCV32SC4 = MatType.MatTypeCV32S + MatChannels.MatChannels4,
+    CV32SC4 = MatType.CV32S + MatChannels.Channels4,
 
     // MatTypeCV32FC1 is a Mat of 32-bit float int with a single channel
-    MatTypeCV32FC1 = MatType.MatTypeCV32F + MatChannels.MatChannels1,
+    CV32FC1 = MatType.CV32F + MatChannels.Channels1,
 
     // MatTypeCV32FC2 is a Mat of 32-bit float int with 2 channels
-    MatTypeCV32FC2 = MatType.MatTypeCV32F + MatChannels.MatChannels2,
+    CV32FC2 = MatType.CV32F + MatChannels.Channels2,
 
     // MatTypeCV32FC3 is a Mat of 32-bit float int with 3 channels
-    MatTypeCV32FC3 = MatType.MatTypeCV32F + MatChannels.MatChannels3,
+    CV32FC3 = MatType.CV32F + MatChannels.Channels3,
 
     // MatTypeCV32FC4 is a Mat of 32-bit float int with 4 channels
-    MatTypeCV32FC4 = MatType.MatTypeCV32F + MatChannels.MatChannels4,
+    CV32FC4 = MatType.CV32F + MatChannels.Channels4,
 
     // MatTypeCV64FC1 is a Mat of 64-bit float int with a single channel
-    MatTypeCV64FC1 = MatType.MatTypeCV64F + MatChannels.MatChannels1,
+    CV64FC1 = MatType.CV64F + MatChannels.Channels1,
 
     // MatTypeCV64FC2 is a Mat of 64-bit float int with 2 channels
-    MatTypeCV64FC2 = MatType.MatTypeCV64F + MatChannels.MatChannels2,
+    CV64FC2 = MatType.CV64F + MatChannels.Channels2,
 
     // MatTypeCV64FC3 is a Mat of 64-bit float int with 3 channels
-    MatTypeCV64FC3 = MatType.MatTypeCV64F + MatChannels.MatChannels3,
+    CV64FC3 = MatType.CV64F + MatChannels.Channels3,
 
     // MatTypeCV64FC4 is a Mat of 64-bit float int with 4 channels
-    MatTypeCV64FC4 = MatType.MatTypeCV64F + MatChannels.MatChannels4,
+    CV64FC4 = MatType.CV64F + MatChannels.Channels4,
 };
 
 pub const CompareType = enum(i32) {
     // CompareEQ src1 is equal to src2.
-    CompareEQ = 0,
+    EQ = 0,
 
     // CompareGT src1 is greater than src2.
-    CompareGT = 1,
+    GT = 1,
 
     // CompareGE src1 is greater than or equal to src2.
-    CompareGE = 2,
+    GE = 2,
 
     // CompareLT src1 is less than src2.
-    CompareLT = 3,
+    LT = 3,
 
     // CompareLE src1 is less than or equal to src2.
-    CompareLE = 4,
+    LE = 4,
 
     // CompareNE src1 is unequal to src2.
-    CompareNE = 5,
+    NE = 5,
 };
 
-pub const SolveDecompositionFlags = enum(i32) {
+pub const SolveDecompositionFlag = enum(i32) {
     // Gaussian elimination with the optimal pivot element chosen.
-    SolveDecompositionLu = 0,
+    Lu = 0,
 
     // Singular value decomposition (SVD) method. The system can be over-defined and/or the matrix src1 can be singular.
-    SolveDecompositionSvd = 1,
+    Svd = 1,
 
     // Eigenvalue decomposition. The matrix src1 must be symmetrical.
-    SolveDecompositionEing = 2,
+    Eing = 2,
 
     // Cholesky LL^T factorization. The matrix src1 must be symmetrical and positively defined.
-    SolveDecompositionCholesky = 3,
+    Cholesky = 3,
 
     // QR factorization. The system can be over-defined and/or the matrix src1 can be singular.
-    SolveDecompositionQr = 4,
+    Qr = 4,
 
     // While all the previous flags are mutually exclusive, this flag can be used together with any of the previous.
     // It means that the normal equations 𝚜𝚛𝚌𝟷^T⋅𝚜𝚛𝚌𝟷⋅𝚍𝚜𝚝=𝚜𝚛𝚌𝟷^T𝚜𝚛𝚌𝟸 are solved instead of the original system
     // 𝚜𝚛𝚌𝟷⋅𝚍𝚜𝚝=𝚜𝚛𝚌𝟸.
-    SolveDecompositionNormal = 5,
+    Normal = 5,
 };
 
 pub const TermCriteriaType = enum(i32) {
@@ -193,7 +194,7 @@ pub const Mat = struct {
         return .{ .ptr = c.Mat_New() };
     }
 
-    pub fn initWithSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
+    pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
         return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
     }
 
