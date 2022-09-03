@@ -18,7 +18,7 @@ pub const SIFT = struct {
         return .{ .ptr = c.SIFT_Create() };
     }
 
-    pub fn initFromC(ptr: c.SIFT) Self {
+    pub fn fromC(ptr: c.SIFT) Self {
         return .{ .ptr = ptr };
     }
 
@@ -31,7 +31,7 @@ pub const SIFT = struct {
     }
 
     pub fn detect(self: Self, src: Mat) KeyPoints {
-        return KeyPoints.initFromC(c.SIFT_Detect(self.ptr, src.toC()));
+        return KeyPoints.fromC(c.SIFT_Detect(self.ptr, src.toC()));
     }
 
     pub fn detectAndCompute(self: Self, src: Mat, mask: Mat, desc: *Mat, allocator) !KeyPoints {

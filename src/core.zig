@@ -198,11 +198,11 @@ pub const Mat = struct {
         return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
     }
 
-    pub fn initFromScalar(s: Scalar) Self {
-        return .{c.Mat_NewFromScalar(Scalar.initFromC(s))};
+    pub fn fromScalar(s: Scalar) Self {
+        return .{c.Mat_NewFromScalar(Scalar.fromC(s))};
     }
 
-    pub fn initFromC(ptr: c.Mat) !Self {
+    pub fn fromC(ptr: c.Mat) !Self {
         if (ptr == null) {
             return error.RuntimeError;
         }
@@ -317,7 +317,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga191389f8a0e58180bb13a727782cd461
     //
     pub fn mean(self: Self) Scalar {
-        return Scalar.initFromC(c.Mat_Mean(self.ptr));
+        return Scalar.fromC(c.Mat_Mean(self.ptr));
     }
 
     pub fn calcValueInplace(self: *Self, v: anytype, op: OperationType) void {
@@ -444,16 +444,12 @@ pub const Point = struct {
         return .{ .x = x, .y = y };
     }
 
-    pub fn initfromC(p: c.Point) Self {
+    pub fn fromC(p: c.Point) Self {
         return .{ .x = p.x, .y = p.y };
     }
 
     pub fn toC(self: Self) c.Point {
         return .{ .x = self.x, .y = self.y };
-    }
-
-    pub fn deinit(self: *Self) void {
-        _ = c.Point_Close(self.*.ptr);
     }
 };
 
@@ -467,7 +463,7 @@ pub const Point2f = struct {
         return .{ .x = x, .y = y };
     }
 
-    pub fn initfromC(p: c.Point2f) Self {
+    pub fn fromC(p: c.Point2f) Self {
         return .{ .x = p.x, .y = p.y };
     }
 
@@ -487,7 +483,7 @@ pub const Point3f = struct {
         return .{ .x = x, .y = y, .z = z };
     }
 
-    pub fn initfromC(p: c.Point3f) Self {
+    pub fn fromC(p: c.Point3f) Self {
         return .{ .x = p.x, .y = p.y, .z = p.z };
     }
 
@@ -505,21 +501,27 @@ pub const PointVector = struct {
         return .{ .ptr = c.PointVector_New() };
     }
 
-    pub fn initFromMat(mat: Mat) !Self {
+    pub fn fromMat(mat: Mat) !Self {
         if (mat.ptr == null) {
             return error.RuntimeError;
         }
         return .{ .ptr = c.PointVector_NewFromMat(mat.ptr) };
     }
 
-    pub fn initFromPoints(points: []const Point) Self {
-        var c_points: [points.len]c.Point = undefined;
-        for (points) |p, i| c_points[i] = p.toC();
+    pub fn fromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
+        const len = @intCast(usize, points.len);
+        var arr = try std.ArrayList(c.Point).initCapacity(allocator, len);
+        {
+            var i: usize = 0;
+            while (i < len) : (i += 1) {
+                arr.items[i] = points[i].toC();
+            }
+        }
         return .{
             .ptr = c.PointVector_NewFromPoints(
                 c.Points{
                     .length = points.len,
-                    .points = @ptrCast([*]c.Point, c_points),
+                    .points = arr.toOwnedSliceSentinel(0),
                 },
             ),
         };
@@ -544,10 +546,15 @@ pub const PointVector = struct {
     pub fn append(self: *Self, p: Point) void {
         c.PointVector_Append(self.ptr, p);
     }
+
+    pub fn toC(self: Self) c.PointVector {
+        return self.ptr;
+    }
 };
 
 pub const Point2fVector = struct {
     ptr: c.Point2fVector,
+    allocator: ?std.mem.Allocator = null,
 
     const Self = @This();
 
@@ -555,23 +562,30 @@ pub const Point2fVector = struct {
         return .{ .ptr = c.Point2fVector_New() };
     }
 
-    pub fn initFromMat(mat: Mat) !Self {
+    pub fn fromMat(mat: Mat) !Self {
         if (mat.ptr == null) {
             return error.RuntimeError;
         }
         return .{ .ptr = c.Point2fVector_NewFromMat(mat.ptr) };
     }
 
-    pub fn initFromPoints(points: []const Point) Self {
-        var c_points: [points.len]c.Point = undefined;
-        for (points) |p, i| c_points[i] = p.toC();
+    pub fn fromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
+        const len = @intCast(usize, points.len);
+        var arr = try std.ArrayList(c.Point).initCapacity(allocator, len);
+        {
+            var i: usize = 0;
+            while (i < len) : (i += 1) {
+                arr.items[i] = points[i].toC();
+            }
+        }
         return .{
-            .ptr = c.Point2fVector_NewFromPoints(
+            .ptr = c.PointVector_NewFromPoints(
                 c.Points{
                     .length = points.len,
-                    .points = @ptrCast([*]c.Point, c_points),
+                    .points = try arr.toOwnedSliceSentinel(0),
                 },
             ),
+            .allocator = allocator,
         };
     }
 
@@ -618,7 +632,7 @@ pub const Scalar = struct {
         };
     }
 
-    pub fn initFromC(s: c.Scalar) Self {
+    pub fn fromC(s: c.Scalar) Self {
         return .{
             .val1 = s.val1,
             .val2 = s.val2,
@@ -668,7 +682,7 @@ pub const KeyPoint = struct {
         };
     }
 
-    pub fn initFromC(kp: c.KeyPoint) Self {
+    pub fn fromC(kp: c.KeyPoint) Self {
         return .{
             .x = kp.x,
             .y = kp.y,
@@ -729,7 +743,7 @@ pub const Rect = struct {
         };
     }
 
-    pub fn initFromC(r: c.Rect) Self {
+    pub fn fromC(r: c.Rect) Self {
         return .{
             .x = r.x,
             .y = r.y,
@@ -780,12 +794,12 @@ pub const RotatedRect = extern struct {
         };
     }
 
-    pub fn initFromC(r: c.RotatedRect) Self {
+    pub fn fromC(r: c.RotatedRect) Self {
         return .{
             .pts = r.pts,
             .boundingRect = r.boundingRect,
-            .center = Point.initfromC(r.center),
-            .size = Size.initFromC(r.size),
+            .center = Point.fromC(r.center),
+            .size = Size.fromC(r.size),
             .angle = r.angle,
         };
     }
@@ -814,7 +828,7 @@ pub const Size = struct {
         };
     }
 
-    pub fn initFromC(r: c.Size) Self {
+    pub fn fromC(r: c.Size) Self {
         return .{
             .width = r.width,
             .height = r.height,
@@ -843,7 +857,7 @@ pub const RNG = struct {
         .{ .ptr = c.TheRNG() };
     }
 
-    pub fn initFromC(ptr: c.RNG) Self {
+    pub fn fromC(ptr: c.RNG) Self {
         return .{ .ptr = ptr };
     }
 

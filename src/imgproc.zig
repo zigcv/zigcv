@@ -393,7 +393,7 @@ pub fn pyrUp(src: Mat, dst: *Mat, dstsize: Size, borderType: c_int) void {
 }
 
 pub fn boundingRect(pts: PointVector) Rect {
-    return Rect.initFromC(c.BoundingRect(pts.toC()));
+    return Rect.fromC(c.BoundingRect(pts.toC()));
 }
 pub fn boxPoints(rect: RotatedRect, box_pts: *Mat) void {
     _ = c.BoxPoints(rect.toC(), box_pts.*.ptr);
@@ -403,11 +403,11 @@ pub fn contourArea(pts: PointVector) f64 {
     return c.ContourArea(pts.toC());
 }
 pub fn minAreaRect(pts: PointVector) RotatedRect {
-    return RotatedRect.initFromC(c.MinAreaRect(pts.toC()));
+    return RotatedRect.fromC(c.MinAreaRect(pts.toC()));
 }
 
 pub fn fitEllipse(pts: PointVector) RotatedRect {
-    return RotatedRect.initFromC(c.FitEllipse(pts.toC()));
+    return RotatedRect.fromC(c.FitEllipse(pts.toC()));
 }
 
 pub fn pointPolygonTest(pts: PointVector, pt: Point, measureDist: bool) f64 {
@@ -464,11 +464,11 @@ pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, b
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernel(ksize: c_int, sigma: f64) !Mat {
-    return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.MatTypeCV64F)));
+    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.MatTypeCV64F)));
 }
 
 pub fn getGaussianKernelWithParams(ksize: c_int, sigma: f64, ktype: MatType) !Mat {
-    return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(ktype)));
+    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(ktype)));
 }
 
 // Laplacian calculates the Laplacian of an image.
@@ -490,10 +490,10 @@ pub fn scharr(src: Mat, dst: *Mat, d_depth: c_int, dx: c_int, dy: c_int, scale: 
 }
 
 pub fn getStructuringElement(shape: c_int, ksize: Size) !Mat {
-    return try Mat.initFromC(c.GetStructuringElement(shape, ksize.toC()));
+    return try Mat.fromC(c.GetStructuringElement(shape, ksize.toC()));
 }
 pub fn morphologyDefaultBorderValue() Scalar {
-    return Scalar.initFromC(c.MorphologyDefaultBorderValue());
+    return Scalar.fromC(c.MorphologyDefaultBorderValue());
 }
 
 pub fn morphologyEx(src: Mat, dst: *Mat, op: c_int, kernel: Mat) void {
@@ -609,7 +609,7 @@ pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: c_int
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
 //
 pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: c_int) Size {
-    return Size.initFromC(c.GetTextSize(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness));
+    return Size.fromC(c.GetTextSize(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness));
 }
 
 // GetTextSizeWithBaseline calculates the width and height of a text string including the basline of the text.
@@ -621,7 +621,7 @@ pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, th
 //
 pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: c_int) Size {
     const baseline = 0;
-    return Size.initFromC(c.GetTextSizeWithBaseline(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness, &baseline));
+    return Size.fromC(c.GetTextSizeWithBaseline(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness, &baseline));
 }
 
 // PutText draws a text string.
@@ -666,7 +666,7 @@ pub fn getRectSubPix(src: Mat, patch_size: Size, center: Point, dst: *Mat) void 
 }
 
 pub fn getRotationMatrix2D(center: Point, angle: f64, scale: f64) !Mat {
-    return try Mat.initFromC(c.GetRotationMatrix2D(center.toC(), angle, scale));
+    return try Mat.fromC(c.GetRotationMatrix2D(center.toC(), angle, scale));
 }
 
 pub fn warpAffine(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size) void {
@@ -711,7 +711,7 @@ pub fn applyCustomColorMap(src: Mat, dst: *Mat, colormap: Mat) void {
 // For further details, please see:
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043
 pub fn getPerspectiveTransform(src: PointVector, dst: PointVector) !Mat {
-    return try Mat.initFromC(c.GetPerspectiveTransform(src.toC(), dst.toC()));
+    return try Mat.fromC(c.GetPerspectiveTransform(src.toC(), dst.toC()));
 }
 
 // GetPerspectiveTransform2f returns 3x3 perspective transformation for the
@@ -720,7 +720,7 @@ pub fn getPerspectiveTransform(src: PointVector, dst: PointVector) !Mat {
 // For further details, please see:
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043
 pub fn getPerspectiveTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
-    return try Mat.initFromC(c.GetPerspectiveTransform2f(src.toC(), dst.toC()));
+    return try Mat.fromC(c.GetPerspectiveTransform2f(src.toC(), dst.toC()));
 }
 
 // GetAffineTransform returns a 2x3 affine transformation matrix for the
@@ -729,7 +729,7 @@ pub fn getPerspectiveTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
 // For further details, please see:
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8f6d378f9f8eebb5cb55cd3ae295a999
 pub fn getAffineTransform(src: PointVector, dst: PointVector) !Mat {
-    return try Mat.initFromC(c.GetAffineTransform(src.toC(), dst.toC()));
+    return try Mat.fromC(c.GetAffineTransform(src.toC(), dst.toC()));
 }
 
 // GetAffineTransform2f returns a 2x3 affine transformation matrix for the
@@ -738,7 +738,7 @@ pub fn getAffineTransform(src: PointVector, dst: PointVector) !Mat {
 // For further details, please see:
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8f6d378f9f8eebb5cb55cd3ae295a999
 pub fn getAffineTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
-    return try Mat.initFromC(c.GetAffineTransform2f(src.toC(), dst.toC()));
+    return try Mat.fromC(c.GetAffineTransform2f(src.toC(), dst.toC()));
 }
 
 // FindHomography finds an optimal homography matrix using 4 or more point pairs (as opposed to GetPerspectiveTransform, which uses exactly 4)
@@ -747,7 +747,7 @@ pub fn getAffineTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
 // https://docs.opencv.org/master/d9/d0c/group__calib3d.html#ga4abc2ece9fab9398f2e560d53c8c9780
 //
 pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_reproj_threshold: f64, mask: *Mat, max_iters: c_int, confidence: f64) !Mat {
-    return try Mat.initFromC(c.FindHomography(src.ptr, dst.*.ptr, @enumToInt(method), ransac_reproj_threshold, mask.*.ptr, max_iters, confidence));
+    return try Mat.fromC(c.FindHomography(src.ptr, dst.*.ptr, @enumToInt(method), ransac_reproj_threshold, mask.*.ptr, max_iters, confidence));
 }
 
 // pub fn drawContours(src: Mat, contours: PointsVector, contour_idx: c_int, color: Color, thickness: c_int) void;
@@ -840,7 +840,7 @@ pub fn InvertAffineTransform(src: Mat, dst: *Mat) void {
 pub fn PhaseCorrelate(src1: Mat, src2: Mat, window: Mat) struct { point: Point2f, response: f64 } {
     var response: f64 = undefined;
     const p = c.PhaseCorrelate(src1.ptr, src2.ptr, window.ptr, &response);
-    return .{ .point = Point2f.initFromC(p), .response = response };
+    return .{ .point = Point2f.fromC(p), .response = response };
 }
 
 // Adds the square of a source image to the accumulator image.

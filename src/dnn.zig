@@ -94,7 +94,7 @@ pub const Net = struct {
         return Self{ .ptr = null };
     }
 
-    pub fn initFromC(ptr: c.Net) !Self {
+    pub fn fromC(ptr: c.Net) !Self {
         if (ptr == null) {
             return error.RuntimeError;
         }
@@ -106,23 +106,23 @@ pub const Net = struct {
     }
 
     pub fn readNet(model: []const u8, config: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config)));
+        return try Self.fromC(c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config)));
     }
 
     pub fn readNetFromCaffe(prototxt: []const u8, caffe_model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model)));
+        return try Self.fromC(c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model)));
     }
 
     pub fn readNetFromTensorflow(model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model)));
+        return try Self.fromC(c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model)));
     }
 
     pub fn readNetFromTorch(model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromTorch(utils.castZigU8ToC(model)));
+        return try Self.fromC(c.Net_ReadNetFromTorch(utils.castZigU8ToC(model)));
     }
 
     pub fn readNetFromONNX(model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromONNX(utils.castZigU8ToC(model)));
+        return try Self.fromC(c.Net_ReadNetFromONNX(utils.castZigU8ToC(model)));
     }
 
     pub fn empty(self: Self) bool {
@@ -137,12 +137,12 @@ pub const Net = struct {
 
     pub fn forward(self: *Self, output_name: []const u8) !Mat {
         if (self.ptr == null) return error.nullPointerError;
-        return Mat.initFromC(c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name)));
+        return Mat.fromC(c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name)));
     }
 
     pub fn forwardAsync(self: *Self, output_name: []const u8) !AsyncArray {
         if (self.ptr == null) return error.nullPointerError;
-        return AsyncArray.initFromC(c.Net_ForwardAsync(self.*.ptr, utils.castZigU8ToC(output_name)));
+        return AsyncArray.fromC(c.Net_ForwardAsync(self.*.ptr, utils.castZigU8ToC(output_name)));
     }
 
     // SetPreferableBackend ask network to use specific computation backend.
@@ -199,17 +199,17 @@ pub const Net = struct {
 
     pub fn getLayer(self: Self, layerid: c_int) !Layer {
         if (self.ptr == null) return error.nullPointerError;
-        return Layer.initFromC(c.Net_GetLayer(self.ptr, layerid));
+        return Layer.fromC(c.Net_GetLayer(self.ptr, layerid));
     }
 
     pub fn getBlobChannel(self: Self, imgidx: c_int, chnidx: c_int) !Mat {
         if (self.ptr == null) return error.nullPointerError;
-        return try Mat.initFromC(c.Net_GetBlobChannel(self.ptr, imgidx, chnidx));
+        return try Mat.fromC(c.Net_GetBlobChannel(self.ptr, imgidx, chnidx));
     }
 
     pub fn getBlobSize(self: Self, blob: Mat) !Size {
         if (self.ptr == null) return error.nullPointerError;
-        return Size.initFromC(c.Net_GetBlobSize(self.ptr, blob.ptr));
+        return Size.fromC(c.Net_GetBlobSize(self.ptr, blob.ptr));
     }
 };
 
@@ -221,7 +221,7 @@ pub const Net = struct {
 // https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#ga152367f253c81b53fe6862b299f5c5cd
 //
 pub fn blobFromImage(image: Mat, scalefactor: f64, size: Size, mean: Scalar, swap_rb: bool, crop: bool) !Mat {
-    return try Mat.initFromC(c.Net_BlobFromImage(image.ptr, scalefactor, size.toC(), mean.toC(), swap_rb, crop));
+    return try Mat.fromC(c.Net_BlobFromImage(image.ptr, scalefactor, size.toC(), mean.toC(), swap_rb, crop));
 }
 
 // BlobFromImages Creates 4-dimensional blob from series of images.
@@ -241,7 +241,7 @@ pub const Layer = struct {
 
     const Self = @This();
 
-    pub fn initFromC(ptr: c.Layer) Self {
+    pub fn fromC(ptr: c.Layer) Self {
         return Self{ .ptr = ptr };
     }
 
@@ -276,7 +276,7 @@ pub const Layer = struct {
 
 //*    implementation done
 //*    pub const Net = ?*anyopaque;
-//     pub const Layer = ?*anyopaque;
+//*    pub const Layer = ?*anyopaque;
 //*    pub extern fn Net_ReadNet(model: [*c]const u8, config: [*c]const u8) Net;
 //     pub extern fn Net_ReadNetBytes(framework: [*c]const u8, model: struct_ByteArray, config: struct_ByteArray) Net;
 //*    pub extern fn Net_ReadNetFromCaffe(prototxt: [*c]const u8, caffeModel: [*c]const u8) Net;
