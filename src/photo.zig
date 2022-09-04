@@ -8,21 +8,21 @@ const Point = core.Point;
 
 pub const SeamlessCloneFlag = enum(u2) {
     // NormalClone The power of the method is fully expressed when inserting objects with complex outlines into a new background.
-    NormalClone = 0,
+    normal_clone = 0,
 
     // MixedClone The classic method, color-based selection and alpha masking might be time consuming and often leaves an undesirable halo. Seamless cloning, even averaged with the original image, is not effective. Mixed seamless cloning based on a loose selection proves effective.
-    MixedClone,
+    mixed_clone,
 
     // MonochromeTransfer Monochrome transfer allows the user to easily replace certain features of one object by alternative features.
-    MonochromeTransfer,
+    monochrome_transfer,
 };
 
 pub const EdgeFilter = enum(u1) {
     // RecursFilter Recursive Filtering.
-    RecursFilter = 1,
+    recurs_filter = 1,
 
     // NormconvFilter Normalized Convolution Filtering.
-    NormconvFilter = 2,
+    normconv_filter = 2,
 };
 
 // ColorChange mix two differently colored versions of an image seamlessly.
