@@ -180,8 +180,11 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
 // For further details, please see:
 // https://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga26a67788faa58ade337f8d28ba0eb19e
 //
-pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
-    var data = @ptrCast([*]u8, buf);
+pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
+    var data = c.ByteArray{
+        .val = @ptrCast([*]u8, buf),
+        .length = buf.len,
+    };
     return try Mat.fromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
 
@@ -193,7 +196,7 @@ pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 //
 pub fn imEncode(file_ext: FileExt, img: Mat) ![]c_int {
-    var c_vector = c.IntVector;
+    var c_vector = c.IntVector{};
     c.Image_IMEncode(file_ext.toString(), img.ptr, &c_vector);
     return std.mem.span(c_vector.val)[0..c_vector.length];
 }
