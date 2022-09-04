@@ -1,5 +1,9 @@
 # ZIGCV
 
+<div align="center">
+  <img src="./logo/zigv.png" width="50%" />
+</div>
+
 ## Caution
 Still under development, so the zig APIs will be dynamically changed.
 
