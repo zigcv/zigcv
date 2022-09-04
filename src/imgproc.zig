@@ -14,251 +14,251 @@ const RotatedRect = core.RotatedRect;
 const MatType = core.MatType;
 const TermCriteria = core.TermCriteria;
 
-pub const ConnectedComponentsAlgorithmType = enum(i32) {
+pub const ConnectedComponentsAlgorithmType = enum(u2) {
 
     // SAUF algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
-    CCL_WU = 0,
+    wu = 0,
 
     // BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
-    CCL_DEFAULT = 1,
+    default = 1,
 
     // BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity
-    CCL_GRANA = 2,
+    grana = 2,
 };
 
-pub const ConnectedComponentsTypes = enum(i32) {
+pub const ConnectedComponentsTypes = enum(u3) {
     //The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
-    CC_STAT_LEFT = 0,
+    stat_left = 0,
 
     //The topmost (y) coordinate which is the inclusive start of the bounding box in the vertical direction.
-    CC_STAT_TOP = 1,
+    stat_top = 1,
 
     // The horizontal size of the bounding box.
-    CC_STAT_WIDTH = 2,
+    stat_width = 2,
 
     // The vertical size of the bounding box.
-    CC_STAT_HEIGHT = 3,
+    stat_height = 3,
 
     // The total area (in pixels) of the connected component.
-    CC_STAT_AREA = 4,
+    stat_area = 4,
 
-    CC_STAT_MAX = 5,
+    stat_max = 5,
 };
 
-pub const BorderType = enum(i32) {
+pub const BorderType = enum(u5) {
     // BorderConstant border type
-    BorderConstant = 0,
+    constant = 0,
 
     // BorderReplicate border type
-    BorderReplicate = 1,
+    replicate = 1,
 
     // BorderReflect border type
-    BorderReflect = 2,
+    reflect = 2,
 
     // BorderWrap border type
-    BorderWrap = 3,
+    wrap = 3,
 
     // BorderReflect101 border type
-    BorderReflect101 = 4,
+    reflect101 = 4,
 
     // BorderTransparent border type
-    BorderTransparent = 5,
+    transparent = 5,
 
     // BorderIsolated border type
-    BorderIsolated = 16,
+    isolated = 16,
 
-    pub const default = BorderType.BorderReflect101;
+    pub const default = BorderType.reflect101;
 };
 
-pub const MorphType = enum(i32) {
+pub const MorphType = enum(u3) {
     // MorphErode operation
-    MorphErode = 0,
+    erode = 0,
 
     // MorphDilate operation
-    MorphDilate = 1,
+    dilate = 1,
 
     // MorphOpen operation
-    MorphOpen = 2,
+    open = 2,
 
     // MorphClose operation
-    MorphClose = 3,
+    close = 3,
 
     // MorphGradient operation
-    MorphGradient = 4,
+    gradient = 4,
 
     // MorphTophat operation
-    MorphTophat = 5,
+    tophat = 5,
 
     // MorphBlackhat operation
-    MorphBlackhat = 6,
+    blackhat = 6,
 
     // MorphHitmiss operation
-    MorphHitmiss = 7,
+    hitmiss = 7,
 };
 
-pub const HoughMode = enum(i32) {
+pub const HoughMode = enum(u2) {
     // HoughStandard is the classical or standard Hough transform.
-    HoughStandard = 0,
+    standard = 0,
     // HoughProbabilistic is the probabilistic Hough transform (more efficient
     // in case if the picture contains a few long linear segments).
-    HoughProbabilistic = 1,
+    probabilistic = 1,
     // HoughMultiScale is the multi-scale variant of the classical Hough
     // transform.
-    HoughMultiScale = 2,
+    multi_scale = 2,
     // HoughGradient is basically 21HT, described in: HK Yuen, John Princen,
     // John Illingworth, and Josef Kittler. Comparative study of hough
     // transform methods for circle finding. Image and Vision Computing,
     // 8(1):71–77, 1990.
-    HoughGradient = 3,
+    gradient = 3,
 };
 
-pub const GrabCutMode = enum(i32) {
+pub const GrabCutMode = enum(u2) {
     // GCInitWithRect makes the function initialize the state and the mask using the provided rectangle.
     // After that it runs the itercount iterations of the algorithm.
-    GCInitWithRect = 0,
+    init_with_rect = 0,
     // GCInitWithMask makes the function initialize the state using the provided mask.
     // GCInitWithMask and GCInitWithRect can be combined.
     // Then all the pixels outside of the ROI are automatically initialized with GC_BGD.
-    GCInitWithMask = 1,
+    init_with_mask = 1,
     // GCEval means that the algorithm should just resume.
-    GCEval = 2,
+    eval = 2,
     // GCEvalFreezeModel means that the algorithm should just run a single iteration of the GrabCut algorithm
     // with the fixed model
-    GCEvalFreezeModel = 3,
+    eval_freeze_model = 3,
 };
 
-pub const LineType = enum(i32) {
+pub const LineType = enum(i6) {
     // Filled line
-    Filled = -1,
+    filled = -1,
     // Line4 4-connected line
-    Line4 = 4,
+    line4 = 4,
     // Line8 8-connected line
-    Line8 = 8,
+    line8 = 8,
     // LineAA antialiased line
-    LineAA = 16,
+    lineAA = 16,
 };
 
-pub const HersheyFont = enum(i32) {
+pub const HersheyFont = enum(u5) {
     // FontHersheySimplex is normal size sans-serif font.
-    FontHersheySimplex = 0,
+    simplex = 0,
     // FontHersheyPlain issmall size sans-serif font.
-    FontHersheyPlain = 1,
+    plain = 1,
     // FontHersheyDuplex normal size sans-serif font
     // (more complex than FontHersheySIMPLEX).
-    FontHersheyDuplex = 2,
+    duplex = 2,
     // FontHersheyComplex i a normal size serif font.
-    FontHersheyComplex = 3,
+    complex = 3,
     // FontHersheyTriplex is a normal size serif font
     // (more complex than FontHersheyCOMPLEX).
-    FontHersheyTriplex = 4,
+    triplex = 4,
     // FontHersheyComplexSmall is a smaller version of FontHersheyCOMPLEX.
-    FontHersheyComplexSmall = 5,
+    complex_small = 5,
     // FontHersheyScriptSimplex is a hand-writing style font.
-    FontHersheyScriptSimplex = 6,
+    script_simplex = 6,
     // FontHersheyScriptComplex is a more complex variant of FontHersheyScriptSimplex.
-    FontHersheyScriptComplex = 7,
+    script_complex = 7,
     // FontItalic is the flag for italic font.
-    FontItalic = 16,
+    italic = 16,
 };
 
-pub const InterpolationFlag = enum(i32) {
+pub const InterpolationFlag = enum(u5) {
     // InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
-    InterpolationNearestNeighbor = 0,
+    nearest_neighbor = 0,
 
     // InterpolationLinear is bilinear interpolation.
-    InterpolationLinear = 1,
+    linear = 1,
 
     // InterpolationCubic is bicube interpolation.
-    InterpolationCubic = 2,
+    cubic = 2,
 
     // InterpolationArea uses pixel area relation. It is preferred for image
     // decimation as it gives moire-free results.
-    InterpolationArea = 3,
+    area = 3,
 
     // InterpolationLanczos4 is Lanczos interpolation over 8x8 neighborhood.
-    InterpolationLanczos4 = 4,
+    lanczos4 = 4,
 
     // InterpolationMax indicates use maximum interpolation.
-    InterpolationMax = 7,
+    max = 7,
 
     // WarpFillOutliers fills all of the destination image pixels. If some of them correspond to outliers in the source image, they are set to zero.
-    WarpFillOutliers = 8,
+    warp_fill_outliers = 8,
 
     // WarpInverseMap, inverse transformation.
-    WarpInverseMap = 16,
+    warp_inverse_map = 16,
 
-    pub const default = InterpolationFlag.InterpolationLinear;
+    pub const default = InterpolationFlag.linear;
 };
 
-pub const ColormapType = enum(i32) {
-    ColormapAutumn = 0,
-    ColormapBone = 1,
-    ColormapJet = 2,
-    ColormapWinter = 3,
-    ColormapRainbow = 4,
-    ColormapOcean = 5,
-    ColormapSummer = 6,
-    ColormapSpring = 7,
-    ColormapCool = 8,
-    ColormapHsv = 9,
-    ColormapPink = 10,
-    ColormapHot = 11,
-    ColormapParula = 12,
+pub const ColormapType = enum(u4) {
+    autumn = 0,
+    bone = 1,
+    jet = 2,
+    winter = 3,
+    rainbow = 4,
+    ocean = 5,
+    summer = 6,
+    spring = 7,
+    cool = 8,
+    hsv = 9,
+    pink = 10,
+    hot = 11,
+    parula = 12,
 };
 
-pub const HomographyMethod = enum(i32) {
-    HomograpyMethodAllPoints = 0,
-    HomograpyMethodLMEDS = 4,
-    HomograpyMethodRANSAC = 8,
+pub const HomographyMethod = enum(u4) {
+    all_points = 0,
+    lmeds = 4,
+    ransac = 8,
 };
 
 // DistanceType types for Distance Transform and M-estimatorss
 //
 // For further details, please see:
 // https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#gaa2bfbebbc5c320526897996aafa1d8eb
-pub const DistanceType = enum(i32) {
-    DistUser = 0,
-    DistL1 = 1,
-    DistL2 = 2,
-    DistC = 3,
-    DistL12 = 4,
-    DistFair = 5,
-    DistWelsch = 6,
-    DistHuber = 7,
+pub const DistanceType = enum(u3) {
+    user = 0,
+    l1 = 1,
+    l2 = 2,
+    c = 3,
+    l12 = 4,
+    fair = 5,
+    welsch = 6,
+    huber = 7,
 };
 
-pub const ThresholdType = enum(i32) {
+pub const ThresholdType = enum(u5) {
     // ThresholdBinary threshold type
-    ThresholdBinary = 0,
+    binary = 0,
 
     // ThresholdBinaryInv threshold type
-    ThresholdBinaryInv = 1,
+    binary_inv = 1,
 
     // ThresholdTrunc threshold type
-    ThresholdTrunc = 2,
+    trunc = 2,
 
     // ThresholdToZero threshold type
-    ThresholdToZero = 3,
+    to_zero = 3,
 
     // ThresholdToZeroInv threshold type
-    ThresholdToZeroInv = 4,
+    to_zero_inv = 4,
 
     // ThresholdMask threshold type
-    ThresholdMask = 7,
+    mask = 7,
 
     // ThresholdOtsu threshold type
-    ThresholdOtsu = 8,
+    otsu = 8,
 
     // ThresholdTriangle threshold type
-    ThresholdTriangle = 16,
+    triangle = 16,
 };
 
-pub const AdaptiveThresholdType = enum(i32) {
+pub const AdaptiveThresholdType = enum(u1) {
     // AdaptiveThresholdMean threshold type
-    AdaptiveThresholdMean = 0,
+    mean = 0,
 
     // AdaptiveThresholdGaussian threshold type
-    AdaptiveThresholdGaussian = 1,
+    gaussian = 1,
 };
 
 pub const CLAHE = struct {
@@ -424,8 +424,8 @@ pub fn connectedComponents(src: Mat, labels: *Mat) c_int {
         src.ptr,
         labels.*.ptr,
         8,
-        @enumToInt(MatType.MatTypeCV32S),
-        @enumToInt(ConnectedComponentsAlgorithmType.CCL_DEFAULT),
+        @enumToInt(MatType.CV32S),
+        @enumToInt(ConnectedComponentsAlgorithmType.default),
     );
 }
 
@@ -464,7 +464,7 @@ pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, b
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernel(ksize: c_int, sigma: f64) !Mat {
-    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.MatTypeCV64F)));
+    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.CV64F)));
 }
 
 pub fn getGaussianKernelWithParams(ksize: c_int, sigma: f64, ktype: MatType) !Mat {
