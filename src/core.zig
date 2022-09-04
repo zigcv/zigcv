@@ -439,6 +439,33 @@ pub const Mat = struct {
         return self.calcMat(m, dest, .Divide);
     }
 
+    // Eigen calculates eigenvalues and eigenvectors of a symmetric matrix.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga9fa0d58657f60eaa6c71f6fbb40456e3
+    //
+    pub fn eigen(self: Self, eigenvalues: *Mat, eigenvectors: *Mat) bool {
+        return c.Mat_Eigen(self.ptr, eigenvalues.*.ptr, eigenvectors.*.ptr);
+    }
+
+    // EigenNonSymmetric calculates eigenvalues and eigenvectors of a non-symmetric matrix (real eigenvalues only).
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d2/de8/group__core__array.html#gaf51987e03cac8d171fbd2b327cf966f6
+    //
+    pub fn eigenNonSymmetric(self: Self, eigenvalues: *Mat, eigenvectors: *Mat) void {
+        return c.Mat_EigenNonSymmetric(self.ptr, eigenvalues.*.ptr, eigenvectors.*.ptr);
+    }
+
+    // Exp calculates the exponent of every array element.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga3e10108e2162c338f1b848af619f39e5
+    //
+    pub fn exp(self: Self, dest: *Mat) void {
+        return c.Mat_Exp(self.ptr, dest.*.ptr);
+    }
+
     // AddWeighted calculates the weighted sum of two arrays.
     //
     // For further details, please see:
@@ -480,6 +507,10 @@ pub const Mat = struct {
 
     pub fn t(self: Self) Self {
         return .{ .ptr = c.Mat_T(self.ptr) };
+    }
+
+    pub fn lut(src: Mat, lut_: Mat, dst: *Mat) void {
+        c.LUT(src.ptr, lut_.ptr, dst.*.ptr);
     }
 
     pub fn transpose(self: Self, dst: *Mat) Self {
@@ -1097,7 +1128,7 @@ pub const RNG = struct {
 //*    pub extern fn Mat_DivideFloat(m: Mat, val: f32) void;
 //*    pub extern fn Mat_MultiplyMatrix(x: Mat, y: Mat) Mat;
 //*    pub extern fn Mat_T(x: Mat) Mat;
-//     pub extern fn LUT(src: Mat, lut: Mat, dst: Mat) void;
+//*    pub extern fn LUT(src: Mat, lut: Mat, dst: Mat) void;
 //     pub extern fn Mat_AbsDiff(src1: Mat, src2: Mat, dst: Mat) void;
 //*    pub extern fn Mat_Add(src1: Mat, src2: Mat, dst: Mat) void;
 //*    pub extern fn Mat_AddWeighted(src1: Mat, alpha: f64, src2: Mat, beta: f64, gamma: f64, dst: Mat) void;
@@ -1123,9 +1154,9 @@ pub const RNG = struct {
 //     pub extern fn Mat_Determinant(m: Mat) f64;
 //     pub extern fn Mat_DFT(m: Mat, dst: Mat, flags: c_int) void;
 //*    pub extern fn Mat_Divide(src1: Mat, src2: Mat, dst: Mat) void;
-//     pub extern fn Mat_Eigen(src: Mat, eigenvalues: Mat, eigenvectors: Mat) bool;
-//     pub extern fn Mat_EigenNonSymmetric(src: Mat, eigenvalues: Mat, eigenvectors: Mat) void;
-//     pub extern fn Mat_Exp(src: Mat, dst: Mat) void;
+//*    pub extern fn Mat_Eigen(src: Mat, eigenvalues: Mat, eigenvectors: Mat) bool;
+//*    pub extern fn Mat_EigenNonSymmetric(src: Mat, eigenvalues: Mat, eigenvectors: Mat) void;
+//*    pub extern fn Mat_Exp(src: Mat, dst: Mat) void;
 //     pub extern fn Mat_ExtractChannel(src: Mat, dst: Mat, coi: c_int) void;
 //     pub extern fn Mat_FindNonZero(src: Mat, idx: Mat) void;
 //     pub extern fn Mat_Flip(src: Mat, dst: Mat, flipCode: c_int) void;
