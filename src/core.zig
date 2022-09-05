@@ -411,24 +411,24 @@ pub const Mat = struct {
 
     pub fn set(self: *Self, row_: c_int, col_: c_int, val: anytype, comptime T: type) void {
         _ = switch (T) {
-            u8 => c.Mat_SetUChar(self.ptr, row_, col_, val),
-            i8 => c.Mat_SetSChar(self.ptr, row_, col_, val),
-            i16 => c.Mat_SetShort(self.ptr, row_, col_, val),
-            i32 => c.Mat_SetInt(self.ptr, row_, col_, val),
-            f32 => c.Mat_SetFloat(self.ptr, row_, col_, val),
-            f64 => c.Mat_SetDouble(self.ptr, row_, col_, val),
+            u8 => c.Mat_SetUChar(self.ptr, row_, col_, @intCast(T, val)),
+            i8 => c.Mat_SetSChar(self.ptr, row_, col_, @intCast(T, val)),
+            i16 => c.Mat_SetShort(self.ptr, row_, col_, @intCast(T, val)),
+            i32 => c.Mat_SetInt(self.ptr, row_, col_, @intCast(T, val)),
+            f32 => c.Mat_SetFloat(self.ptr, row_, col_, @floatCast(T, val)),
+            f64 => c.Mat_SetDouble(self.ptr, row_, col_, @floatCast(T, val)),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
 
     pub fn set3(self: *Self, x: c_int, y: c_int, z: c_int, val: anytype, comptime T: type) void {
         _ = switch (T) {
-            u8 => c.Mat_SetUChar3(self.ptr, x, y, z, val),
-            i8 => c.Mat_SetSChar3(self.ptr, x, y, z, val),
-            i16 => c.Mat_SetShort3(self.ptr, x, y, z, val),
-            i32 => c.Mat_SetInt3(self.ptr, x, y, z, val),
-            f32 => c.Mat_SetFloat3(self.ptr, x, y, z, val),
-            f64 => c.Mat_SetDouble3(self.ptr, x, y, z, val),
+            u8 => c.Mat_SetUChar3(self.ptr, x, y, z, @intCast(T, val)),
+            i8 => c.Mat_SetSChar3(self.ptr, x, y, z, @intCast(T, val)),
+            i16 => c.Mat_SetShort3(self.ptr, x, y, z, @intCast(T, val)),
+            i32 => c.Mat_SetInt3(self.ptr, x, y, z, @intCast(T, val)),
+            f32 => c.Mat_SetFloat3(self.ptr, x, y, z, @floatCast(T, val)),
+            f64 => c.Mat_SetDouble3(self.ptr, x, y, z, @floatCast(T, val)),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
