@@ -39,7 +39,7 @@ pub const Mat = struct {
         not_,
     };
 
-    pub const MatType = enum(u6) {
+    pub const MatType = enum(u5) {
         // MatTypeCV8UC1 is a Mat of 8-bit unsigned int with a single channel
         cv8uc1 = cv8u + channels1,
 

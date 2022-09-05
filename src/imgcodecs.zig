@@ -110,7 +110,7 @@ pub const IMWriteFlag = enum(u32) {
     jpeg2000_compression_x1000 = 272,
 };
 
-pub const FileExt = enum(u4) {
+pub const FileExt = enum(u2) {
     png,
     jpg,
     gif,
