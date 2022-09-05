@@ -93,12 +93,39 @@ pub const Fisheye = struct {
     }
 };
 
+// InitUndistortRectifyMap computes the joint undistortion and rectification transformation and represents the result in the form of maps for remap
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d9/d0c/group__calib3d.html#ga7dfb72c9cf9780a347fbe3d1c47e5d5a
+//
+pub fn initUndistortRectifyMap(
+    camera_matrix: Mat,
+    dist_coeffs: Mat,
+    r: Mat,
+    new_camera_matrix: Mat,
+    size: Size,
+    m1type: c_int,
+    map1: Mat,
+    map2: Mat,
+) void {
+    _ = c.InitUndistortRectifyMap(
+        camera_matrix.ptr,
+        dist_coeffs.ptr,
+        r.ptr,
+        new_camera_matrix.ptr,
+        size.toC(),
+        m1type,
+        map1.ptr,
+        map2.ptr,
+    );
+}
+
 //*    implementation done
 //*    pub extern fn Fisheye_UndistortImage(distorted: Mat, undistorted: Mat, k: Mat, d: Mat) void;
 //*    pub extern fn Fisheye_UndistortImageWithParams(distorted: Mat, undistorted: Mat, k: Mat, d: Mat, knew: Mat, size: Size) void;
 //*    pub extern fn Fisheye_UndistortPoints(distorted: Mat, undistorted: Mat, k: Mat, d: Mat, R: Mat, P: Mat) void;
 //*    pub extern fn Fisheye_EstimateNewCameraMatrixForUndistortRectify(k: Mat, d: Mat, imgSize: Size, r: Mat, p: Mat, balance: f64, newSize: Size, fovScale: f64) void;
-//     pub extern fn InitUndistortRectifyMap(cameraMatrix: Mat, distCoeffs: Mat, r: Mat, newCameraMatrix: Mat, size: Size, m1type: c_int, map1: Mat, map2: Mat) void;
+//*    pub extern fn InitUndistortRectifyMap(cameraMatrix: Mat, distCoeffs: Mat, r: Mat, newCameraMatrix: Mat, size: Size, m1type: c_int, map1: Mat, map2: Mat) void;
 //     pub extern fn GetOptimalNewCameraMatrixWithParams(cameraMatrix: Mat, distCoeffs: Mat, size: Size, alpha: f64, newImgSize: Size, validPixROI: [*c]Rect, centerPrincipalPoint: bool) Mat;
 //     pub extern fn CalibrateCamera(objectPoints: Points3fVector, imagePoints: Points2fVector, imageSize: Size, cameraMatrix: Mat, distCoeffs: Mat, rvecs: Mat, tvecs: Mat, flag: c_int) f64;
 //     pub extern fn Undistort(src: Mat, dst: Mat, cameraMatrix: Mat, distCoeffs: Mat, newCameraMatrix: Mat) void;

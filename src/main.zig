@@ -1,5 +1,6 @@
 pub const c_api = @import("c_api.zig");
 pub usingnamespace @import("asyncarray.zig");
+pub usingnamespace @import("calib3d.zig");
 pub usingnamespace @import("core.zig");
 pub usingnamespace @import("dnn.zig");
 pub usingnamespace @import("highgui.zig");
