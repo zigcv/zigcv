@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with: 
+          submodules: true
       - name: install opencv
         run: |
           sudo apt-get update
