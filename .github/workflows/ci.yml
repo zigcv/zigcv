@@ -3,11 +3,15 @@ name: ci
 on: push
 
 jobs:
-  build:
+  run_test:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: install opencv
+        uses: Dovyski/setup-opencv-action@v1
+        with:
+          opencv-version: '4.6.0'
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
