@@ -424,7 +424,7 @@ pub fn connectedComponents(src: Mat, labels: *Mat) c_int {
         src.ptr,
         labels.*.ptr,
         8,
-        MatType.cv32s.toInt(),
+        @enumToInt(MatType.cv32sc1),
         @enumToInt(ConnectedComponentsAlgorithmType.default),
     );
 }
@@ -435,7 +435,7 @@ pub fn connectedComponents(src: Mat, labels: *Mat) c_int {
 // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
 //
 pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: c_int, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) c_int {
-    return c.ConnectedComponents(src.ptr, labels.*.ptr, connectivity, ltype.toInt(), @enumToInt(ccltype));
+    return c.ConnectedComponents(src.ptr, labels.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
 // ConnectedComponentsWithStats computes the connected components labeled image of boolean
@@ -445,7 +445,7 @@ pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: c_int
 // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
 //
 pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: c_int, ltype: MatType, ccltype: ConnectedComponentsTypes) c_int {
-    return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, ltype.toInt(), @enumToInt(ccltype));
+    return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
 // GaussianBlur blurs an image Mat using a Gaussian filter.
@@ -464,11 +464,11 @@ pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, b
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernel(ksize: c_int, sigma: f64) !Mat {
-    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, MatType.cv64f.toInt()));
+    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.cv64fc1)));
 }
 
 pub fn getGaussianKernelWithParams(ksize: c_int, sigma: f64, ktype: MatType) !Mat {
-    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, ktype.toInt()));
+    return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(ktype)));
 }
 
 // Laplacian calculates the Laplacian of an image.
@@ -759,7 +759,7 @@ pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_repr
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gacea54f142e81b6758cb6f375ce782c8d
 //
 pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: c_int, dy: c_int, ksize: c_int, scale: f64, delta: f64, border_type: BorderType) void {
-    _ = c.Sobel(src.ptr, dst.*.ptr, ddepth.toInt(), dx, dy, ksize, scale, delta, @enumToInt(border_type));
+    _ = c.Sobel(src.ptr, dst.*.ptr, @enumToInt(ddepth), dx, dy, ksize, scale, delta, @enumToInt(border_type));
 }
 
 // SpatialGradient calculates the first order image derivative in both x and y using a Sobel operator.

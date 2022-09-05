@@ -27,7 +27,7 @@ test "svd" {
     const result_u = [4]f32{ -0.1346676, -0.99089086, 0.9908908, -0.1346676 };
     const result_vt = [4]f32{ 0.01964448, 0.999807, -0.999807, 0.01964448 };
 
-    var src = Mat.initSize(2, 2, .cv32f);
+    var src = Mat.initSize(2, 2, .cv32fc1);
     src.set(0, 0, 3.76956568, f32);
     src.set(0, 1, -0.90478725, f32);
     src.set(1, 0, 0.634576, f32);

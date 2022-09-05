@@ -39,185 +39,109 @@ pub const Mat = struct {
         not_,
     };
 
-    pub const MatChannel = enum(u5) {
-        // Channels1 is a single channel Mat.
-        channels1 = 0 << 3,
-
-        // Channels2 is 2 channel Mat.
-        channels2 = 1 << 3,
-
-        // Channels3 is 3 channel Mat.
-        channels3 = 2 << 3,
-
-        // Channels4 is 4 channel Mat.
-        channels4 = 3 << 3,
-    };
-
     pub const MatType = enum(u6) {
-
-        // MatTypeCV8U is a Mat of 8-bit unsigned int
-        cv8u = 0,
-
-        // MatTypeCV8S is a Mat of 8-bit signed int
-        cv8s = 1,
-
-        // MatTypeCV16U is a Mat of 16-bit unsigned int
-        cv16u = 2,
-
-        // MatTypeCV16S is a Mat of 16-bit signed int
-        cv16s = 3,
-
-        // MatTypeCV32S is a Mat of 32-bit signed int
-        cv32s = 4,
-
-        // MatTypeCV32F is a Mat of 32-bit float
-        cv32f = 5,
-
-        // MatTypeCV64F is a Mat of 64-bit float
-        cv64f = 6,
-
         // MatTypeCV8UC1 is a Mat of 8-bit unsigned int with a single channel
-        cv8uc1,
+        cv8uc1 = cv8u + channels1,
 
         // MatTypeCV8UC2 is a Mat of 8-bit unsigned int with 2 channels
-        cv8uc2,
+        cv8uc2 = cv8u + channels2,
 
         // MatTypeCV8UC3 is a Mat of 8-bit unsigned int with 3 channels
-        cv8uc3,
+        cv8uc3 = cv8u + channels3,
 
         // MatTypeCV8UC4 is a Mat of 8-bit unsigned int with 4 channels
-        cv8uc4,
+        cv8uc4 = cv8u + channels4,
 
         // MatTypeCV8SC1 is a Mat of 8-bit signed int with a single channel
-        cv8sc1,
+        cv8sc1 = cv8s + channels1,
 
         // MatTypeCV8SC2 is a Mat of 8-bit signed int with 2 channels
-        cv8sc2,
+        cv8sc2 = cv8s + channels2,
 
         // MatTypeCV8SC3 is a Mat of 8-bit signed int with 3 channels
-        cv8sc3,
+        cv8sc3 = cv8s + channels3,
 
         // MatTypeCV8SC4 is a Mat of 8-bit signed int with 4 channels
-        cv8sc4,
+        cv8sc4 = cv8s + channels4,
 
         // MatTypeCV16UC1 is a Mat of 16-bit unsigned int with a single channel
-        cv16uc1,
+        cv16uc1 = cv16u + channels1,
 
         // MatTypeCV16UC2 is a Mat of 16-bit unsigned int with 2 channels
-        cv16uc2,
+        cv16uc2 = cv16u + channels2,
 
         // MatTypeCV16UC3 is a Mat of 16-bit unsigned int with 3 channels
-        cv16uc3,
+        cv16uc3 = cv16u + channels3,
 
         // MatTypeCV16UC4 is a Mat of 16-bit unsigned int with 4 channels
-        cv16uc4,
+        cv16uc4 = cv16u + channels4,
 
         // MatTypeCV16SC1 is a Mat of 16-bit signed int with a single channel
-        cv16sc1,
+        cv16sc1 = cv16s + channels1,
 
         // MatTypeCV16SC2 is a Mat of 16-bit signed int with 2 channels
-        cv16sc2,
+        cv16sc2 = cv16s + channels2,
 
         // MatTypeCV16SC3 is a Mat of 16-bit signed int with 3 channels
-        cv16sc3,
+        cv16sc3 = cv16s + channels3,
 
         // MatTypeCV16SC4 is a Mat of 16-bit signed int with 4 channels
-        cv16sc4,
+        cv16sc4 = cv16s + channels4,
 
         // MatTypeCV32SC1 is a Mat of 32-bit signed int with a single channel
-        cv32sc1,
+        cv32sc1 = cv32s + channels1,
 
         // MatTypeCV32SC2 is a Mat of 32-bit signed int with 2 channels
-        cv32sc2,
+        cv32sc2 = cv32s + channels2,
 
         // MatTypeCV32SC3 is a Mat of 32-bit signed int with 3 channels
-        cv32sc3,
+        cv32sc3 = cv32s + channels3,
 
         // MatTypeCV32SC4 is a Mat of 32-bit signed int with 4 channels
-        cv32sc4,
+        cv32sc4 = cv32s + channels4,
 
         // MatTypeCV32FC1 is a Mat of 32-bit float int with a single channel
-        cv32fc1,
+        cv32fc1 = cv32f + channels1,
 
         // MatTypeCV32FC2 is a Mat of 32-bit float int with 2 channels
-        cv32fc2,
+        cv32fc2 = cv32f + channels2,
 
         // MatTypeCV32FC3 is a Mat of 32-bit float int with 3 channels
-        cv32fc3,
+        cv32fc3 = cv32f + channels3,
 
         // MatTypeCV32FC4 is a Mat of 32-bit float int with 4 channels
-        cv32fc4,
+        cv32fc4 = cv32f + channels4,
 
         // MatTypeCV64FC1 is a Mat of 64-bit float int with a single channel
-        cv64fc1,
+        cv64fc1 = cv64f + channels1,
 
         // MatTypeCV64FC2 is a Mat of 64-bit float int with 2 channels
-        cv64fc2,
+        cv64fc2 = cv64f + channels2,
 
         // MatTypeCV64FC3 is a Mat of 64-bit float int with 3 channels
-        cv64fc3,
+        cv64fc3 = cv64f + channels3,
 
         // MatTypeCV64FC4 is a Mat of 64-bit float int with 4 channels
-        cv64fc4,
+        cv64fc4 = cv64f + channels4,
 
-        const cv8u_ = 0;
-        const cv8s_ = 1;
-        const cv16u_ = 2;
-        const cv16s_ = 3;
-        const cv32s_ = 4;
-        const cv32f_ = 5;
-        const cv64f_ = 6;
-        const channels1 = @enumToInt(MatChannel.channels1);
-        const channels2 = @enumToInt(MatChannel.channels2);
-        const channels3 = @enumToInt(MatChannel.channels3);
-        const channels4 = @enumToInt(MatChannel.channels4);
-
-        pub fn toInt(self: MatType) u6 {
-            return switch (self) {
-                .cv8u => cv8u_,
-                .cv8s => cv8s_,
-                .cv16u => cv16u_,
-                .cv16s => cv16s_,
-                .cv32s => cv32s_,
-                .cv32f => cv32f_,
-                .cv64f => cv64f_,
-
-                .cv8uc1 => cv8u_ + channels1,
-                .cv8uc2 => cv8u_ + channels2,
-                .cv8uc3 => cv8u_ + channels3,
-                .cv8uc4 => cv8u_ + channels4,
-
-                .cv8sc1 => cv8s_ + channels1,
-                .cv8sc2 => cv8s_ + channels2,
-                .cv8sc3 => cv8s_ + channels3,
-                .cv8sc4 => cv8s_ + channels4,
-
-                .cv16uc1 => cv16u_ + channels1,
-                .cv16uc2 => cv16u_ + channels2,
-                .cv16uc3 => cv16u_ + channels3,
-                .cv16uc4 => cv16u_ + channels4,
-
-                .cv16sc1 => cv16s_ + channels1,
-                .cv16sc2 => cv16s_ + channels2,
-                .cv16sc3 => cv16s_ + channels3,
-                .cv16sc4 => cv16s_ + channels4,
-
-                .cv32sc1 => cv32s_ + channels1,
-                .cv32sc2 => cv32s_ + channels2,
-                .cv32sc3 => cv32s_ + channels3,
-                .cv32sc4 => cv32s_ + channels4,
-
-                .cv32fc1 => cv32f_ + channels1,
-                .cv32fc2 => cv32f_ + channels2,
-                .cv32fc3 => cv32f_ + channels3,
-                .cv32fc4 => cv32f_ + channels4,
-
-                .cv64fc1 => cv64f_ + channels1,
-                .cv64fc2 => cv64f_ + channels2,
-                .cv64fc3 => cv64f_ + channels3,
-                .cv64fc4 => cv64f_ + channels4,
-            };
-        }
+        const channels1 = 0 << 3;
+        const channels2 = 1 << 3;
+        const channels3 = 2 << 3;
+        const channels4 = 3 << 3;
+        // MatTypeCV8U is a Mat of 8-bit unsigned int
+        const cv8u = 0;
+        // MatTypeCV8S is a Mat of 8-bit signed int
+        const cv8s = 1;
+        // MatTypeCV16U is a Mat of 16-bit unsigned int
+        const cv16u = 2;
+        // MatTypeCV16S is a Mat of 16-bit signed int
+        const cv16s = 3;
+        // MatTypeCV32S is a Mat of 32-bit signed int
+        const cv32s = 4;
+        // MatTypeCV32F is a Mat of 32-bit float
+        const cv32f = 5;
+        // MatTypeCV64F is a Mat of 64-bit float
+        const cv64f = 6;
     };
 
     pub const CompareType = enum(u3) {
@@ -281,11 +205,11 @@ pub const Mat = struct {
     }
 
     pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, mt.toInt()) };
+        return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
     }
 
     pub fn fromScalar(s: Scalar) Self {
-        return .{c.Mat_NewFromScalar(Scalar.fromC(s))};
+        return .{ .ptr = c.Mat_NewFromScalar(Scalar.fromC(s)) };
     }
 
     pub fn fromC(ptr: c.Mat) !Self {
@@ -296,13 +220,13 @@ pub const Mat = struct {
     }
 
     pub fn eye(rows_: c_int, cols_: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Eye(rows_, cols_, mt.toInt()) };
+        return .{ .ptr = c.Eye(rows_, cols_, @enumToInt(mt)) };
     }
     pub fn zeros(rows_: c_int, cols_: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Zeros(rows_, cols_, mt.toInt()) };
+        return .{ .ptr = c.Zeros(rows_, cols_, @enumToInt(mt)) };
     }
     pub fn ones(rows_: c_int, cols_: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Ones(rows_, cols_, mt.toInt()) };
+        return .{ .ptr = c.Ones(rows_, cols_, @enumToInt(mt)) };
     }
 
     pub fn deinit(self: *Self) void {
@@ -326,10 +250,10 @@ pub const Mat = struct {
     }
 
     pub fn converTo(self: Self, dst: *Mat, mt: MatType) void {
-        _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, mt.toInt());
+        _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @enumToInt(mt));
     }
     pub fn convertToWithParams(self: Self, dst: *Mat, mt: MatType, alpha: f32, beta: f32) void {
-        _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, mt.toInt(), alpha, beta);
+        _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
     pub fn cols(self: Self) i32 {
@@ -340,8 +264,8 @@ pub const Mat = struct {
         return c.Mat_Rows(self.ptr);
     }
 
-    pub fn channels(self: Self) MatChannel {
-        return @intToEnum(MatChannel, c.Mat_Channels(self.ptr));
+    pub fn channels(self: Self) i32 {
+        return c.Mat_Channels(self.ptr);
     }
 
     pub fn getType(self: Self) MatType {
@@ -361,10 +285,10 @@ pub const Mat = struct {
         return c.Mat_Total(self.ptr);
     }
 
-    pub fn size(self: Self) []i32 {
+    pub fn size(self: Self) []c_int {
         var return_v: c.IntVector = undefined;
         _ = c.Mat_Size(self.ptr, &return_v);
-        return return_v;
+        return std.mem.span(return_v.val);
     }
 
     // getAt returns a value from a specific row/col
@@ -711,12 +635,12 @@ pub const Mat = struct {
 
     pub fn dataPtr(self: Self, comptime T: type) ![]T {
         if (switch (T) {
-            u8 => @enumToInt(self.getType()) & MatType.cv8u.toInt() != MatType.cv8u.toInt(),
-            i8 => @enumToInt(self.getType()) & MatType.cv8s.toInt() != MatType.cv8s.toInt(),
-            u16 => @enumToInt(self.getType()) & MatType.cv16u.toInt() != MatType.cv16u.toInt(),
-            i16 => @enumToInt(self.getType()) & MatType.cv16s.toInt() != MatType.cv16s.toInt(),
-            f32 => @enumToInt(self.getType()) & MatType.cv32f.toInt() != MatType.cv32f.toInt(),
-            f64 => @enumToInt(self.getType()) & MatType.cv64f.toInt() != MatType.cv64f.toInt(),
+            u8 => @enumToInt(self.getType()) & MatType.cv8u != MatType.cv8u,
+            i8 => @enumToInt(self.getType()) & MatType.cv8s != MatType.cv8s,
+            u16 => @enumToInt(self.getType()) & MatType.cv16u != MatType.cv16u,
+            i16 => @enumToInt(self.getType()) & MatType.cv16s != MatType.cv16s,
+            f32 => @enumToInt(self.getType()) & MatType.cv32f != MatType.cv32f,
+            f64 => @enumToInt(self.getType()) & MatType.cv64f != MatType.cv64f,
             else => @compileError("Unsupported type"),
         }) {
             return error.RuntimeError;
@@ -1365,6 +1289,10 @@ pub const RNG = struct {
         return c.RNG_Next(self.ptr);
     }
 };
+
+test "core" {
+    _ = @import("core_test.zig");
+}
 
 //*    implementation done
 //     pub extern fn Mats_get(mats: struct_Mats, i: c_int) Mat;
