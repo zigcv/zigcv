@@ -5,15 +5,12 @@ on: push
 jobs:
   run_test:
     runs-on: ubuntu-latest
+    container: gocv/opencv:4.6.0
     steps:
       - name: checkout
         uses: actions/checkout@v2
         with: 
           submodules: true
-      - name: install opencv
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libopencv-dev
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
