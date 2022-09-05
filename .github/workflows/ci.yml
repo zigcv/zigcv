@@ -1,0 +1,16 @@
+name: ci
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup zig master
+        uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: master
+      - name: test
+        run: zig build test
