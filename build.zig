@@ -63,6 +63,8 @@ pub fn build(b: *std.build.Builder) void {
     }
 
     const exe_tests = b.addTest("src/main.zig");
+    zigcv.link(exe_tests);
+    zigcv.addAsPackage(exe_tests);
     exe_tests.setTarget(target);
     exe_tests.setBuildMode(mode);
 
