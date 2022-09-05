@@ -9,9 +9,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: install opencv
-        uses: Dovyski/setup-opencv-action@v1
-        with:
-          opencv-version: '4.6.0'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopencv-dev
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
