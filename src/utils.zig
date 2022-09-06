@@ -11,7 +11,7 @@ pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: c_int, co
     {
         var i: usize = 0;
         while (i < len) : (i += 1) {
-            arr.items[i] = to_type.fromC(from_array[i]);
+            try arr.append(to_type.fromC(from_array[i]));
         }
     }
     return arr;

@@ -285,10 +285,18 @@ pub const Mat = struct {
         return c.Mat_Total(self.ptr);
     }
 
-    pub fn size(self: Self) []c_int {
-        var return_v: c.IntVector = undefined;
-        _ = c.Mat_Size(self.ptr, &return_v);
-        return std.mem.span(return_v.val);
+    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
+        var v: c.IntVector = undefined;
+        _ = c.Mat_Size(self.ptr, &v);
+        const len = @intCast(usize, v.length);
+        var arr = try std.ArrayList(i32).initCapacity(allocator, len);
+        {
+            var i: usize = 0;
+            while (i < len) : (i += 1) {
+                try arr.append(v.val[i]);
+            }
+        }
+        return arr;
     }
 
     // getAt returns a value from a specific row/col
