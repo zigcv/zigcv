@@ -7,9 +7,7 @@ const Mat = core.Mat;
 test "mat" {
     var mat = Mat.init();
     defer mat.deinit();
-    try testing.expect(
-        mat.isEmpty(),
-    );
+    try testing.expectEqual(true, mat.isEmpty());
 }
 
 test "mat size" {
@@ -20,7 +18,7 @@ test "mat size" {
     defer mat_size.deinit();
     try testing.expectEqual(size, mat_size.items[0]);
     try testing.expectEqual(size, mat_size.items[1]);
-    try testing.expectEqual(@intCast(usize, 2), mat_size.capacity);
+    try testing.expectEqual(@intCast(usize, 2), mat_size.items.len);
 
     try testing.expectEqual(size, mat.rows());
     try testing.expectEqual(size, mat.cols());

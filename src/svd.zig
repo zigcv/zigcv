@@ -28,10 +28,10 @@ test "svd" {
     const result_vt = [4]f32{ 0.01964448, 0.999807, -0.999807, 0.01964448 };
 
     var src = Mat.initSize(2, 2, .cv32fc1);
-    src.set(0, 0, 3.76956568, f32);
-    src.set(0, 1, -0.90478725, f32);
-    src.set(1, 0, 0.634576, f32);
-    src.set(1, 1, 6.10002347, f32);
+    src.set(f32, 0, 0, 3.76956568);
+    src.set(f32, 0, 1, -0.90478725);
+    src.set(f32, 1, 0, 0.634576);
+    src.set(f32, 1, 1, 6.10002347);
 
     var w = Mat.init();
     defer w.deinit();

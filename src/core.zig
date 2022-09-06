@@ -261,16 +261,16 @@ pub const Mat = struct {
         _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
-    pub fn cols(self: Self) usize {
-        return @intCast(usize, c.Mat_Cols(self.ptr));
+    pub fn cols(self: Self) u31 {
+        return @intCast(u31, c.Mat_Cols(self.ptr));
     }
 
-    pub fn rows(self: Self) usize {
-        return @intCast(usize, c.Mat_Rows(self.ptr));
+    pub fn rows(self: Self) u31 {
+        return @intCast(u31, c.Mat_Rows(self.ptr));
     }
 
-    pub fn channels(self: Self) usize {
-        return @intCast(usize, c.Mat_Channels(self.ptr));
+    pub fn channels(self: Self) u31 {
+        return @intCast(u31, c.Mat_Channels(self.ptr));
     }
 
     pub fn getType(self: Self) MatType {
@@ -321,14 +321,16 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn at(self: Self, row: i32, col: i32, comptime T: type) T {
+    pub fn at(self: Self, comptime T: type, row: usize, col: usize) T {
+        const row_ = @intCast(u31, row);
+        const col_ = @intCast(u31, col);
         return switch (T) {
-            u8 => c.Mat_GetUChar(self.ptr, row, col),
-            i8 => c.Mat_GetSChar(self.ptr, row, col),
-            i16 => c.Mat_GetShort(self.ptr, row, col),
-            i32 => c.Mat_GetInt(self.ptr, row, col),
-            f32 => c.Mat_GetFloat(self.ptr, row, col),
-            f64 => c.Mat_GetDouble(self.ptr, row, col),
+            u8 => c.Mat_GetUChar(self.ptr, row_, col_),
+            i8 => c.Mat_GetSChar(self.ptr, row_, col_),
+            i16 => c.Mat_GetShort(self.ptr, row_, col_),
+            i32 => c.Mat_GetInt(self.ptr, row_, col_),
+            f32 => c.Mat_GetFloat(self.ptr, row_, col_),
+            f64 => c.Mat_GetDouble(self.ptr, row_, col_),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
@@ -340,14 +342,17 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn at3(self: Self, x: i32, y: i32, z: i32, comptime T: type) T {
+    pub fn at3(self: Self, comptime T: type, x: usize, y: usize, z: usize) T {
+        const x_ = @intCast(u31, x);
+        const y_ = @intCast(u31, y);
+        const z_ = @intCast(u31, z);
         return switch (T) {
-            u8 => c.Mat_GetUChar3(self.ptr, x, y, z),
-            i8 => c.Mat_GetSChar3(self.ptr, x, y, z),
-            i16 => c.Mat_GetShort3(self.ptr, x, y, z),
-            i32 => c.Mat_GetInt3(self.ptr, x, y, z),
-            f32 => c.Mat_GetFloat3(self.ptr, x, y, z),
-            f64 => c.Mat_GetDouble3(self.ptr, x, y, z),
+            u8 => c.Mat_GetUChar3(self.ptr, x_, y_, z_),
+            i8 => c.Mat_GetSChar3(self.ptr, x_, y_, z_),
+            i16 => c.Mat_GetShort3(self.ptr, x_, y_, z_),
+            i32 => c.Mat_GetInt3(self.ptr, x_, y_, z_),
+            f32 => c.Mat_GetFloat3(self.ptr, x_, y_, z_),
+            f64 => c.Mat_GetDouble3(self.ptr, x_, y_, z_),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
@@ -356,26 +361,31 @@ pub const Mat = struct {
         _ = c.Mat_SetTo(self.ptr, value.toC());
     }
 
-    pub fn set(self: *Self, row_: i32, col_: i32, val: anytype, comptime T: type) void {
+    pub fn set(self: *Self, comptime T: type, row: usize, col: usize, val: T) void {
+        const row_ = @intCast(u31, row);
+        const col_ = @intCast(u31, col);
         _ = switch (T) {
-            u8 => c.Mat_SetUChar(self.ptr, row_, col_, @intCast(T, val)),
-            i8 => c.Mat_SetSChar(self.ptr, row_, col_, @intCast(T, val)),
-            i16 => c.Mat_SetShort(self.ptr, row_, col_, @intCast(T, val)),
-            i32 => c.Mat_SetInt(self.ptr, row_, col_, @intCast(T, val)),
-            f32 => c.Mat_SetFloat(self.ptr, row_, col_, @floatCast(T, val)),
-            f64 => c.Mat_SetDouble(self.ptr, row_, col_, @floatCast(T, val)),
+            u8 => c.Mat_SetUChar(self.ptr, row_, col_, val),
+            i8 => c.Mat_SetSChar(self.ptr, row_, col_, val),
+            i16 => c.Mat_SetShort(self.ptr, row_, col_, val),
+            i32 => c.Mat_SetInt(self.ptr, row_, col_, val),
+            f32 => c.Mat_SetFloat(self.ptr, row_, col_, val),
+            f64 => c.Mat_SetDouble(self.ptr, row_, col_, val),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
 
-    pub fn set3(self: *Self, x: i32, y: i32, z: i32, val: anytype, comptime T: type) void {
+    pub fn set3(self: *Self, comptime T: type, x: usize, y: usize, z: usize, val: T) void {
+        const x_ = @intCast(u31, x);
+        const y_ = @intCast(u31, y);
+        const z_ = @intCast(u31, z);
         _ = switch (T) {
-            u8 => c.Mat_SetUChar3(self.ptr, x, y, z, @intCast(T, val)),
-            i8 => c.Mat_SetSChar3(self.ptr, x, y, z, @intCast(T, val)),
-            i16 => c.Mat_SetShort3(self.ptr, x, y, z, @intCast(T, val)),
-            i32 => c.Mat_SetInt3(self.ptr, x, y, z, @intCast(T, val)),
-            f32 => c.Mat_SetFloat3(self.ptr, x, y, z, @floatCast(T, val)),
-            f64 => c.Mat_SetDouble3(self.ptr, x, y, z, @floatCast(T, val)),
+            u8 => c.Mat_SetUChar3(self.ptr, x_, y_, z_, val),
+            i8 => c.Mat_SetSChar3(self.ptr, x_, y_, z_, val),
+            i16 => c.Mat_SetShort3(self.ptr, x_, y_, z_, val),
+            i32 => c.Mat_SetInt3(self.ptr, x_, y_, z_, val),
+            f32 => c.Mat_SetFloat3(self.ptr, x_, y_, z_, val),
+            f64 => c.Mat_SetDouble3(self.ptr, x_, y_, z_, val),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
@@ -427,7 +437,7 @@ pub const Mat = struct {
         return Scalar.fromC(c.Mat_MeanWithMask(self.ptr, mask.ptr));
     }
 
-    pub fn calcValueInplace(self: *Self, v: anytype, comptime op: OperationType) void {
+    pub fn calcValueInplace(self: *Self, comptime op: OperationType, v: anytype) void {
         const T = @TypeOf(v);
         return switch (T) {
             u8 => switch (op) {
@@ -447,22 +457,22 @@ pub const Mat = struct {
     }
 
     pub fn addValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .add);
+        return self.calcValueInplace(.add, v);
     }
 
     pub fn subtractValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .subtract);
+        return self.calcValueInplace(.subtract, v);
     }
 
     pub fn multiplyValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .multiply);
+        return self.calcValueInplace(.multiply, v);
     }
 
     pub fn divideValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .divide);
+        return self.calcValueInplace(.divide, v);
     }
 
-    pub fn calcMat(self: Self, m: Mat, dest: *Mat, op: OperationType) void {
+    pub fn calcMat(self: Self, op: OperationType, m: Mat, dest: *Mat) void {
         return switch (op) {
             .add => c.Mat_Add(self.ptr, m.ptr, dest.*.ptr),
             .subtract => c.Mat_Subtract(self.ptr, m.ptr, dest.*.ptr),
@@ -477,7 +487,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga10ac1bfb180e2cfda1701d06c24fdbd6
     //
     pub fn addMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .add);
+        return self.calcMat(.add, m, dest);
     }
 
     // Subtract calculates the per-element subtraction of two arrays or an array and a scalar.
@@ -486,7 +496,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gaa0f00d98b4b5edeaeb7b8333b2de353b
     //
     pub fn subtractMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .subtract);
+        return self.calcMat(.subtract, m, dest);
     }
 
     // Multiply calculates the per-element scaled product of two arrays.
@@ -496,7 +506,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga979d898a58d7f61c53003e162e7ad89f
     //
     pub fn multiplyMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .multiply);
+        return self.calcMat(.multiply, m, dest);
     }
 
     // Divide performs the per-element division
@@ -506,7 +516,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga6db555d30115642fedae0cda05604874
     //
     pub fn divideMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .divide);
+        return self.calcMat(.divide, m, dest);
     }
 
     // AbsDiff calculates the per-element absolute difference between two arrays
@@ -607,7 +617,7 @@ pub const Mat = struct {
         return self.bitwise(m, dest, .xor_);
     }
 
-    pub fn bitwiseWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat, comptime op: BitOperationType) void {
+    pub fn bitwiseWithMask(self: Self, comptime op: BitOperationType, m: Mat, dest: *Mat, mask: Mat) void {
         _ = switch (op) {
             .and_ => _ = c.Mat_BitwiseAndWithMask(self.ptr, m.ptr, dest.*.ptr, mask.ptr),
             .not_ => _ = c.Mat_BitwiseNotWithMask(self.ptr, dest.*.ptr, mask.ptr),
@@ -624,7 +634,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga60b4d04b251ba5eb1392c34425497e14
     //
     pub fn bitwiseAndWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(m, dest, mask, .and_);
+        return self.bitwiseWithMask(self, .and_, m, dest, mask);
     }
 
     // BitwiseNotWithMask inverts every bit of an array. It has an additional parameter for a mask.
@@ -632,8 +642,8 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga0002cf8b418479f4cb49a75442baee2f
     //
-    pub fn bitwiseNotWithMask(self: Self, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(self, dest, mask, .not_);
+    pub fn bitwiseNotWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
+        return self.bitwiseWithMask(self, .not_, m, dest, mask);
     }
 
     // BitwiseOrWithMask calculates the per-element bit-wise disjunction of two arrays
@@ -643,7 +653,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gab85523db362a4e26ff0c703793a719b4
     //
     pub fn bitwiseOrWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(m, dest, mask, .or_);
+        return self.bitwiseWithMask(self, .or_, m, dest, mask);
     }
 
     // BitwiseXorWithMask calculates the per-element bit-wise "exclusive or" operation
@@ -653,7 +663,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga84b2d8188ce506593dcc3f8cd00e8e2c
     //
     pub fn bitwiseXorWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(m, dest, mask, .xor_);
+        return self.bitwiseWithMask(self, .xor_, m, dest, mask);
     }
 
     pub fn dataPtr(self: Self, comptime T: type) ![]T {
@@ -684,8 +694,8 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a4eb96e3251417fa88b78e2abd6cfd7d8
     //
-    pub fn reshape(self: Self, cn: i32, rows_: i32) Self {
-        return .{ .ptr = c.Mat_Reshape(self.ptr, cn, rows_) };
+    pub fn reshape(self: Self, cn: i32, rows_: usize) Self {
+        return .{ .ptr = c.Mat_Reshape(self.ptr, @intCast(u31, cn), @intCast(c_int, rows_)) };
     }
 
     // Region returns a new Mat that points to a region of this Mat. Changes made to the
@@ -1224,12 +1234,12 @@ pub const RotatedRect = extern struct {
 };
 
 pub const Size = struct {
-    width: i32,
-    height: i32,
+    width: u32,
+    height: u32,
 
     const Self = @This();
 
-    pub fn init(width: i32, height: i32) Self {
+    pub fn init(width: u32, height: u32) Self {
         return .{
             .width = width,
             .height = height,
@@ -1238,15 +1248,15 @@ pub const Size = struct {
 
     pub fn fromC(r: c.Size) Self {
         return .{
-            .width = r.width,
-            .height = r.height,
+            .width = @intCast(u32, r.width),
+            .height = @intCast(u32, r.height),
         };
     }
 
     pub fn toC(self: Self) c.Size {
         return .{
-            .width = self.width,
-            .height = self.height,
+            .width = @intCast(c_int, self.width),
+            .height = @intCast(c_int, self.height),
         };
     }
 };
