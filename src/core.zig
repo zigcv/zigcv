@@ -249,6 +249,11 @@ pub const Mat = struct {
         return .{ .ptr = c.Mat_Clone(self.ptr) };
     }
 
+    // ConvertTo converts Mat into destination Mat.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#adf88c60c5b4980e05bb556080916978b
+    //
     pub fn converTo(self: Self, dst: *Mat, mt: MatType) void {
         _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @enumToInt(mt));
     }
@@ -256,16 +261,16 @@ pub const Mat = struct {
         _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
-    pub fn cols(self: Self) i32 {
-        return c.Mat_Cols(self.ptr);
+    pub fn cols(self: Self) usize {
+        return @intCast(usize, c.Mat_Cols(self.ptr));
     }
 
-    pub fn rows(self: Self) i32 {
-        return c.Mat_Rows(self.ptr);
+    pub fn rows(self: Self) usize {
+        return @intCast(usize, c.Mat_Rows(self.ptr));
     }
 
-    pub fn channels(self: Self) i32 {
-        return c.Mat_Channels(self.ptr);
+    pub fn channels(self: Self) usize {
+        return @intCast(usize, c.Mat_Channels(self.ptr));
     }
 
     pub fn getType(self: Self) MatType {
@@ -273,27 +278,37 @@ pub const Mat = struct {
         return @intToEnum(MatType, type_);
     }
 
-    pub fn step(self: Self) i32 {
-        return c.Mat_Step(self.ptr);
+    pub fn step(self: Self) usize {
+        return @intCast(usize, c.Mat_Step(self.ptr));
     }
 
-    pub fn elemSize(self: Self) c_int {
-        return c.Mat_ElemSize(self.ptr);
+    pub fn elemSize(self: Self) usize {
+        return @intCast(usize, c.Mat_ElemSize(self.ptr));
     }
 
+    // Total returns the total number of array elements.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa4d317d43fb0cba9c2503f3c61b866c8
+    //
     pub fn total(self: Self) i32 {
         return c.Mat_Total(self.ptr);
     }
 
-    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
+    // Size returns an array with one element for each dimension containing the size of that dimension for the Mat.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa4d317d43fb0cba9c2503f3c61b866c8
+    //
+    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(usize) {
         var v: c.IntVector = undefined;
         _ = c.Mat_Size(self.ptr, &v);
         const len = @intCast(usize, v.length);
-        var arr = try std.ArrayList(i32).initCapacity(allocator, len);
+        var arr = try std.ArrayList(usize).initCapacity(allocator, len);
         {
             var i: usize = 0;
             while (i < len) : (i += 1) {
-                try arr.append(v.val[i]);
+                try arr.append(@intCast(usize, v.val[i]));
             }
         }
         return arr;
@@ -341,7 +356,7 @@ pub const Mat = struct {
         _ = c.Mat_SetTo(self.ptr, value.toC());
     }
 
-    pub fn set(self: *Self, row_: c_int, col_: c_int, val: anytype, comptime T: type) void {
+    pub fn set(self: *Self, row_: i32, col_: i32, val: anytype, comptime T: type) void {
         _ = switch (T) {
             u8 => c.Mat_SetUChar(self.ptr, row_, col_, @intCast(T, val)),
             i8 => c.Mat_SetSChar(self.ptr, row_, col_, @intCast(T, val)),
@@ -353,7 +368,7 @@ pub const Mat = struct {
         };
     }
 
-    pub fn set3(self: *Self, x: c_int, y: c_int, z: c_int, val: anytype, comptime T: type) void {
+    pub fn set3(self: *Self, x: i32, y: i32, z: i32, val: anytype, comptime T: type) void {
         _ = switch (T) {
             u8 => c.Mat_SetUChar3(self.ptr, x, y, z, @intCast(T, val)),
             i8 => c.Mat_SetSChar3(self.ptr, x, y, z, @intCast(T, val)),
@@ -669,7 +684,7 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a4eb96e3251417fa88b78e2abd6cfd7d8
     //
-    pub fn reshape(self: Self, cn: c_int, rows_: c_int) Self {
+    pub fn reshape(self: Self, cn: i32, rows_: i32) Self {
         return .{ .ptr = c.Mat_Reshape(self.ptr, cn, rows_) };
     }
 
@@ -784,7 +799,7 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gac2f5e953016fabcdf793d762f4ec5dce
     //
-    pub fn solvePoly(self: Self, roots: *Mat, max_iters: c_int) bool {
+    pub fn solvePoly(self: Self, roots: *Mat, max_iters: i32) bool {
         return c.Mat_SolvePoly(self.ptr, roots.*.ptr, max_iters);
     }
 
@@ -819,12 +834,12 @@ pub const Mat = struct {
 pub const Mats = std.ArrayList(Mat);
 
 pub const Point = struct {
-    x: c_int,
-    y: c_int,
+    x: i32,
+    y: i32,
 
     const Self = @This();
 
-    pub fn int(x: c_int, y: c_int) Self {
+    pub fn int(x: i32, y: i32) Self {
         return .{ .x = x, .y = y };
     }
 
@@ -921,11 +936,11 @@ pub const PointVector = struct {
         }
     }
 
-    pub fn at(self: Self, idx: c_int) Point {
+    pub fn at(self: Self, idx: i32) Point {
         return c.PointVector_At(self.ptr, idx);
     }
 
-    pub fn size(self: Self) c_int {
+    pub fn size(self: Self) i32 {
         return c.PointVector_Size(self.ptr);
     }
 
@@ -987,11 +1002,11 @@ pub const Point2fVector = struct {
         }
     }
 
-    pub fn at(self: Self, idx: c_int) Point {
+    pub fn at(self: Self, idx: i32) Point {
         return c.Point2fVector_At(self.ptr, idx);
     }
 
-    pub fn size(self: Self) c_int {
+    pub fn size(self: Self) i32 {
         return c.Point2fVector_Size(self.ptr);
     }
 
@@ -1055,8 +1070,8 @@ pub const KeyPoint = struct {
     size: f64,
     angle: f64,
     response: f64,
-    octave: c_int,
-    class_id: c_int,
+    octave: i32,
+    class_id: i32,
 
     const Self = @This();
 
@@ -1066,8 +1081,8 @@ pub const KeyPoint = struct {
         size: f64,
         angle: f64,
         response: f64,
-        octave: c_int,
-        class_id: c_int,
+        octave: i32,
+        class_id: i32,
     ) Self {
         return .{
             .x = x,
@@ -1112,18 +1127,18 @@ pub const KeyPoint = struct {
 pub const KeyPoints = std.ArrayList(KeyPoint);
 
 pub const Rect = struct {
-    x: c_int,
-    y: c_int,
-    width: c_int,
-    height: c_int,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
 
     const Self = @This();
 
     pub fn init(
-        x: c_int,
-        y: c_int,
-        width: c_int,
-        height: c_int,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
     ) Self {
         return .{
             .x = x,
@@ -1209,12 +1224,12 @@ pub const RotatedRect = extern struct {
 };
 
 pub const Size = struct {
-    width: c_int,
-    height: c_int,
+    width: i32,
+    height: i32,
 
     const Self = @This();
 
-    pub fn init(width: c_int, height: c_int) Self {
+    pub fn init(width: i32, height: i32) Self {
         return .{
             .width = width,
             .height = height,
@@ -1263,7 +1278,7 @@ pub const RNG = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga757e657c037410d9e19e819569e7de0f
     //
-    pub fn setRNGSeed(self: Self, seed: c_int) void {
+    pub fn setRNGSeed(self: Self, seed: i32) void {
         _ = self;
         c.SetRNGSeed(seed);
     }
@@ -1273,7 +1288,7 @@ pub const RNG = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d1/dd6/classcv_1_1RNG.html#ad26f2b09d9868cf108e84c9814aa682d
     //
-    pub fn fill(self: *Self, mat: *Mat, dist_type: c_int, a: f64, b: f64, saturate_range: bool) void {
+    pub fn fill(self: *Self, mat: *Mat, dist_type: i32, a: f64, b: f64, saturate_range: bool) void {
         _ = c.RNG_Fill(self.ptr, mat.*.ptr, dist_type, a, b, saturate_range);
     }
 

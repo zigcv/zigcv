@@ -227,6 +227,17 @@ pub const DistanceType = enum(u3) {
     huber = 7,
 };
 
+pub const DistanceTransformLabelType = enum(u1) {
+    c_comp = 0,
+    pixel = 1,
+};
+
+pub const DistanceTransformMask = enum(u1) {
+    mask_3 = 3,
+    mask_5 = 5,
+    mask_precise = 0,
+};
+
 pub const ThresholdType = enum(u5) {
     // ThresholdBinary threshold type
     binary = 0,
@@ -322,7 +333,7 @@ pub fn approxPolyDP(curve: PointVector, epsilon: f64, closed: bool) PointVector 
     return .{ .ptr = c.ApproxPolyDP(curve.toC(), epsilon, closed) };
 }
 
-pub fn cvtColor(src: Mat, dst: *Mat, code: c_int) void {
+pub fn cvtColor(src: Mat, dst: *Mat, code: i32) void {
     c.cvtColor(src.ptr, dst.*.ptr, code);
 }
 
@@ -333,7 +344,7 @@ pub fn equalizeHist(src: Mat, dst: *Mat) void {
 // pub fn calcHist(mats: struct_Mats, chans: IntVector, mask: Mat, hist: Mat, sz: IntVector, rng: FloatVector, acc: bool) void;
 // pub fn calcBackProject(mats: struct_Mats, chans: IntVector, hist: Mat, backProject: Mat, rng: FloatVector, uniform: bool) void;
 
-pub fn compareHist(hist1: Mat, hist2: Mat, method: c_int) f64 {
+pub fn compareHist(hist1: Mat, hist2: Mat, method: i32) f64 {
     return c.CompareHist(hist1.ptr, hist2.ptr, method);
 }
 
@@ -345,7 +356,7 @@ pub fn convexityDefects(points: PointVector, hull: Mat, result: *Mat) void {
     _ = c.ConvexityDefects(points.toC(), hull.ptr, result.*.ptr);
 }
 
-pub fn bilateralFilter(src: Mat, dst: *Mat, d: c_int, sc: f64, ss: f64) void {
+pub fn bilateralFilter(src: Mat, dst: *Mat, d: i32, sc: f64, ss: f64) void {
     _ = c.BilateralFilter(src.ptr, dst.*.ptr, d, sc, ss);
 }
 
@@ -353,11 +364,11 @@ pub fn blur(src: Mat, dst: *Mat, ps: Size) void {
     _ = c.Blur(src.ptr, dst.*.ptr, ps.toC());
 }
 
-pub fn boxFilter(src: Mat, dst: *Mat, ddepth: c_int, ps: Size) void {
+pub fn boxFilter(src: Mat, dst: *Mat, ddepth: i32, ps: Size) void {
     _ = c.BoxFilter(src.ptr, dst.*.ptr, ddepth, ps.toC());
 }
 
-pub fn sqBoxFilter(src: Mat, dst: *Mat, ddepth: c_int, ps: Size) void {
+pub fn sqBoxFilter(src: Mat, dst: *Mat, ddepth: i32, ps: Size) void {
     _ = c.SqBoxFilter(src.ptr, dst.*.ptr, ddepth, ps);
 }
 
@@ -365,31 +376,31 @@ pub fn dilate(src: Mat, dst: *Mat, kernel: Mat) void {
     _ = c.Dilate(src.ptr, dst.*.ptr, kernel.ptr);
 }
 
-pub fn dilateWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: c_int, border_type: c_int, border_value: Scalar) void {
-    _ = c.DilateWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), iterations, border_type, border_value);
+pub fn dilateWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: BorderType, border_type: BorderType, border_value: Color) void {
+    _ = c.DilateWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), @enumToInt(iterations), @enumToInt(border_type), border_value.toScalar.toC());
 }
 
-pub fn distanceTransform(src: Mat, dst: *Mat, labels: Mat, distanceType: c_int, maskSize: c_int, labelType: c_int) void {
-    _ = c.DistanceTransform(src.ptr, dst.*.ptr, labels.ptr, distanceType, maskSize, labelType);
+pub fn distanceTransform(src: Mat, dst: *Mat, labels: Mat, distance_type: DistanceType, mask_size: DistanceTransformMask, label_type: DistanceTransformLabelType) void {
+    _ = c.DistanceTransform(src.ptr, dst.*.ptr, labels.ptr, @enumToInt(distance_type), @enumToInt(mask_size), @enumToInt(label_type));
 }
 pub fn erode(src: Mat, dst: *Mat, kernel: Mat) void {
     _ = c.Erode(src.ptr, dst.*.ptr, kernel.ptr);
 }
 
-pub fn erodeWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: c_int, borderType: c_int) void {
-    _ = c.ErodeWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), iterations, borderType);
+pub fn erodeWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: i32, border_type: i32) void {
+    _ = c.ErodeWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), iterations, border_type);
 }
 
-pub fn matchTemplate(image: Mat, templ: Mat, result: *Mat, method: c_int, mask: Mat) void {
+pub fn matchTemplate(image: Mat, templ: Mat, result: *Mat, method: i32, mask: Mat) void {
     _ = c.MatchTemplate(image.ptr, templ.ptr, result.*.ptr, method, mask.ptr);
 }
 
-pub fn pyrDown(src: Mat, dst: *Mat, dstsize: Size, borderType: c_int) void {
-    _ = c.PyrDown(src.ptr, dst.*.ptr, dstsize.toC(), borderType);
+pub fn pyrDown(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
+    _ = c.PyrDown(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
 }
 
-pub fn pyrUp(src: Mat, dst: *Mat, dstsize: Size, borderType: c_int) void {
-    _ = c.PyrUp(src.ptr, dst.*.ptr, dstsize.toC(), borderType);
+pub fn pyrUp(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
+    _ = c.PyrUp(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
 }
 
 pub fn boundingRect(pts: PointVector) Rect {
@@ -410,8 +421,8 @@ pub fn fitEllipse(pts: PointVector) RotatedRect {
     return RotatedRect.fromC(c.FitEllipse(pts.toC()));
 }
 
-pub fn pointPolygonTest(pts: PointVector, pt: Point, measureDist: bool) f64 {
-    return c.PointPolygonTest(pts.toC(), pt.toC(), measureDist);
+pub fn pointPolygonTest(pts: PointVector, pt: Point, measure_dist: bool) f64 {
+    return c.PointPolygonTest(pts.toC(), pt.toC(), measure_dist);
 }
 
 // // ConnectedComponents computes the connected components labeled image of boolean image.
@@ -419,7 +430,7 @@ pub fn pointPolygonTest(pts: PointVector, pt: Point, measureDist: bool) f64 {
 // // For further details, please see:
 // // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
 // //
-pub fn connectedComponents(src: Mat, labels: *Mat) c_int {
+pub fn connectedComponents(src: Mat, labels: *Mat) i32 {
     return c.ConnectedComponents(
         src.ptr,
         labels.*.ptr,
@@ -434,7 +445,7 @@ pub fn connectedComponents(src: Mat, labels: *Mat) c_int {
 // For further details, please see:
 // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
 //
-pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: c_int, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) c_int {
+pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) i32 {
     return c.ConnectedComponents(src.ptr, labels.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
@@ -444,7 +455,7 @@ pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: c_int
 // For further details, please see:
 // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
 //
-pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: c_int, ltype: MatType, ccltype: ConnectedComponentsTypes) c_int {
+pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsTypes) i32 {
     return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
@@ -463,11 +474,11 @@ pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, b
 //
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
-pub fn getGaussianKernel(ksize: c_int, sigma: f64) !Mat {
+pub fn getGaussianKernel(ksize: i32, sigma: f64) !Mat {
     return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.cv64fc1)));
 }
 
-pub fn getGaussianKernelWithParams(ksize: c_int, sigma: f64, ktype: MatType) !Mat {
+pub fn getGaussianKernelWithParams(ksize: i32, sigma: f64, ktype: MatType) !Mat {
     return try Mat.fromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(ktype)));
 }
 
@@ -476,7 +487,7 @@ pub fn getGaussianKernelWithParams(ksize: c_int, sigma: f64, ktype: MatType) !Ma
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gad78703e4c8fe703d479c1860d76429e6
 //
-pub fn laplacian(src: Mat, dst: *Mat, d_depth: c_int, k_size: c_int, scale: f64, delta: f64, border_type: BorderType) void {
+pub fn laplacian(src: Mat, dst: *Mat, d_depth: i32, k_size: i32, scale: f64, delta: f64, border_type: BorderType) void {
     _ = c.Laplacian(src.ptr, dst.*.ptr, d_depth, k_size, scale, delta, @enumToInt(border_type));
 }
 
@@ -485,26 +496,26 @@ pub fn laplacian(src: Mat, dst: *Mat, d_depth: c_int, k_size: c_int, scale: f64,
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaa13106761eedf14798f37aa2d60404c9
 //
-pub fn scharr(src: Mat, dst: *Mat, d_depth: c_int, dx: c_int, dy: c_int, scale: f64, delta: f64, border_type: BorderType) void {
+pub fn scharr(src: Mat, dst: *Mat, d_depth: i32, dx: i32, dy: i32, scale: f64, delta: f64, border_type: BorderType) void {
     _ = c.Scharr(src.ptr, dst.*.ptr, d_depth, dx, dy, scale, delta, @enumToInt(border_type));
 }
 
-pub fn getStructuringElement(shape: c_int, ksize: Size) !Mat {
+pub fn getStructuringElement(shape: i32, ksize: Size) !Mat {
     return try Mat.fromC(c.GetStructuringElement(shape, ksize.toC()));
 }
 pub fn morphologyDefaultBorderValue() Scalar {
     return Scalar.fromC(c.MorphologyDefaultBorderValue());
 }
 
-pub fn morphologyEx(src: Mat, dst: *Mat, op: c_int, kernel: Mat) void {
+pub fn morphologyEx(src: Mat, dst: *Mat, op: i32, kernel: Mat) void {
     _ = c.MorphologyEx(src.ptr, dst.*.ptr, op, kernel.ptr);
 }
 
-pub fn morphologyExWithParams(src: Mat, dst: *Mat, op: c_int, kernel: Mat, pt: Point, iterations: c_int, border_type: BorderType) void {
+pub fn morphologyExWithParams(src: Mat, dst: *Mat, op: i32, kernel: Mat, pt: Point, iterations: i32, border_type: BorderType) void {
     _ = c.MorphologyExWithParams(src.ptr, dst.*.ptr, op, kernel.ptr, pt.toC(), iterations, @enumToInt(border_type));
 }
 
-pub fn medianBlur(src: Mat, dst: *Mat, ksize: c_int) void {
+pub fn medianBlur(src: Mat, dst: *Mat, ksize: i32) void {
     _ = c.MedianBlur(src.ptr, dst.*.ptr, ksize);
 }
 
@@ -515,11 +526,11 @@ pub fn canny(src: Mat, edges: *Mat, t1: f64, t2: f64) void {
 pub fn cornerSubPix(img: Mat, corners: *Mat, winSize: Size, zeroZone: Size, criteria: TermCriteria) void {
     _ = c.CornerSubPix(img.ptr, corners.*.ptr, winSize.toC(), zeroZone.toC(), @enumToInt(criteria));
 }
-pub fn goodFeaturesToTrack(img: Mat, corners: Mat, maxCorners: c_int, quality: f64, minDist: f64) void {
+pub fn goodFeaturesToTrack(img: Mat, corners: Mat, maxCorners: i32, quality: f64, minDist: f64) void {
     _ = c.GoodFeaturesToTrack(img.ptr, corners.*.ptr, maxCorners, quality, minDist);
 }
 
-pub fn grabCut(img: Mat, mask: Mat, rect: Rect, bgd_model: *Mat, fgd_model: *Mat, iter_count: c_int, mode: GrabCutMode) void {
+pub fn grabCut(img: Mat, mask: Mat, rect: Rect, bgd_model: *Mat, fgd_model: *Mat, iter_count: i32, mode: GrabCutMode) void {
     _ = c.GrabCut(img.ptr, mask.*.ptr, rect.toC(), bgd_model.*.ptr, fgd_model.*.ptr, iter_count, @enumToInt(mode));
 }
 
@@ -527,15 +538,15 @@ pub fn houghCircles(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dis
     _ = c.HoughCircles(src.ptr, circles.*.ptr, @enumToInt(method), dp, min_dist);
 }
 
-pub fn houghCirclesWithParams(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dist: f64, param1: f64, param2: f64, min_radius: c_int, max_radius: c_int) void {
+pub fn houghCirclesWithParams(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dist: f64, param1: f64, param2: f64, min_radius: i32, max_radius: i32) void {
     _ = c.HoughCirclesWithParams(src.ptr, circles.*.ptr, @enumToInt(method), dp, min_dist, param1, param2, min_radius, max_radius);
 }
 
-pub fn houghLines(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: c_int) void {
+pub fn houghLines(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: i32) void {
     _ = c.HoughLines(src.ptr, lines.*.ptr, rho, theta, threshold_int);
 }
 
-pub fn houghLinesP(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: c_int) void {
+pub fn houghLinesP(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: i32) void {
     _ = c.HoughLinesP(src.ptr, lines.*.ptr, rho, theta, threshold_int);
 }
 
@@ -547,11 +558,11 @@ pub fn integral(src: Mat, sum: *Mat, sqsum: Mat, tilted: Mat) void {
     _ = c.Integral(src.ptr, sum.*.ptr, sqsum.ptr, tilted.ptr);
 }
 
-pub fn threshold(src: Mat, dst: *Mat, thresh: f64, maxvalue: f64, typ: c_int) f64 {
+pub fn threshold(src: Mat, dst: *Mat, thresh: f64, maxvalue: f64, typ: i32) f64 {
     return c.Threshold(src.ptr, dst.*.ptr, thresh, maxvalue, typ);
 }
 
-pub fn adaptiveThreshold(src: Mat, dst: *Mat, max_value: f64, adaptive_type: AdaptiveThresholdType, type_: ThresholdType, block_size: c_int, C: f64) void {
+pub fn adaptiveThreshold(src: Mat, dst: *Mat, max_value: f64, adaptive_type: AdaptiveThresholdType, type_: ThresholdType, block_size: i32, C: f64) void {
     _ = c.AdaptiveThreshold(src.ptr, dst.*.ptr, max_value, @enumToInt(adaptive_type), @enumToInt(type_), block_size, C);
 }
 // ArrowedLine draws a arrow segment pointing from the first point
@@ -560,15 +571,15 @@ pub fn adaptiveThreshold(src: Mat, dst: *Mat, max_value: f64, adaptive_type: Ada
 // For further details, please see:
 // https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga0a165a3ca093fd488ac709fdf10c05b2
 //
-pub fn arrowedLine(img: *Mat, pt1: Point, pt2: Point, color: Color, thickness: c_int) void {
+pub fn arrowedLine(img: *Mat, pt1: Point, pt2: Point, color: Color, thickness: i32) void {
     _ = c.ArrowedLine(img.*.ptr, pt1.toC(), pt2.toC(), color.toScalar().toC(), thickness);
 }
 
-pub fn circle(img: *Mat, center: Point, radius: c_int, color: Color, thickness: c_int) void {
+pub fn circle(img: *Mat, center: Point, radius: i32, color: Color, thickness: i32) void {
     _ = c.Circle(img.*.ptr, center.toC(), radius, color.toScalar().toC(), thickness);
 }
 
-pub fn circleWithParams(img: *Mat, center: Point, radius: c_int, color: Color, thickness: c_int, line_type: LineType, shift: c_int) void {
+pub fn circleWithParams(img: *Mat, center: Point, radius: i32, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
     _ = c.CircleWithParams(img.*.ptr, center.toC(), radius, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
@@ -577,23 +588,23 @@ pub fn circleWithParams(img: *Mat, center: Point, radius: c_int, color: Color, t
 // For further details, please see:
 // https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga28b2267d35786f5f890ca167236cbc69
 //
-pub fn ellipse(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: c_int) void {
+pub fn ellipse(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: i32) void {
     _ = c.Ellipse(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness);
 }
 
-pub fn ellipseWithParams(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: c_int, line_type: LineType, shift: c_int) void {
+pub fn ellipseWithParams(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
     _ = c.EllipseWithParams(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
-pub fn line(img: Mat, pt1: Point, pt2: Point, color: Color, thickness: c_int) void {
+pub fn line(img: Mat, pt1: Point, pt2: Point, color: Color, thickness: i32) void {
     _ = c.Line(img.ptr, pt1.toC(), pt2.toC(), color.toScalar().toC(), thickness);
 }
 
-pub fn rectangle(img: *Mat, rect: Rect, color: Color, thickness: c_int) void {
+pub fn rectangle(img: *Mat, rect: Rect, color: Color, thickness: i32) void {
     _ = c.Rectangle(img.*.ptr, rect.toC(), color.toScalar().toC(), thickness);
 }
 
-pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: c_int, line_type: LineType, shift: c_int) void {
+pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
     _ = c.RectangleWithParams(img.*.ptr, rect.toC(), color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
@@ -608,7 +619,7 @@ pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: c_int
 // For further details, please see:
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
 //
-pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: c_int) Size {
+pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
     return Size.fromC(c.GetTextSize(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness));
 }
 
@@ -619,7 +630,7 @@ pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, th
 // For further details, please see:
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
 //
-pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: c_int) Size {
+pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
     const baseline = 0;
     return Size.fromC(c.GetTextSizeWithBaseline(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness, &baseline));
 }
@@ -632,7 +643,7 @@ pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_sc
 // For further details, please see:
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
-pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: c_int) void {
+pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32) void {
     _ = c.PutText(img.*.ptr, utils.castZigU8ToC(text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness);
 }
 
@@ -644,7 +655,7 @@ pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, 
 // For further details, please see:
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
-pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: c_int, line_type: LineType, bottom_left_origin: bool) void {
+pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32, line_type: LineType, bottom_left_origin: bool) void {
     _ = c.PutTextWithParams(img.*.ptr, utils.castZigU8ToC(text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), @boolToInt(bottom_left_origin));
 }
 
@@ -681,7 +692,7 @@ pub fn warpPerspective(src: Mat, dst: *Mat, m: Mat, dsize: Size) void {
     _ = c.WarpPerspective(src.ptr, dst.*.ptr, m.ptr, dsize.toC());
 }
 
-pub fn warpPerspectiveWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flags: c_int, border_mode: BorderType, border_value: Color) void {
+pub fn warpPerspectiveWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flags: i32, border_mode: BorderType, border_value: Color) void {
     _ = c.WarpPerspectiveWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), flags, @enumToInt(border_mode), border_value.toScalar().toC());
 }
 
@@ -746,7 +757,7 @@ pub fn getAffineTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
 // For further details, please see:
 // https://docs.opencv.org/master/d9/d0c/group__calib3d.html#ga4abc2ece9fab9398f2e560d53c8c9780
 //
-pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_reproj_threshold: f64, mask: *Mat, max_iters: c_int, confidence: f64) !Mat {
+pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_reproj_threshold: f64, mask: *Mat, max_iters: i32, confidence: f64) !Mat {
     return try Mat.fromC(c.FindHomography(src.ptr, dst.*.ptr, @enumToInt(method), ransac_reproj_threshold, mask.*.ptr, max_iters, confidence));
 }
 
@@ -758,7 +769,7 @@ pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_repr
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gacea54f142e81b6758cb6f375ce782c8d
 //
-pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: c_int, dy: c_int, ksize: c_int, scale: f64, delta: f64, border_type: BorderType) void {
+pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: i32, dy: i32, ksize: i32, scale: f64, delta: f64, border_type: BorderType) void {
     _ = c.Sobel(src.ptr, dst.*.ptr, @enumToInt(ddepth), dx, dy, ksize, scale, delta, @enumToInt(border_type));
 }
 
@@ -767,7 +778,7 @@ pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: c_int, dy: c_int, ksize: 
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga405d03b20c782b65a4daf54d233239a2
 //
-pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: c_int, border_type: BorderType) void {
+pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: i32, border_type: BorderType) void {
     _ = c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, ksize, @enumToInt(border_type));
 }
 
@@ -783,7 +794,7 @@ pub fn remap(src: Mat, dst: Mat, map1: Mat, map2: *Mat, interpolation: Interpola
 //
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga27c049795ce870216ddfb366086b5a04
-pub fn filter2D(src: Mat, dst: *Mat, ddepth: c_int, kernel: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
+pub fn filter2D(src: Mat, dst: *Mat, ddepth: i32, kernel: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
     _ = c.Filter2D(src.ptr, dst.*.ptr, ddepth, kernel.ptr, anchor.toC(), delta, @enumToInt(border_type));
 }
 
@@ -791,7 +802,7 @@ pub fn filter2D(src: Mat, dst: *Mat, ddepth: c_int, kernel: Mat, anchor: Point, 
 //
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga910e29ff7d7b105057d1625a4bf6318d
-pub fn sepFilter2D(src: Mat, dst: *Mat, ddepth: c_int, kernel_x: Mat, kernel_y: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
+pub fn sepFilter2D(src: Mat, dst: *Mat, ddepth: i32, kernel_x: Mat, kernel_y: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
     _ = c.SepFilter2D(src.ptr, dst.*.ptr, ddepth, kernel_x.ptr, kernel_y.ptr, anchor.toC(), delta, @enumToInt(border_type));
 }
 

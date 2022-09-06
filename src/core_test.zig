@@ -13,7 +13,7 @@ test "mat" {
 }
 
 test "mat size" {
-    const size: c_int = 10;
+    const size: usize = 10;
     var mat = Mat.initSize(10, 10, .cv8uc1);
     defer mat.deinit();
     const mat_size = try mat.size(allocator);
@@ -30,7 +30,7 @@ test "mat channnel" {
     var mat = Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
-    try testing.expectEqual(@intCast(i32, 1), mat.channels());
+    try testing.expectEqual(@intCast(usize, 1), mat.channels());
 }
 
 test "mat type" {

@@ -14,7 +14,6 @@ test "show version" {
     const parseFloat = std.fmt.parseFloat;
 
     const version = openCVVersion();
-    std.debug.print("\nversion:\t{s}\n", .{version});
 
     const actual_version = (std.ChildProcess.exec(.{
         .allocator = allocator,

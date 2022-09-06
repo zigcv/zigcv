@@ -157,13 +157,13 @@ pub fn imWrite(filename: []const u8, img: Mat) !void {
 // https://docs.opencv.org/4.6.0/d8/d6a/group__imgcodecs__flags.html
 //
 pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) !void {
-    comptime var int_params: [params.len * 2]c_int = undefined;
+    comptime var int_params: [params.len * 2]i32 = undefined;
     for (params) |p, i| {
         int_params[2 * i] = @enumToInt(p.f);
         int_params[2 * i + 1] = @enumToInt(p.v);
     }
     comptime var c_params = c.IntVector{
-        .val = @ptrCast([*]c_int, int_params),
+        .val = @ptrCast([*]i32, int_params),
         .length = params.len,
     };
     const result = c.Image_IMWrite_WithParams(castToC(filename), img.ptr, c_params);
@@ -195,7 +195,7 @@ pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 //
-pub fn imEncode(file_ext: FileExt, img: Mat) ![]c_int {
+pub fn imEncode(file_ext: FileExt, img: Mat) ![]i32 {
     var c_vector = c.IntVector{};
     c.Image_IMEncode(file_ext.toString(), img.ptr, &c_vector);
     return std.mem.span(c_vector.val)[0..c_vector.length];
@@ -211,14 +211,14 @@ pub fn imEncode(file_ext: FileExt, img: Mat) ![]c_int {
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 //
-pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) []c_int {
-    comptime var int_params: [params.len * 2]c_int = undefined;
+pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) []i32 {
+    comptime var int_params: [params.len * 2]i32 = undefined;
     for (params) |p, i| {
         int_params[2 * i] = @enumToInt(p.f);
         int_params[2 * i + 1] = @enumToInt(p.v);
     }
     comptime var c_params = c.IntVector{
-        .val = @ptrCast([*]c_int, int_params),
+        .val = @ptrCast([*]i32, int_params),
         .length = params.len,
     };
     var c_vector = c.IntVector;
