@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
@@ -56,7 +57,7 @@ pub const IMReadFlag = enum(i9) {
     ignore_orientation = 128,
 };
 
-pub const IMWriteFlag = enum(u32) {
+pub const IMWriteFlag = enum(u9) {
     //IMWriteJpegQuality is the quality from 0 to 100 for JPEG (the higher is the better). Default value is 95.
     jpeg_quality = 1,
 
@@ -117,12 +118,14 @@ pub const FileExt = enum(u2) {
 
     pub fn toString(fe: @This()) []const u8 {
         return switch (fe) {
-            .png => "png",
-            .jpg => "jpg",
-            .gif => "gif",
+            .png => ".png",
+            .jpg => ".jpg",
+            .gif => ".gif",
         };
     }
 };
+
+const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
 
 // IMRead reads an image from a file into a Mat.
 // The flags param is one of the IMReadFlag flags.
@@ -156,15 +159,18 @@ pub fn imWrite(filename: []const u8, img: Mat) !void {
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#gabbc7ef1aa2edfaa87772f1202d67e0ce
 // https://docs.opencv.org/4.6.0/d8/d6a/group__imgcodecs__flags.html
 //
-pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) !void {
-    comptime var int_params: [params.len * 2]i32 = undefined;
-    for (params) |p, i| {
-        int_params[2 * i] = @enumToInt(p.f);
-        int_params[2 * i + 1] = @enumToInt(p.v);
-    }
-    comptime var c_params = c.IntVector{
-        .val = @ptrCast([*]i32, int_params),
-        .length = params.len,
+pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []const IMWriteParam) !void {
+    const c_params = comptime blk: {
+        const len = params.len * 2;
+        var pa: [len]i32 = undefined;
+        inline for (params) |p, i| {
+            pa[2 * i] = @enumToInt(p.f);
+            pa[2 * i + 1] = p.v;
+        }
+        break :blk c.IntVector{
+            .val = @ptrCast([*]i32, &pa),
+            .length = len,
+        };
     };
     const result = c.Image_IMWrite_WithParams(castToC(filename), img.ptr, c_params);
     if (!result) {
@@ -181,9 +187,12 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
 // https://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga26a67788faa58ade337f8d28ba0eb19e
 //
 pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
-    var data = c.ByteArray{
-        .val = @ptrCast([*]u8, buf),
-        .length = buf.len,
+    if (buf.len == 0) {
+        return Mat.init();
+    }
+    const data = c.ByteArray{
+        .data = @ptrCast([*]u8, buf),
+        .length = @intCast(i32, buf.len),
     };
     return try Mat.fromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
@@ -195,10 +204,22 @@ pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 //
-pub fn imEncode(file_ext: FileExt, img: Mat) ![]i32 {
-    var c_vector = c.IntVector{};
-    c.Image_IMEncode(file_ext.toString(), img.ptr, &c_vector);
-    return std.mem.span(c_vector.val)[0..c_vector.length];
+pub fn imEncode(allocator: std.mem.Allocator, file_ext: FileExt, img: Mat) !std.ArrayList(u8) {
+    var c_vector: struct { std_vector_opaq: [3]usize } = undefined;
+    var cvp = &(c_vector.std_vector_opaq[0]);
+    c.StdByteVectorInitialize(cvp);
+    defer c.StdByteVectorFree(cvp);
+    c.Image_IMEncode(castToC(file_ext.toString()), img.ptr, cvp);
+    const data = c.StdByteVectorData(cvp);
+    const len = c.StdByteVectorLen(cvp);
+    var buf = try std.ArrayList(u8).initCapacity(allocator, len);
+    {
+        var i: usize = 0;
+        while (i < len) : (i += 1) {
+            try buf.append(data[i]);
+        }
+    }
+    return buf;
 }
 
 // IMEncodeWithParams encodes an image Mat into a memory buffer.
@@ -211,19 +232,110 @@ pub fn imEncode(file_ext: FileExt, img: Mat) ![]i32 {
 // For further details, please see:
 // http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 //
-pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const struct { f: IMWriteFlag, v: i32 }) []i32 {
-    comptime var int_params: [params.len * 2]i32 = undefined;
-    for (params) |p, i| {
-        int_params[2 * i] = @enumToInt(p.f);
-        int_params[2 * i + 1] = @enumToInt(p.v);
-    }
-    comptime var c_params = c.IntVector{
-        .val = @ptrCast([*]i32, int_params),
-        .length = params.len,
+
+pub fn imEncodeWithParams(allocator: std.mem.Allocator, file_ext: FileExt, img: Mat, comptime params: []const IMWriteParam) !std.ArrayList(u8) {
+    const c_params = comptime blk: {
+        const len = params.len * 2;
+        var pa: [len]i32 = undefined;
+        inline for (params) |p, i| {
+            pa[2 * i] = @enumToInt(p.f);
+            pa[2 * i + 1] = p.v;
+        }
+        break :blk c.IntVector{
+            .val = @ptrCast([*]i32, &pa),
+            .length = len,
+        };
     };
-    var c_vector = c.IntVector;
-    c.Image_IMEncode_WithParams(file_ext.toString(), img.ptr, c_params, c_vector);
-    return std.mem.span(c_vector.val)[0..c_vector.length];
+    var c_vector: struct { std_vector_opaq: [3]usize } = undefined;
+    var cvp = &(c_vector.std_vector_opaq[0]);
+    c.StdByteVectorInitialize(cvp);
+    defer c.StdByteVectorFree(cvp);
+    c.Image_IMEncode_WithParams(castToC(file_ext.toString()), img.ptr, c_params, cvp);
+    const data = c.StdByteVectorData(cvp);
+    const len = c.StdByteVectorLen(cvp);
+    var buf = try std.ArrayList(u8).initCapacity(allocator, len);
+    {
+        var i: usize = 0;
+        while (i < len) : (i += 1) {
+            try buf.append(data[i]);
+        }
+    }
+    return buf;
+}
+
+const testing = std.testing;
+const face_detect_img_path = "libs/gocv/images/face-detect.jpg";
+test "imread" {
+    var img = try imRead(face_detect_img_path, .color);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imwrite" {
+    const filename = "test_imwrite0.jpg";
+    var img = try imRead(face_detect_img_path, .color);
+    defer img.deinit();
+
+    try imWrite(filename, img);
+
+    defer std.fs.cwd().deleteFile(filename) catch @panic("cannot delete " ++ filename);
+}
+
+test "imwriteWithParams" {
+    const filename = "test_imwrite1.jpg";
+    var img = try imRead(face_detect_img_path, .color);
+    defer img.deinit();
+
+    const params = [_]IMWriteParam{.{ .f = .jpeg_quality, .v = 60 }};
+    try imWriteWithParams(filename, img, &params);
+
+    defer std.fs.cwd().deleteFile(filename) catch @panic("cannot delete " ++ filename);
+}
+
+test "imencode" {
+    var img = try imRead(face_detect_img_path, .color);
+    defer img.deinit();
+
+    var buf = try imEncode(testing.allocator, .jpg, img);
+    defer buf.deinit();
+    try testing.expect(buf.items.len > 43000);
+}
+
+test "imencodeWithParams" {
+    var img = try imRead(face_detect_img_path, .color);
+    defer img.deinit();
+
+    const params = [_]IMWriteParam{.{ .f = .jpeg_quality, .v = 75 }};
+    var buf = try imEncodeWithParams(testing.allocator, .jpg, img, &params);
+    defer buf.deinit();
+    try testing.expect(buf.items.len > 18000);
+}
+
+test "imdecode empty" {
+    var img_empty = try imDecode(&[0]u8{}, .color);
+    defer img_empty.deinit();
+    try testing.expectEqual(true, img_empty.isEmpty());
+}
+
+test "imdecode jpg" {
+    const content = @embedFile("./test/images/face.jpg");
+    var img = try imDecode(content, .color);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imdecode png" {
+    const content = @embedFile("./test/images/zigcv.png");
+    var img = try imDecode(content, .color);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imdecode webp" {
+    const content = @embedFile("./test/images/sample.webp");
+    var img = try imDecode(content, .color);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
 }
 
 //*    implementation done
