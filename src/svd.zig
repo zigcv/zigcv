@@ -2,18 +2,8 @@ const c = @import("c_api.zig");
 const core = @import("core.zig");
 const Mat = core.Mat;
 
-pub fn svdCompute(
-    src: Mat,
-    w: *Mat,
-    u: *Mat,
-    vt: *Mat,
-) void {
-    c.SVD_Compute(
-        src.ptr,
-        w.*.ptr,
-        u.*.ptr,
-        vt.*.ptr,
-    );
+pub fn svdCompute(src: Mat, w: *Mat, u: *Mat, vt: *Mat) void {
+    c.SVD_Compute(src.ptr, w.*.ptr, u.*.ptr, vt.*.ptr);
 }
 
 //*    implementation done
@@ -44,23 +34,11 @@ test "svd" {
 
     svdCompute(src, &w, &u, &vt);
 
-    var data_w = try w.dataPtr(f32);
-    var data_u = try u.dataPtr(f32);
-    var data_vt = try vt.dataPtr(f32);
+    const data_w = try w.dataPtr(f32);
+    const data_u = try u.dataPtr(f32);
+    const data_vt = try vt.dataPtr(f32);
 
-    try testing.expectEqual(data_w.len, result_w.len);
-    try testing.expectEqual(data_u.len, result_u.len);
-    try testing.expectEqual(data_vt.len, result_vt.len);
-
-    for (data_w) |value, i| {
-        try testing.expectEqual(value, result_w[i]);
-    }
-
-    for (data_u) |value, i| {
-        try testing.expectEqual(value, result_u[i]);
-    }
-
-    for (data_vt) |value, i| {
-        try testing.expectEqual(value, result_vt[i]);
-    }
+    try testing.expectEqualSlices(f32, result_w[0..], data_w[0..]);
+    try testing.expectEqualSlices(f32, result_u[0..], data_u[0..]);
+    try testing.expectEqualSlices(f32, result_vt[0..], data_vt[0..]);
 }
