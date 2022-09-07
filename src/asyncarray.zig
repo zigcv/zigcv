@@ -28,6 +28,12 @@ pub const AsyncArray = struct {
     }
 };
 
+test "AsyncArray" {
+    var aa = AsyncArray.init();
+    defer aa.deinit();
+    try std.testing.expect(aa.ptr != null);
+}
+
 //*    implementation done
 //*    pub const AsyncArray = ?*anyopaque;
 //*    pub extern fn AsyncArray_New(...) AsyncArray;
