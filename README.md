@@ -1,7 +1,7 @@
 # ZIGCV
 
 <div align="center">
-  <img src="./logo/zigv.png" width="50%" />
+  <img src="./logo/zigcv.png" width="50%" />
 </div>
 
 ## Caution
