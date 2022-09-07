@@ -261,16 +261,16 @@ pub const Mat = struct {
         _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
-    pub fn cols(self: Self) u31 {
-        return @intCast(u31, c.Mat_Cols(self.ptr));
+    pub fn cols(self: Self) u32 {
+        return @intCast(u32, c.Mat_Cols(self.ptr));
     }
 
-    pub fn rows(self: Self) u31 {
-        return @intCast(u31, c.Mat_Rows(self.ptr));
+    pub fn rows(self: Self) u32 {
+        return @intCast(u32, c.Mat_Rows(self.ptr));
     }
 
-    pub fn channels(self: Self) u31 {
-        return @intCast(u31, c.Mat_Channels(self.ptr));
+    pub fn channels(self: Self) u32 {
+        return @intCast(u32, c.Mat_Channels(self.ptr));
     }
 
     pub fn getType(self: Self) MatType {
@@ -278,12 +278,12 @@ pub const Mat = struct {
         return @intToEnum(MatType, type_);
     }
 
-    pub fn step(self: Self) usize {
-        return @intCast(usize, c.Mat_Step(self.ptr));
+    pub fn step(self: Self) u32 {
+        return @intCast(u32, c.Mat_Step(self.ptr));
     }
 
-    pub fn elemSize(self: Self) usize {
-        return @intCast(usize, c.Mat_ElemSize(self.ptr));
+    pub fn elemSize(self: Self) u32 {
+        return @intCast(u32, c.Mat_ElemSize(self.ptr));
     }
 
     // Total returns the total number of array elements.
@@ -1234,22 +1234,22 @@ pub const RotatedRect = extern struct {
 };
 
 pub const Size = struct {
-    width: u32,
-    height: u32,
+    width: u31,
+    height: u31,
 
     const Self = @This();
 
     pub fn init(width: u32, height: u32) Self {
         return .{
-            .width = width,
-            .height = height,
+            .width = @intCast(u31, width),
+            .height = @intCast(u31, height),
         };
     }
 
     pub fn fromC(r: c.Size) Self {
         return .{
-            .width = @intCast(u32, r.width),
-            .height = @intCast(u32, r.height),
+            .width = @intCast(u31, r.width),
+            .height = @intCast(u31, r.height),
         };
     }
 
