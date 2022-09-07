@@ -1,0 +1,14 @@
+# Implementation Done List
+- [x]   asyncarray.zig
+- [ ]   calib3d.zig
+- [ ]   core.zig
+- [ ]   dnn.zig
+- [ ]   highgui.zig
+- [ ]   objdetect.zig
+- [x]   imgcodecs.zig
+- [ ]   imgproc.zig
+- [ ]   photo.zig
+- [x]   svd.zig
+- [x]   version.zig
+- [ ]   videoio.zig
+- [ ]   video.zig
