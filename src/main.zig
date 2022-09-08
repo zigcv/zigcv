@@ -14,6 +14,7 @@ pub const videoio = @import("videoio.zig");
 pub const video = @import("video.zig");
 
 pub usingnamespace asyncarray;
+pub usingnamespace core;
 pub usingnamespace calib3d;
 pub usingnamespace dnn;
 pub usingnamespace highgui;
