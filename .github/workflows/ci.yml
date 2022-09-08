@@ -10,13 +10,21 @@ jobs:
         uses: actions/checkout@v2
         with: 
           submodules: true
-      - name: install opencv
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libopencv-dev
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
           version: master
+      - name: Cache OpenCV
+        id: opencv-cache
+        uses: actions/cache@v2
+        with:
+          path: ./opencv-install
+          key: ${{ runner.os }}-opencv-cache
+      - name: Install OpenCV
+        uses: rayandrews/with-opencv-action@v1
+        with:
+          dir: ./opencv-install
+          cached: ${{ steps.opencv-cache.outputs.cache-hit }}
+          opencv-version: '4.6.0'
       - name: test
         run: zig build test
