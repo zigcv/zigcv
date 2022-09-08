@@ -1,6 +1,7 @@
 const std = @import("std");
 const c = @import("c_api.zig");
 
+/// Return OpenCV version as a string.
 pub fn openCVVersion() []const u8 {
     return std.mem.span(c.openCVVersion());
 }

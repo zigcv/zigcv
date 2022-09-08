@@ -2,6 +2,9 @@ const c = @import("c_api.zig");
 const core = @import("core.zig");
 const Mat = core.Mat;
 
+/// SVDCompute decomposes matrix and stores the results to user-provided matrices
+///
+/// https://docs.opencv.org/4.1.2/df/df7/classcv_1_1SVD.html#a76f0b2044df458160292045a3d3714c6
 pub fn svdCompute(src: Mat, w: *Mat, u: *Mat, vt: *Mat) void {
     c.SVD_Compute(src.ptr, w.*.ptr, u.*.ptr, vt.*.ptr);
 }
