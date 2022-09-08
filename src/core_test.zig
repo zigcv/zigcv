@@ -18,7 +18,7 @@ test "mat size" {
     defer mat_size.deinit();
     try testing.expectEqual(size, mat_size.items[0]);
     try testing.expectEqual(size, mat_size.items[1]);
-    try testing.expectEqual(@intCast(usize, 2), mat_size.items.len);
+    try testing.expectEqual(@as(usize, 2), mat_size.items.len);
 
     try testing.expectEqual(size, mat.rows());
     try testing.expectEqual(size, mat.cols());
@@ -28,7 +28,7 @@ test "mat channnel" {
     var mat = Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
-    try testing.expectEqual(@intCast(usize, 1), mat.channels());
+    try testing.expectEqual(@as(usize, 1), mat.channels());
 }
 
 test "mat type" {
