@@ -58,8 +58,8 @@ pub const CascadeClassifier = struct {
         self: Self,
         img: Mat,
         scale: f64,
-        min_neighbors: c_int,
-        flags: c_int,
+        min_neighbors: i32,
+        flags: i32,
         min_size: Size,
         max_size: Size,
         allocator: std.mem.Allocator,
@@ -288,6 +288,41 @@ pub const QRCodeDetector = struct {
         };
     }
 };
+
+const testing = std.testing;
+test "test CascadeClassifier" {
+    const cv = @import("main.zig");
+    var img = try cv.imRead("libs/gocv/images/face.jpg", .color);
+    defer img.deinit();
+    try testing.expect(!img.isEmpty());
+
+    var classifier = CascadeClassifier.init();
+    defer classifier.deinit();
+
+    try classifier.load("libs/gocv/data/haarcascade_frontalface_default.xml");
+
+    var rects = try classifier.detectMultiScale(img, testing.allocator);
+    defer rects.deinit();
+
+    try testing.expectEqual(@intCast(usize, 1), rects.items.len);
+}
+
+test "test CascadeClassifierWithParams" {
+    const cv = @import("main.zig");
+    var img = try cv.imRead("libs/gocv/images/face.jpg", .color);
+    defer img.deinit();
+    try testing.expect(!img.isEmpty());
+
+    var classifier = CascadeClassifier.init();
+    defer classifier.deinit();
+
+    try classifier.load("libs/gocv/data/haarcascade_frontalface_default.xml");
+
+    var rects = try classifier.detectMultiScaleWithParams(img, 1.1, 3, 0, Size.init(0, 0), Size.init(0, 0), testing.allocator);
+    defer rects.deinit();
+
+    try testing.expectEqual(@intCast(usize, 1), rects.items.len);
+}
 
 //*    implementation done
 //*    pub const CascadeClassifier = ?*anyopaque;

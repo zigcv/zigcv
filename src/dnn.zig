@@ -197,12 +197,12 @@ pub const Net = struct {
         return std.mem.span(c_strs);
     }
 
-    pub fn getLayer(self: Self, layerid: c_int) !Layer {
+    pub fn getLayer(self: Self, layerid: i32) !Layer {
         if (self.ptr == null) return error.nullPointerError;
         return Layer.fromC(c.Net_GetLayer(self.ptr, layerid));
     }
 
-    pub fn getBlobChannel(self: Self, imgidx: c_int, chnidx: c_int) !Mat {
+    pub fn getBlobChannel(self: Self, imgidx: i32, chnidx: i32) !Mat {
         if (self.ptr == null) return error.nullPointerError;
         return try Mat.fromC(c.Net_GetBlobChannel(self.ptr, imgidx, chnidx));
     }
@@ -231,7 +231,7 @@ pub fn blobFromImage(image: Mat, scalefactor: f64, size: Size, mean: Scalar, swa
 // For further details, please see:
 // https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga2b89ed84432e4395f5a1412c2926293c
 //
-pub fn blobFromImages(images: []const Mat, blob: *Mat, scalefactor: f64, size: Size, mean: Scalar, swap_r_b: bool, crop: bool, ddepth: c_int, allocator: std.mem.Allocator) !void {
+pub fn blobFromImages(images: []const Mat, blob: *Mat, scalefactor: f64, size: Size, mean: Scalar, swap_r_b: bool, crop: bool, ddepth: i32, allocator: std.mem.Allocator) !void {
     var c_mats = try core.matsToCMats(images, allocator);
     c.Net_BlobFromImages(c_mats, blob.*.ptr, scalefactor, size.toC(), mean.toC(), swap_r_b, crop, ddepth);
 }
@@ -253,12 +253,12 @@ pub const Layer = struct {
         return self.ptr;
     }
 
-    pub fn inputNameToIndex(self: *Self, name: []const u8) !c_int {
+    pub fn inputNameToIndex(self: *Self, name: []const u8) !i32 {
         if (self.ptr == null) return error.nullPointerError;
         return c.Layer_InputNameToIndex(self.ptr, utils.castZigU8ToC(name));
     }
 
-    pub fn outputNameToIndex(self: *Self, name: []const u8) !c_int {
+    pub fn outputNameToIndex(self: *Self, name: []const u8) !i32 {
         if (self.ptr == null) return error.nullPointerError;
         return c.Layer_OutputNameToIndex(self.ptr, utils.castZigU8ToC(name));
     }

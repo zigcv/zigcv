@@ -1,7 +1,7 @@
 # ZIGCV
 
 <div align="center">
-  <img src="./logo/zigv.png" width="50%" />
+  <img src="./logo/zigcv.png" width="50%" />
 </div>
 
 ## Caution
@@ -28,7 +28,9 @@ For example:
 zig build examples
 ./zig-out/bin/face_detection 0
 ```
-<img width="400" alt="face detection" src="https://user-images.githubusercontent.com/1560508/185785932-404865df-d2d1-4f6a-b3ec-18632f77f7ae.png">
+<div align="center">
+  <img width="400" alt="face detection" src="https://user-images.githubusercontent.com/1560508/188515175-4d344660-5680-43e7-9b74-3bad92507430.gif">
+</div>
 
 You can see the full demo list by `zig build --help`.
 

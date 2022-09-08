@@ -39,185 +39,109 @@ pub const Mat = struct {
         not_,
     };
 
-    pub const MatChannel = enum(u5) {
-        // Channels1 is a single channel Mat.
-        channels1 = 0 << 3,
-
-        // Channels2 is 2 channel Mat.
-        channels2 = 1 << 3,
-
-        // Channels3 is 3 channel Mat.
-        channels3 = 2 << 3,
-
-        // Channels4 is 4 channel Mat.
-        channels4 = 3 << 3,
-    };
-
-    pub const MatType = enum(u6) {
-
-        // MatTypeCV8U is a Mat of 8-bit unsigned int
-        cv8u = 0,
-
-        // MatTypeCV8S is a Mat of 8-bit signed int
-        cv8s = 1,
-
-        // MatTypeCV16U is a Mat of 16-bit unsigned int
-        cv16u = 2,
-
-        // MatTypeCV16S is a Mat of 16-bit signed int
-        cv16s = 3,
-
-        // MatTypeCV32S is a Mat of 32-bit signed int
-        cv32s = 4,
-
-        // MatTypeCV32F is a Mat of 32-bit float
-        cv32f = 5,
-
-        // MatTypeCV64F is a Mat of 64-bit float
-        cv64f = 6,
-
+    pub const MatType = enum(u5) {
         // MatTypeCV8UC1 is a Mat of 8-bit unsigned int with a single channel
-        cv8uc1,
+        cv8uc1 = cv8u + channels1,
 
         // MatTypeCV8UC2 is a Mat of 8-bit unsigned int with 2 channels
-        cv8uc2,
+        cv8uc2 = cv8u + channels2,
 
         // MatTypeCV8UC3 is a Mat of 8-bit unsigned int with 3 channels
-        cv8uc3,
+        cv8uc3 = cv8u + channels3,
 
         // MatTypeCV8UC4 is a Mat of 8-bit unsigned int with 4 channels
-        cv8uc4,
+        cv8uc4 = cv8u + channels4,
 
         // MatTypeCV8SC1 is a Mat of 8-bit signed int with a single channel
-        cv8sc1,
+        cv8sc1 = cv8s + channels1,
 
         // MatTypeCV8SC2 is a Mat of 8-bit signed int with 2 channels
-        cv8sc2,
+        cv8sc2 = cv8s + channels2,
 
         // MatTypeCV8SC3 is a Mat of 8-bit signed int with 3 channels
-        cv8sc3,
+        cv8sc3 = cv8s + channels3,
 
         // MatTypeCV8SC4 is a Mat of 8-bit signed int with 4 channels
-        cv8sc4,
+        cv8sc4 = cv8s + channels4,
 
         // MatTypeCV16UC1 is a Mat of 16-bit unsigned int with a single channel
-        cv16uc1,
+        cv16uc1 = cv16u + channels1,
 
         // MatTypeCV16UC2 is a Mat of 16-bit unsigned int with 2 channels
-        cv16uc2,
+        cv16uc2 = cv16u + channels2,
 
         // MatTypeCV16UC3 is a Mat of 16-bit unsigned int with 3 channels
-        cv16uc3,
+        cv16uc3 = cv16u + channels3,
 
         // MatTypeCV16UC4 is a Mat of 16-bit unsigned int with 4 channels
-        cv16uc4,
+        cv16uc4 = cv16u + channels4,
 
         // MatTypeCV16SC1 is a Mat of 16-bit signed int with a single channel
-        cv16sc1,
+        cv16sc1 = cv16s + channels1,
 
         // MatTypeCV16SC2 is a Mat of 16-bit signed int with 2 channels
-        cv16sc2,
+        cv16sc2 = cv16s + channels2,
 
         // MatTypeCV16SC3 is a Mat of 16-bit signed int with 3 channels
-        cv16sc3,
+        cv16sc3 = cv16s + channels3,
 
         // MatTypeCV16SC4 is a Mat of 16-bit signed int with 4 channels
-        cv16sc4,
+        cv16sc4 = cv16s + channels4,
 
         // MatTypeCV32SC1 is a Mat of 32-bit signed int with a single channel
-        cv32sc1,
+        cv32sc1 = cv32s + channels1,
 
         // MatTypeCV32SC2 is a Mat of 32-bit signed int with 2 channels
-        cv32sc2,
+        cv32sc2 = cv32s + channels2,
 
         // MatTypeCV32SC3 is a Mat of 32-bit signed int with 3 channels
-        cv32sc3,
+        cv32sc3 = cv32s + channels3,
 
         // MatTypeCV32SC4 is a Mat of 32-bit signed int with 4 channels
-        cv32sc4,
+        cv32sc4 = cv32s + channels4,
 
         // MatTypeCV32FC1 is a Mat of 32-bit float int with a single channel
-        cv32fc1,
+        cv32fc1 = cv32f + channels1,
 
         // MatTypeCV32FC2 is a Mat of 32-bit float int with 2 channels
-        cv32fc2,
+        cv32fc2 = cv32f + channels2,
 
         // MatTypeCV32FC3 is a Mat of 32-bit float int with 3 channels
-        cv32fc3,
+        cv32fc3 = cv32f + channels3,
 
         // MatTypeCV32FC4 is a Mat of 32-bit float int with 4 channels
-        cv32fc4,
+        cv32fc4 = cv32f + channels4,
 
         // MatTypeCV64FC1 is a Mat of 64-bit float int with a single channel
-        cv64fc1,
+        cv64fc1 = cv64f + channels1,
 
         // MatTypeCV64FC2 is a Mat of 64-bit float int with 2 channels
-        cv64fc2,
+        cv64fc2 = cv64f + channels2,
 
         // MatTypeCV64FC3 is a Mat of 64-bit float int with 3 channels
-        cv64fc3,
+        cv64fc3 = cv64f + channels3,
 
         // MatTypeCV64FC4 is a Mat of 64-bit float int with 4 channels
-        cv64fc4,
+        cv64fc4 = cv64f + channels4,
 
-        const cv8u_ = 0;
-        const cv8s_ = 1;
-        const cv16u_ = 2;
-        const cv16s_ = 3;
-        const cv32s_ = 4;
-        const cv32f_ = 5;
-        const cv64f_ = 6;
-        const channels1 = @enumToInt(MatChannel.channels1);
-        const channels2 = @enumToInt(MatChannel.channels2);
-        const channels3 = @enumToInt(MatChannel.channels3);
-        const channels4 = @enumToInt(MatChannel.channels4);
-
-        pub fn toInt(self: MatType) u6 {
-            return switch (self) {
-                .cv8u => cv8u_,
-                .cv8s => cv8s_,
-                .cv16u => cv16u_,
-                .cv16s => cv16s_,
-                .cv32s => cv32s_,
-                .cv32f => cv32f_,
-                .cv64f => cv64f_,
-
-                .cv8uc1 => cv8u_ + channels1,
-                .cv8uc2 => cv8u_ + channels2,
-                .cv8uc3 => cv8u_ + channels3,
-                .cv8uc4 => cv8u_ + channels4,
-
-                .cv8sc1 => cv8s_ + channels1,
-                .cv8sc2 => cv8s_ + channels2,
-                .cv8sc3 => cv8s_ + channels3,
-                .cv8sc4 => cv8s_ + channels4,
-
-                .cv16uc1 => cv16u_ + channels1,
-                .cv16uc2 => cv16u_ + channels2,
-                .cv16uc3 => cv16u_ + channels3,
-                .cv16uc4 => cv16u_ + channels4,
-
-                .cv16sc1 => cv16s_ + channels1,
-                .cv16sc2 => cv16s_ + channels2,
-                .cv16sc3 => cv16s_ + channels3,
-                .cv16sc4 => cv16s_ + channels4,
-
-                .cv32sc1 => cv32s_ + channels1,
-                .cv32sc2 => cv32s_ + channels2,
-                .cv32sc3 => cv32s_ + channels3,
-                .cv32sc4 => cv32s_ + channels4,
-
-                .cv32fc1 => cv32f_ + channels1,
-                .cv32fc2 => cv32f_ + channels2,
-                .cv32fc3 => cv32f_ + channels3,
-                .cv32fc4 => cv32f_ + channels4,
-
-                .cv64fc1 => cv64f_ + channels1,
-                .cv64fc2 => cv64f_ + channels2,
-                .cv64fc3 => cv64f_ + channels3,
-                .cv64fc4 => cv64f_ + channels4,
-            };
-        }
+        const channels1 = 0 << 3;
+        const channels2 = 1 << 3;
+        const channels3 = 2 << 3;
+        const channels4 = 3 << 3;
+        // MatTypeCV8U is a Mat of 8-bit unsigned int
+        const cv8u = 0;
+        // MatTypeCV8S is a Mat of 8-bit signed int
+        const cv8s = 1;
+        // MatTypeCV16U is a Mat of 16-bit unsigned int
+        const cv16u = 2;
+        // MatTypeCV16S is a Mat of 16-bit signed int
+        const cv16s = 3;
+        // MatTypeCV32S is a Mat of 32-bit signed int
+        const cv32s = 4;
+        // MatTypeCV32F is a Mat of 32-bit float
+        const cv32f = 5;
+        // MatTypeCV64F is a Mat of 64-bit float
+        const cv64f = 6;
     };
 
     pub const CompareType = enum(u3) {
@@ -281,11 +205,11 @@ pub const Mat = struct {
     }
 
     pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, mt.toInt()) };
+        return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
     }
 
     pub fn fromScalar(s: Scalar) Self {
-        return .{c.Mat_NewFromScalar(Scalar.fromC(s))};
+        return .{ .ptr = c.Mat_NewFromScalar(Scalar.fromC(s)) };
     }
 
     pub fn fromC(ptr: c.Mat) !Self {
@@ -296,13 +220,13 @@ pub const Mat = struct {
     }
 
     pub fn eye(rows_: c_int, cols_: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Eye(rows_, cols_, mt.toInt()) };
+        return .{ .ptr = c.Eye(rows_, cols_, @enumToInt(mt)) };
     }
     pub fn zeros(rows_: c_int, cols_: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Zeros(rows_, cols_, mt.toInt()) };
+        return .{ .ptr = c.Zeros(rows_, cols_, @enumToInt(mt)) };
     }
     pub fn ones(rows_: c_int, cols_: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Ones(rows_, cols_, mt.toInt()) };
+        return .{ .ptr = c.Ones(rows_, cols_, @enumToInt(mt)) };
     }
 
     pub fn deinit(self: *Self) void {
@@ -325,23 +249,28 @@ pub const Mat = struct {
         return .{ .ptr = c.Mat_Clone(self.ptr) };
     }
 
+    // ConvertTo converts Mat into destination Mat.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#adf88c60c5b4980e05bb556080916978b
+    //
     pub fn converTo(self: Self, dst: *Mat, mt: MatType) void {
-        _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, mt.toInt());
+        _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @enumToInt(mt));
     }
     pub fn convertToWithParams(self: Self, dst: *Mat, mt: MatType, alpha: f32, beta: f32) void {
-        _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, mt.toInt(), alpha, beta);
+        _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
-    pub fn cols(self: Self) i32 {
-        return c.Mat_Cols(self.ptr);
+    pub fn cols(self: Self) u32 {
+        return @intCast(u32, c.Mat_Cols(self.ptr));
     }
 
-    pub fn rows(self: Self) i32 {
-        return c.Mat_Rows(self.ptr);
+    pub fn rows(self: Self) u32 {
+        return @intCast(u32, c.Mat_Rows(self.ptr));
     }
 
-    pub fn channels(self: Self) MatChannel {
-        return @intToEnum(MatChannel, c.Mat_Channels(self.ptr));
+    pub fn channels(self: Self) u32 {
+        return @intCast(u32, c.Mat_Channels(self.ptr));
     }
 
     pub fn getType(self: Self) MatType {
@@ -349,22 +278,40 @@ pub const Mat = struct {
         return @intToEnum(MatType, type_);
     }
 
-    pub fn step(self: Self) i32 {
-        return c.Mat_Step(self.ptr);
+    pub fn step(self: Self) u32 {
+        return @intCast(u32, c.Mat_Step(self.ptr));
     }
 
-    pub fn elemSize(self: Self) c_int {
-        return c.Mat_ElemSize(self.ptr);
+    pub fn elemSize(self: Self) u32 {
+        return @intCast(u32, c.Mat_ElemSize(self.ptr));
     }
 
+    // Total returns the total number of array elements.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa4d317d43fb0cba9c2503f3c61b866c8
+    //
     pub fn total(self: Self) i32 {
         return c.Mat_Total(self.ptr);
     }
 
-    pub fn size(self: Self) []i32 {
-        var return_v: c.IntVector = undefined;
-        _ = c.Mat_Size(self.ptr, &return_v);
-        return return_v;
+    // Size returns an array with one element for each dimension containing the size of that dimension for the Mat.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa4d317d43fb0cba9c2503f3c61b866c8
+    //
+    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(usize) {
+        var v: c.IntVector = undefined;
+        _ = c.Mat_Size(self.ptr, &v);
+        const len = @intCast(usize, v.length);
+        var arr = try std.ArrayList(usize).initCapacity(allocator, len);
+        {
+            var i: usize = 0;
+            while (i < len) : (i += 1) {
+                try arr.append(@intCast(usize, v.val[i]));
+            }
+        }
+        return arr;
     }
 
     // getAt returns a value from a specific row/col
@@ -374,14 +321,16 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn at(self: Self, row: i32, col: i32, comptime T: type) T {
+    pub fn at(self: Self, comptime T: type, row: usize, col: usize) T {
+        const row_ = @intCast(u31, row);
+        const col_ = @intCast(u31, col);
         return switch (T) {
-            u8 => c.Mat_GetUChar(self.ptr, row, col),
-            i8 => c.Mat_GetSChar(self.ptr, row, col),
-            i16 => c.Mat_GetShort(self.ptr, row, col),
-            i32 => c.Mat_GetInt(self.ptr, row, col),
-            f32 => c.Mat_GetFloat(self.ptr, row, col),
-            f64 => c.Mat_GetDouble(self.ptr, row, col),
+            u8 => c.Mat_GetUChar(self.ptr, row_, col_),
+            i8 => c.Mat_GetSChar(self.ptr, row_, col_),
+            i16 => c.Mat_GetShort(self.ptr, row_, col_),
+            i32 => c.Mat_GetInt(self.ptr, row_, col_),
+            f32 => c.Mat_GetFloat(self.ptr, row_, col_),
+            f64 => c.Mat_GetDouble(self.ptr, row_, col_),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
@@ -393,14 +342,17 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn at3(self: Self, x: i32, y: i32, z: i32, comptime T: type) T {
+    pub fn at3(self: Self, comptime T: type, x: usize, y: usize, z: usize) T {
+        const x_ = @intCast(u31, x);
+        const y_ = @intCast(u31, y);
+        const z_ = @intCast(u31, z);
         return switch (T) {
-            u8 => c.Mat_GetUChar3(self.ptr, x, y, z),
-            i8 => c.Mat_GetSChar3(self.ptr, x, y, z),
-            i16 => c.Mat_GetShort3(self.ptr, x, y, z),
-            i32 => c.Mat_GetInt3(self.ptr, x, y, z),
-            f32 => c.Mat_GetFloat3(self.ptr, x, y, z),
-            f64 => c.Mat_GetDouble3(self.ptr, x, y, z),
+            u8 => c.Mat_GetUChar3(self.ptr, x_, y_, z_),
+            i8 => c.Mat_GetSChar3(self.ptr, x_, y_, z_),
+            i16 => c.Mat_GetShort3(self.ptr, x_, y_, z_),
+            i32 => c.Mat_GetInt3(self.ptr, x_, y_, z_),
+            f32 => c.Mat_GetFloat3(self.ptr, x_, y_, z_),
+            f64 => c.Mat_GetDouble3(self.ptr, x_, y_, z_),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
@@ -409,26 +361,31 @@ pub const Mat = struct {
         _ = c.Mat_SetTo(self.ptr, value.toC());
     }
 
-    pub fn set(self: *Self, row_: c_int, col_: c_int, val: anytype, comptime T: type) void {
+    pub fn set(self: *Self, comptime T: type, row: usize, col: usize, val: T) void {
+        const row_ = @intCast(u31, row);
+        const col_ = @intCast(u31, col);
         _ = switch (T) {
-            u8 => c.Mat_SetUChar(self.ptr, row_, col_, @intCast(T, val)),
-            i8 => c.Mat_SetSChar(self.ptr, row_, col_, @intCast(T, val)),
-            i16 => c.Mat_SetShort(self.ptr, row_, col_, @intCast(T, val)),
-            i32 => c.Mat_SetInt(self.ptr, row_, col_, @intCast(T, val)),
-            f32 => c.Mat_SetFloat(self.ptr, row_, col_, @floatCast(T, val)),
-            f64 => c.Mat_SetDouble(self.ptr, row_, col_, @floatCast(T, val)),
+            u8 => c.Mat_SetUChar(self.ptr, row_, col_, val),
+            i8 => c.Mat_SetSChar(self.ptr, row_, col_, val),
+            i16 => c.Mat_SetShort(self.ptr, row_, col_, val),
+            i32 => c.Mat_SetInt(self.ptr, row_, col_, val),
+            f32 => c.Mat_SetFloat(self.ptr, row_, col_, val),
+            f64 => c.Mat_SetDouble(self.ptr, row_, col_, val),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
 
-    pub fn set3(self: *Self, x: c_int, y: c_int, z: c_int, val: anytype, comptime T: type) void {
+    pub fn set3(self: *Self, comptime T: type, x: usize, y: usize, z: usize, val: T) void {
+        const x_ = @intCast(u31, x);
+        const y_ = @intCast(u31, y);
+        const z_ = @intCast(u31, z);
         _ = switch (T) {
-            u8 => c.Mat_SetUChar3(self.ptr, x, y, z, @intCast(T, val)),
-            i8 => c.Mat_SetSChar3(self.ptr, x, y, z, @intCast(T, val)),
-            i16 => c.Mat_SetShort3(self.ptr, x, y, z, @intCast(T, val)),
-            i32 => c.Mat_SetInt3(self.ptr, x, y, z, @intCast(T, val)),
-            f32 => c.Mat_SetFloat3(self.ptr, x, y, z, @floatCast(T, val)),
-            f64 => c.Mat_SetDouble3(self.ptr, x, y, z, @floatCast(T, val)),
+            u8 => c.Mat_SetUChar3(self.ptr, x_, y_, z_, val),
+            i8 => c.Mat_SetSChar3(self.ptr, x_, y_, z_, val),
+            i16 => c.Mat_SetShort3(self.ptr, x_, y_, z_, val),
+            i32 => c.Mat_SetInt3(self.ptr, x_, y_, z_, val),
+            f32 => c.Mat_SetFloat3(self.ptr, x_, y_, z_, val),
+            f64 => c.Mat_SetDouble3(self.ptr, x_, y_, z_, val),
             else => @compileError("not implemented for " ++ @typeName(T)),
         };
     }
@@ -480,7 +437,7 @@ pub const Mat = struct {
         return Scalar.fromC(c.Mat_MeanWithMask(self.ptr, mask.ptr));
     }
 
-    pub fn calcValueInplace(self: *Self, v: anytype, comptime op: OperationType) void {
+    pub fn calcValueInplace(self: *Self, comptime op: OperationType, v: anytype) void {
         const T = @TypeOf(v);
         return switch (T) {
             u8 => switch (op) {
@@ -500,22 +457,22 @@ pub const Mat = struct {
     }
 
     pub fn addValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .add);
+        return self.calcValueInplace(.add, v);
     }
 
     pub fn subtractValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .subtract);
+        return self.calcValueInplace(.subtract, v);
     }
 
     pub fn multiplyValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .multiply);
+        return self.calcValueInplace(.multiply, v);
     }
 
     pub fn divideValueInplace(self: *Self, v: anytype) void {
-        return self.calcValueInplace(v, .divide);
+        return self.calcValueInplace(.divide, v);
     }
 
-    pub fn calcMat(self: Self, m: Mat, dest: *Mat, op: OperationType) void {
+    pub fn calcMat(self: Self, op: OperationType, m: Mat, dest: *Mat) void {
         return switch (op) {
             .add => c.Mat_Add(self.ptr, m.ptr, dest.*.ptr),
             .subtract => c.Mat_Subtract(self.ptr, m.ptr, dest.*.ptr),
@@ -530,7 +487,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga10ac1bfb180e2cfda1701d06c24fdbd6
     //
     pub fn addMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .add);
+        return self.calcMat(.add, m, dest);
     }
 
     // Subtract calculates the per-element subtraction of two arrays or an array and a scalar.
@@ -539,7 +496,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gaa0f00d98b4b5edeaeb7b8333b2de353b
     //
     pub fn subtractMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .subtract);
+        return self.calcMat(.subtract, m, dest);
     }
 
     // Multiply calculates the per-element scaled product of two arrays.
@@ -549,7 +506,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga979d898a58d7f61c53003e162e7ad89f
     //
     pub fn multiplyMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .multiply);
+        return self.calcMat(.multiply, m, dest);
     }
 
     // Divide performs the per-element division
@@ -559,7 +516,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga6db555d30115642fedae0cda05604874
     //
     pub fn divideMat(self: Self, m: Mat, dest: *Mat) void {
-        return self.calcMat(m, dest, .divide);
+        return self.calcMat(.divide, m, dest);
     }
 
     // AbsDiff calculates the per-element absolute difference between two arrays
@@ -660,7 +617,7 @@ pub const Mat = struct {
         return self.bitwise(m, dest, .xor_);
     }
 
-    pub fn bitwiseWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat, comptime op: BitOperationType) void {
+    pub fn bitwiseWithMask(self: Self, comptime op: BitOperationType, m: Mat, dest: *Mat, mask: Mat) void {
         _ = switch (op) {
             .and_ => _ = c.Mat_BitwiseAndWithMask(self.ptr, m.ptr, dest.*.ptr, mask.ptr),
             .not_ => _ = c.Mat_BitwiseNotWithMask(self.ptr, dest.*.ptr, mask.ptr),
@@ -677,7 +634,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga60b4d04b251ba5eb1392c34425497e14
     //
     pub fn bitwiseAndWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(m, dest, mask, .and_);
+        return self.bitwiseWithMask(self, .and_, m, dest, mask);
     }
 
     // BitwiseNotWithMask inverts every bit of an array. It has an additional parameter for a mask.
@@ -685,8 +642,8 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga0002cf8b418479f4cb49a75442baee2f
     //
-    pub fn bitwiseNotWithMask(self: Self, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(self, dest, mask, .not_);
+    pub fn bitwiseNotWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
+        return self.bitwiseWithMask(self, .not_, m, dest, mask);
     }
 
     // BitwiseOrWithMask calculates the per-element bit-wise disjunction of two arrays
@@ -696,7 +653,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gab85523db362a4e26ff0c703793a719b4
     //
     pub fn bitwiseOrWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(m, dest, mask, .or_);
+        return self.bitwiseWithMask(self, .or_, m, dest, mask);
     }
 
     // BitwiseXorWithMask calculates the per-element bit-wise "exclusive or" operation
@@ -706,17 +663,17 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga84b2d8188ce506593dcc3f8cd00e8e2c
     //
     pub fn bitwiseXorWithMask(self: Self, m: Mat, dest: *Mat, mask: Mat) void {
-        return self.bitwiseWithMask(m, dest, mask, .xor_);
+        return self.bitwiseWithMask(self, .xor_, m, dest, mask);
     }
 
     pub fn dataPtr(self: Self, comptime T: type) ![]T {
         if (switch (T) {
-            u8 => @enumToInt(self.getType()) & MatType.cv8u.toInt() != MatType.cv8u.toInt(),
-            i8 => @enumToInt(self.getType()) & MatType.cv8s.toInt() != MatType.cv8s.toInt(),
-            u16 => @enumToInt(self.getType()) & MatType.cv16u.toInt() != MatType.cv16u.toInt(),
-            i16 => @enumToInt(self.getType()) & MatType.cv16s.toInt() != MatType.cv16s.toInt(),
-            f32 => @enumToInt(self.getType()) & MatType.cv32f.toInt() != MatType.cv32f.toInt(),
-            f64 => @enumToInt(self.getType()) & MatType.cv64f.toInt() != MatType.cv64f.toInt(),
+            u8 => @enumToInt(self.getType()) & MatType.cv8u != MatType.cv8u,
+            i8 => @enumToInt(self.getType()) & MatType.cv8s != MatType.cv8s,
+            u16 => @enumToInt(self.getType()) & MatType.cv16u != MatType.cv16u,
+            i16 => @enumToInt(self.getType()) & MatType.cv16s != MatType.cv16s,
+            f32 => @enumToInt(self.getType()) & MatType.cv32f != MatType.cv32f,
+            f64 => @enumToInt(self.getType()) & MatType.cv64f != MatType.cv64f,
             else => @compileError("Unsupported type"),
         }) {
             return error.RuntimeError;
@@ -737,8 +694,8 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a4eb96e3251417fa88b78e2abd6cfd7d8
     //
-    pub fn reshape(self: Self, cn: c_int, rows_: c_int) Self {
-        return .{ .ptr = c.Mat_Reshape(self.ptr, cn, rows_) };
+    pub fn reshape(self: Self, cn: i32, rows_: usize) Self {
+        return .{ .ptr = c.Mat_Reshape(self.ptr, @intCast(u31, cn), @intCast(c_int, rows_)) };
     }
 
     // Region returns a new Mat that points to a region of this Mat. Changes made to the
@@ -852,7 +809,7 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#gac2f5e953016fabcdf793d762f4ec5dce
     //
-    pub fn solvePoly(self: Self, roots: *Mat, max_iters: c_int) bool {
+    pub fn solvePoly(self: Self, roots: *Mat, max_iters: i32) bool {
         return c.Mat_SolvePoly(self.ptr, roots.*.ptr, max_iters);
     }
 
@@ -887,12 +844,12 @@ pub const Mat = struct {
 pub const Mats = std.ArrayList(Mat);
 
 pub const Point = struct {
-    x: c_int,
-    y: c_int,
+    x: i32,
+    y: i32,
 
     const Self = @This();
 
-    pub fn int(x: c_int, y: c_int) Self {
+    pub fn int(x: i32, y: i32) Self {
         return .{ .x = x, .y = y };
     }
 
@@ -989,11 +946,11 @@ pub const PointVector = struct {
         }
     }
 
-    pub fn at(self: Self, idx: c_int) Point {
+    pub fn at(self: Self, idx: i32) Point {
         return c.PointVector_At(self.ptr, idx);
     }
 
-    pub fn size(self: Self) c_int {
+    pub fn size(self: Self) i32 {
         return c.PointVector_Size(self.ptr);
     }
 
@@ -1055,11 +1012,11 @@ pub const Point2fVector = struct {
         }
     }
 
-    pub fn at(self: Self, idx: c_int) Point {
+    pub fn at(self: Self, idx: i32) Point {
         return c.Point2fVector_At(self.ptr, idx);
     }
 
-    pub fn size(self: Self) c_int {
+    pub fn size(self: Self) i32 {
         return c.Point2fVector_Size(self.ptr);
     }
 
@@ -1123,8 +1080,8 @@ pub const KeyPoint = struct {
     size: f64,
     angle: f64,
     response: f64,
-    octave: c_int,
-    class_id: c_int,
+    octave: i32,
+    class_id: i32,
 
     const Self = @This();
 
@@ -1134,8 +1091,8 @@ pub const KeyPoint = struct {
         size: f64,
         angle: f64,
         response: f64,
-        octave: c_int,
-        class_id: c_int,
+        octave: i32,
+        class_id: i32,
     ) Self {
         return .{
             .x = x,
@@ -1180,18 +1137,18 @@ pub const KeyPoint = struct {
 pub const KeyPoints = std.ArrayList(KeyPoint);
 
 pub const Rect = struct {
-    x: c_int,
-    y: c_int,
-    width: c_int,
-    height: c_int,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
 
     const Self = @This();
 
     pub fn init(
-        x: c_int,
-        y: c_int,
-        width: c_int,
-        height: c_int,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
     ) Self {
         return .{
             .x = x,
@@ -1277,29 +1234,29 @@ pub const RotatedRect = extern struct {
 };
 
 pub const Size = struct {
-    width: c_int,
-    height: c_int,
+    width: u31,
+    height: u31,
 
     const Self = @This();
 
-    pub fn init(width: c_int, height: c_int) Self {
+    pub fn init(width: u32, height: u32) Self {
         return .{
-            .width = width,
-            .height = height,
+            .width = @intCast(u31, width),
+            .height = @intCast(u31, height),
         };
     }
 
     pub fn fromC(r: c.Size) Self {
         return .{
-            .width = r.width,
-            .height = r.height,
+            .width = @intCast(u31, r.width),
+            .height = @intCast(u31, r.height),
         };
     }
 
     pub fn toC(self: Self) c.Size {
         return .{
-            .width = self.width,
-            .height = self.height,
+            .width = @intCast(c_int, self.width),
+            .height = @intCast(c_int, self.height),
         };
     }
 };
@@ -1331,7 +1288,7 @@ pub const RNG = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga757e657c037410d9e19e819569e7de0f
     //
-    pub fn setRNGSeed(self: Self, seed: c_int) void {
+    pub fn setRNGSeed(self: Self, seed: i32) void {
         _ = self;
         c.SetRNGSeed(seed);
     }
@@ -1341,7 +1298,7 @@ pub const RNG = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d1/dd6/classcv_1_1RNG.html#ad26f2b09d9868cf108e84c9814aa682d
     //
-    pub fn fill(self: *Self, mat: *Mat, dist_type: c_int, a: f64, b: f64, saturate_range: bool) void {
+    pub fn fill(self: *Self, mat: *Mat, dist_type: i32, a: f64, b: f64, saturate_range: bool) void {
         _ = c.RNG_Fill(self.ptr, mat.*.ptr, dist_type, a, b, saturate_range);
     }
 
@@ -1365,6 +1322,10 @@ pub const RNG = struct {
         return c.RNG_Next(self.ptr);
     }
 };
+
+test "core" {
+    _ = @import("core_test.zig");
+}
 
 //*    implementation done
 //     pub extern fn Mats_get(mats: struct_Mats, i: c_int) Mat;

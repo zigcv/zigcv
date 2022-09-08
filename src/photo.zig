@@ -57,7 +57,7 @@ pub fn IlluminationChange(src: Mat, mask: Mat, dst: *Mat, alpha: f32, beta: f32)
 // For further details, please see:
 // https://docs.opencv.org/master/df/da0/group__photo__clone.html#gad55df6aa53797365fa7cc23959a54004
 //
-pub fn TextureFlattening(src: Mat, mask: Mat, dst: *Mat, low_threshold: f32, high_threshold: f32, kernel_size: c_int) void {
+pub fn TextureFlattening(src: Mat, mask: Mat, dst: *Mat, low_threshold: f32, high_threshold: f32, kernel_size: i32) void {
     _ = c.TextureFlattening(src.ptr, mask.ptr, dst.*.ptr, low_threshold, high_threshold, kernel_size);
 }
 
@@ -70,8 +70,8 @@ pub fn TextureFlattening(src: Mat, mask: Mat, dst: *Mat, low_threshold: f32, hig
 pub fn fastNlMeansDenoisingColoredMulti(
     src: []Mat,
     dst: *Mat,
-    img_to_denoise_index: c_int,
-    temporal_window_size: c_int,
+    img_to_denoise_index: i32,
+    temporal_window_size: i32,
     allocator: std.mem.Allocator,
 ) !void {
     var c_mats = try Mat.toCStructs(src, allocator);
@@ -87,12 +87,12 @@ pub fn fastNlMeansDenoisingColoredMulti(
 pub fn FastNlMeansDenoisingColoredWithParams(
     src: []Mat,
     dst: *Mat,
-    img_to_denoise_index: c_int,
-    temporal_window_size: c_int,
+    img_to_denoise_index: i32,
+    temporal_window_size: i32,
     h: f32,
     h_color: f32,
-    template_window_size: c_int,
-    search_window_size: c_int,
+    template_window_size: i32,
+    search_window_size: i32,
     allocator: std.mem.Allocator,
 ) !void {
     var c_mats = try Mat.toCStructs(src, allocator);
@@ -129,8 +129,8 @@ pub fn fastNlMeansDenoisingWithParams(
     src: Mat,
     dst: *Mat,
     h: f32,
-    template_window_size: c_int,
-    search_window_size: c_int,
+    template_window_size: i32,
+    search_window_size: i32,
 ) void {
     _ = c.FastNlMeansDenoisingWithParams(
         src.ptr,
@@ -160,8 +160,8 @@ pub fn fastNlMeansDenoisingColoredWithParams(
     dst: *Mat,
     h: f32,
     h_color: f32,
-    template_window_size: c_int,
-    search_window_size: c_int,
+    template_window_size: i32,
+    search_window_size: i32,
 ) void {
     _ = c.FastNlMeansDenoisingColoredWithParams(
         src.ptr,
@@ -206,7 +206,7 @@ pub const AlignMTB = struct {
         return .{ .ptr = c.AlignMTB_Create() };
     }
 
-    pub fn initWithParams(max_bits: c_int, exclude_range: c_int, cut: bool) Self {
+    pub fn initWithParams(max_bits: i32, exclude_range: i32, cut: bool) Self {
         return .{ .ptr = c.AlignMTB_CreateWithParams(max_bits, exclude_range, cut) };
     }
 

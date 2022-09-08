@@ -104,7 +104,7 @@ pub fn initUndistortRectifyMap(
     r: Mat,
     new_camera_matrix: Mat,
     size: Size,
-    m1type: c_int,
+    m1type: i32,
     map1: Mat,
     map2: Mat,
 ) void {

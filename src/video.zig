@@ -52,7 +52,7 @@ const BackgroundSubtractorMOG2 = struct {
     // https://docs.opencv.org/master/de/de1/group__video__motion.html#ga2beb2dee7a073809ccec60f145b6b29c
     // https://docs.opencv.org/master/d7/d7b/classcv_1_1BackgroundSubtractorMOG2.html
     //
-    pub fn initWithPatams(history: c_int, varThreshold: f64, detectShadows: bool) BackgroundSubtractorMOG2 {
+    pub fn initWithPatams(history: i32, varThreshold: f64, detectShadows: bool) BackgroundSubtractorMOG2 {
         return Self{
             .ptr = c.BackgroundSubtractorMOG2_CreateWithParams(history, varThreshold, detectShadows),
         };
@@ -101,7 +101,7 @@ pub const BackgroundSubtractorKNN = struct {
     // https://docs.opencv.org/master/de/de1/group__video__motion.html#gac9be925771f805b6fdb614ec2292006d
     // https://docs.opencv.org/master/db/d88/classcv_1_1BackgroundSubtractorKNN.html
     //
-    pub fn initWithPatams(history: c_int, dist2Threshold: f64, detectShadows: bool) Self {
+    pub fn initWithPatams(history: i32, dist2Threshold: f64, detectShadows: bool) Self {
         return Self{
             .p = c.BackgroundSubtractorKNN_CreateWithParams(history, dist2Threshold, detectShadows),
         };
@@ -133,12 +133,12 @@ pub fn CalcOpticalFlowFarneback(
     next_img: Mat,
     flow: *Mat,
     pyr_scale: f64,
-    levels: c_int,
-    winsize: c_int,
-    iterations: c_int,
-    poly_n: c_int,
+    levels: i32,
+    winsize: i32,
+    iterations: i32,
+    poly_n: i32,
     poly_sigma: f64,
-    flags: c_int,
+    flags: i32,
 ) void {
     _ = c.CalcOpticalFlowFarneback(
         prev_img.ptr,
@@ -192,9 +192,9 @@ pub fn calcOpticalFlowPyrLKWithParams(
     status: *Mat,
     err: *Mat,
     win_size: Size,
-    max_level: c_int,
+    max_level: i32,
     criteria: TermCriteria,
-    flags: c_int,
+    flags: i32,
     min_eig_threshold: f64,
 ) void {
     _ = c.CalcOpticalFlowPyrLKWithParams(
@@ -221,10 +221,10 @@ pub fn findTransformECC(
     template_image: Mat,
     input_image: Mat,
     warp_matrix: *Mat,
-    motion_type: c_int,
+    motion_type: i32,
     criteria: TermCriteria,
     input_mask: Mat,
-    gauss_filt_size: c_int,
+    gauss_filt_size: i32,
 ) f64 {
     return @as(
         f64,

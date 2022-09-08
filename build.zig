@@ -7,32 +7,32 @@ pub fn build(b: *std.build.Builder) void {
     const examples = [_]Program{
         .{
             .name = "hello",
-            .path = "cmd/hello/main.zig",
+            .path = "examples/hello/main.zig",
             .desc = "Show Webcam",
         },
         .{
             .name = "version",
-            .path = "cmd/version/main.zig",
+            .path = "examples/version/main.zig",
             .desc = "Print OpenCV Version",
         },
         .{
             .name = "show_image",
-            .path = "cmd/showimage/main.zig",
+            .path = "examples/showimage/main.zig",
             .desc = "Show Image Demo",
         },
         .{
             .name = "face_detection",
-            .path = "cmd/facedetect/main.zig",
+            .path = "examples/facedetect/main.zig",
             .desc = "Face Detection Demo",
         },
         .{
             .name = "face_blur",
-            .path = "cmd/faceblur/main.zig",
+            .path = "examples/faceblur/main.zig",
             .desc = "Face Detection and Blur Demo",
         },
         .{
             .name = "dnn_detection",
-            .path = "cmd/dnndetection/main.zig",
+            .path = "examples/dnndetection/main.zig",
             .desc = "DNN Detection Demo",
         },
     };
@@ -70,6 +70,13 @@ pub fn build(b: *std.build.Builder) void {
 
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&exe_tests.step);
+
+    const docs = b.addTest("src/main.zig");
+    zigcv.link(docs);
+    zigcv.addAsPackage(docs);
+    docs.emit_docs = .emit;
+    const docs_step = b.step("docs", "Generate docs");
+    docs_step.dependOn(&docs.step);
 }
 
 inline fn thisDir() []const u8 {

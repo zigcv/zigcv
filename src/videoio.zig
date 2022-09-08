@@ -315,7 +315,7 @@ pub const VideoCapture = struct {
         return c.VideoCapture_Set(self.ptr, @enumToInt(prop), param);
     }
 
-    pub fn grab(self: Self, skip: c_int) void {
+    pub fn grab(self: Self, skip: i32) void {
         c.VideoCapture_Grab(self.ptr, skip);
     }
 
