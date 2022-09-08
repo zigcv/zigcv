@@ -219,13 +219,30 @@ pub const Mat = struct {
         return Self{ .ptr = ptr };
     }
 
-    pub fn eye(rows_: c_int, cols_: c_int, mt: MatType) Self {
+    /// Returns an identity matrix of the specified size and type.
+    ///
+    /// The method returns a Matlab-style identity matrix initializer, similarly to Mat::zeros. Similarly to Mat::ones.
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a2cf9b9acde7a9852542bbc20ef851ed2
+    pub fn eye(rows_: i32, cols_: i32, mt: MatType) Self {
         return .{ .ptr = c.Eye(rows_, cols_, @enumToInt(mt)) };
     }
-    pub fn zeros(rows_: c_int, cols_: c_int, mt: MatType) Self {
+
+    /// Returns a zero array of the specified size and type.
+    ///
+    /// The method returns a Matlab-style zero array initializer.
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a0b57b6a326c8876d944d188a46e0f556
+    pub fn zeros(rows_: i32, cols_: i32, mt: MatType) Self {
         return .{ .ptr = c.Zeros(rows_, cols_, @enumToInt(mt)) };
     }
-    pub fn ones(rows_: c_int, cols_: c_int, mt: MatType) Self {
+
+    /// Returns an array of all 1's of the specified size and type.
+    ///
+    /// The method returns a Matlab-style 1's array initializer
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a69ae0402d116fc9c71908d8508dc2f09
+    pub fn ones(rows_: i32, cols_: i32, mt: MatType) Self {
         return .{ .ptr = c.Ones(rows_, cols_, @enumToInt(mt)) };
     }
 

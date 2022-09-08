@@ -42,3 +42,49 @@ test "mat type" {
 
     try testing.expectEqual(Mat.MatType.cv16sc2, mat2.getType());
 }
+
+test "mat eye" {
+    var mat = Mat.eye(3, 3, .cv8sc1);
+    defer mat.deinit();
+    {
+        var i: usize = 0;
+        while (i < 3) : (i += 1) {
+            var j: usize = 0;
+            while (j < 3) : (j += 1) {
+                if (i == j) {
+                    try testing.expectEqual(@as(u8, 1), mat.at(u8, i, j));
+                } else {
+                    try testing.expectEqual(@as(u8, 0), mat.at(u8, i, j));
+                }
+            }
+        }
+    }
+}
+
+test "mat zeros" {
+    var mat = Mat.zeros(3, 3, .cv8sc1);
+    defer mat.deinit();
+    {
+        var i: usize = 0;
+        while (i < 3) : (i += 1) {
+            var j: usize = 0;
+            while (j < 3) : (j += 1) {
+                try testing.expectEqual(@as(u8, 0), mat.at(u8, i, j));
+            }
+        }
+    }
+}
+
+test "mat ones" {
+    var mat = Mat.ones(3, 3, .cv8sc1);
+    defer mat.deinit();
+    {
+        var i: usize = 0;
+        while (i < 3) : (i += 1) {
+            var j: usize = 0;
+            while (j < 3) : (j += 1) {
+                try testing.expectEqual(@as(u8, 1), mat.at(u8, i, j));
+            }
+        }
+    }
+}
