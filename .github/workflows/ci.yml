@@ -35,8 +35,8 @@ jobs:
           key: ${{ runner.os }}-zig-cache
       - name: test
         run: zig build test
-      - name: build examples
-        run: zig build examples
+      # - name: build examples
+      #   run: zig build examples
       - name: build docs
         if: github.ref == 'refs/heads/main'
         run: zig build docs
