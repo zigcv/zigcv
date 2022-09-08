@@ -4,24 +4,25 @@ on: push
 
 jobs:
   run_test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
           version: master
-      - name: Cache OpenCV
-        id: opencv-cache
+      - name: Update Homebrew
+        run: |
+          brew update --preinstall
+      - name: Configure Homebrew cache
         uses: actions/cache@v2
         with:
-          path: ./opencv-install
-          key: ${{ runner.os }}-opencv-cache
-      - name: Install OpenCV
-        uses: rayandrews/with-opencv-action@v1
-        with:
-          dir: ./opencv-install
-          cached: ${{ steps.opencv-cache.outputs.cache-hit }}
-          opencv-version: '4.6.0'
+          path: |
+            ~/Library/Caches/Homebrew/
+          key: brew-${{ hashFiles('.github/brew-formulae') }}
+          restore-keys: brew-
+      - name: Install Homebrew dependencies
+        run: |
+          env HOMEBREW_NO_AUTO_UPDATE=1 brew install opencv llvm cmake
       - name: checkout
         uses: actions/checkout@v2
         with: 
