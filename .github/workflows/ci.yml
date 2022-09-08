@@ -3,7 +3,7 @@ name: ci
 on: push
 
 jobs:
-  run_test:
+  run_test_and_build_docs:
     runs-on: macos-latest
     steps:
       - name: setup zig master
@@ -22,10 +22,10 @@ jobs:
           restore-keys: brew-
       - name: Install Homebrew dependencies
         run: |
-          env HOMEBREW_NO_AUTO_UPDATE=1 brew install opencv llvm cmake
+          env HOMEBREW_NO_AUTO_UPDATE=1 brew install opencv
       - name: checkout
         uses: actions/checkout@v2
-        with: 
+        with:
           submodules: true
       - name: Cache zig
         id: opencv-cache
@@ -37,3 +37,25 @@ jobs:
         run: zig build test
       - name: build examples
         run: zig build examples
+      - name: build docs
+        if: github.ref == 'refs/heads/main'
+        run: zig build docs
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs
+
+  deploy:
+    needs: run_test_and_build_docs
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+
