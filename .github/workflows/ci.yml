@@ -6,10 +6,6 @@ jobs:
   run_test:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-        with: 
-          submodules: true
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
@@ -26,5 +22,17 @@ jobs:
           dir: ./opencv-install
           cached: ${{ steps.opencv-cache.outputs.cache-hit }}
           opencv-version: '4.6.0'
+      - name: checkout
+        uses: actions/checkout@v2
+        with: 
+          submodules: true
+      - name: Cache zig
+        id: opencv-cache
+        uses: actions/cache@v2
+        with:
+          path: ./zig-cache
+          key: ${{ runner.os }}-zig-cache
       - name: test
         run: zig build test
+      - name: build examples
+        run: zig build examples
