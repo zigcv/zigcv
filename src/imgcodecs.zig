@@ -211,7 +211,7 @@ pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
 /// For further details, please see:
 /// http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 ///
-pub fn imEncode(allocator: std.mem.Allocator, file_ext: FileExt, img: Mat) !std.ArrayList(u8) {
+pub fn imEncode(file_ext: FileExt, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(u8) {
     var c_vector: STDVector = undefined;
     var cvp = &c_vector;
     c.StdByteVectorInitialize(cvp);
@@ -236,7 +236,7 @@ pub fn imEncode(allocator: std.mem.Allocator, file_ext: FileExt, img: Mat) !std.
 /// For further details, please see:
 /// http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 ///
-pub fn imEncodeWithParams(allocator: std.mem.Allocator, file_ext: FileExt, img: Mat, comptime params: []const IMWriteParam) !std.ArrayList(u8) {
+pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const IMWriteParam, allocator: std.mem.Allocator) !std.ArrayList(u8) {
     // TODO: Failed on M1 Mac
     if (builtin.os.tag == .macos and builtin.target.cpu.arch == .aarch64) @compileError("imEncodeWithParams is not supported on M1 Mac");
     const c_params = comptime blk: {
@@ -301,7 +301,7 @@ test "imencode" {
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
 
-    var buf = try imEncode(testing.allocator, .jpg, img);
+    var buf = try imEncode(.jpg, img, testing.allocator);
     defer buf.deinit();
     try testing.expect(buf.items.len > 43000);
 }
@@ -316,7 +316,7 @@ test "imencodeWithParams" {
     defer img.deinit();
 
     const params = [_]IMWriteParam{.{ .f = .jpeg_quality, .v = 75 }};
-    var buf = try imEncodeWithParams(testing.allocator, .jpg, img, &params);
+    var buf = try imEncodeWithParams(.jpg, img, &params, testing.allocator);
     defer buf.deinit();
     try testing.expect(buf.items.len > 18000);
 }
