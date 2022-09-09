@@ -243,16 +243,6 @@ pub const Window = struct {
         self.trackbar = Trackbar.init(&self.name, trackbar_name, max);
     }
 
-    /// CreateTrackbarWithValue works like CreateTrackbar but also assigns a
-    /// variable value to be a position synchronized with the trackbar.
-    ///
-    /// For further details, please see:
-    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
-    ///
-    pub fn createTrackbarWithValue(self: *Self, trackbar_name: []const u8, value: *i32, max: i32) void {
-        self.trackbar = Trackbar.initWithValue(&self.name, trackbar_name, value, max);
-    }
-
     pub const Trackbar = struct {
         trackbar_name: []const u8,
         window_name: *[]const u8,
@@ -264,17 +254,6 @@ pub const Window = struct {
         ///
         pub fn init(window_name: *[]const u8, trackbar_name: []const u8, max: i32) Trackbar {
             _ = c.Trackbar_Create(castToC(window_name.*), castToC(trackbar_name), max);
-            return .{ .trackbar_name = trackbar_name, .window_name = window_name };
-        }
-
-        /// CreateTrackbarWithValue works like CreateTrackbar but also assigns a
-        /// variable value to be a position synchronized with the trackbar.
-        ///
-        /// For further details, please see:
-        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
-        ///
-        pub fn initWithValue(window_name: *[]const u8, trackbar_name: []const u8, value: *i32, max: i32) Trackbar {
-            _ = c.Trackbar_CreateWithValue(castToC(window_name.*), castToC(trackbar_name), value, max);
             return .{ .trackbar_name = trackbar_name, .window_name = window_name };
         }
 
@@ -376,24 +355,6 @@ test "window trackbar" {
     } else @panic("trackbar not found");
 }
 
-test "window trackbarWithValue" {
-    var window = Window.init("testtrackbarWithValue");
-    defer window.deinit();
-
-    var val: i32 = 20;
-    window.createTrackbarWithValue("trackme", &val, 100);
-
-    if (window.trackbar != null) {
-        var t = window.trackbar.?;
-        try testing.expectEqual(@as(i32, 20), t.getPos());
-
-        t.setMin(10);
-        t.setMax(150);
-        t.setPos(50);
-        try testing.expectEqual(@as(i32, 50), t.getPos());
-    } else @panic("trackbar not found");
-}
-
 //*    implementation done
 //*    pub extern fn Window_New(winname: [*c]const u8, flags: c_int) void;
 //*    pub extern fn Window_Close(winname: [*c]const u8) void;
@@ -407,7 +368,7 @@ test "window trackbarWithValue" {
 //*    pub extern fn Window_SelectROI(winname: [*c]const u8, img: Mat) struct_Rect;
 //*    pub extern fn Window_SelectROIs(winname: [*c]const u8, img: Mat) struct_Rects;
 //*    pub extern fn Trackbar_Create(winname: [*c]const u8, trackname: [*c]const u8, max: c_int) void;
-//*    pub extern fn Trackbar_CreateWithValue(winname: [*c]const u8, trackname: [*c]const u8, value: [*c]c_int, max: c_int) void;
+//     pub extern fn Trackbar_CreateWithValue(winname: [*c]const u8, trackname: [*c]const u8, value: [*c]c_int, max: c_int) void; // deprecated
 //*    pub extern fn Trackbar_GetPos(winname: [*c]const u8, trackname: [*c]const u8) c_int;
 //*    pub extern fn Trackbar_SetPos(winname: [*c]const u8, trackname: [*c]const u8, pos: c_int) void;
 //*    pub extern fn Trackbar_SetMin(winname: [*c]const u8, trackname: [*c]const u8, pos: c_int) void;
