@@ -28,7 +28,7 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "DNN Detection";
-    var window = cv.Window.init(window_name, .normal);
+    var window = cv.Window.init(window_name);
     defer window.deinit();
 
     // prepare image matrix

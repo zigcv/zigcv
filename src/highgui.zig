@@ -2,28 +2,35 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const imgcodecs = @import("imgcodecs.zig");
 const castToC = utils.castZigU8ToC;
 const Mat = core.Mat;
 const Rect = core.Rect;
 const Rects = core.Rects;
 
 pub const WindowFlag = enum {
-    // WindowNormal indicates a normal window.
+    /// WindowNormal indicates a normal window.
     normal,
 
-    // WindowAutosize indicates a window sized based on the contents.
+    /// WindowAutosize indicates a window sized based on the contents.
     autosize,
 
-    // WindowFullscreen indicates a full-screen window.
+    /// WindowFullscreen indicates a full-screen window.
     fullscreen,
 
-    // WindowFreeRatio indicates allow the user to resize without maintaining aspect ratio.
+    /// WindowFreeRatio indicates allow the user to resize without maintaining aspect ratio.
     free_ratio,
 
-    // WindowKeepRatio indicates always maintain an aspect ratio that matches the contents.
+    /// WindowKeepRatio indicates always maintain an aspect ratio that matches the contents.
     keep_ratio,
 
-    fn windowFlagToNum(wf: WindowFlag, comptime T: type) T {
+    fn toNum(wp: WindowPropertyFlag, wf: WindowFlag, comptime T: type) T {
+        if ((wp == .fullscreen and !(wf == .normal or wf == .fullscreen)) or
+            (wp == .autosize and !(wf == .normal or wf == .autosize)) or
+            (wp == .aspect_ratio and !(wf == .free_ratio or wf == .keep_ratio)))
+        {
+            @panic("invalid window property flag and window flag combination");
+        }
         return switch (wf) {
             .normal => 0x00000000,
             .autosize => 0x00000001,
@@ -33,13 +40,29 @@ pub const WindowFlag = enum {
         };
     }
 
-    fn numToWindowFlag(wf: anytype) WindowFlag {
-        return switch (wf) {
-            0x00000000 => .normal,
-            0x00000001 => .autosize,
-            1 => .fullscreen,
+    fn toEnum(wp: WindowPropertyFlag, wf: anytype) WindowFlag {
+        const f = switch (@typeInfo(@TypeOf(wf))) {
+            .Int, .ComptimeInt => @intCast(u32, wf),
+            .Float, .ComptimeFloat => @floatToInt(u32, wf),
+            else => unreachable,
+        };
+        return switch (f) {
+            0x00000000 => blk: {
+                break :blk switch (wp) {
+                    .fullscreen => .normal,
+                    .autosize => .normal,
+                    .aspect_ratio => .keep_ratio,
+                    else => unreachable,
+                };
+            },
+            1 => blk: {
+                break :blk switch (wp) {
+                    .fullscreen => .fullscreen,
+                    .autosize => .autosize,
+                    else => unreachable,
+                };
+            },
             0x00000100 => .free_ratio,
-            0x00000000 => .keep_ratio,
             else => @panic("invalid number"),
         };
     }
@@ -66,12 +89,15 @@ pub const WindowPropertyFlag = enum(u3) {
 
     // WindowPropertyTopMost status bar and tool bar
     top_most = 5,
+
+    // WindowPropertyVSYNC enables or disables VSYNC (in OpenGL mode)
+    vsync = 6,
 };
 
 pub const Window = struct {
     name: []const u8,
-    trackbar_name: ?[]const u8,
     open: bool,
+    trackbar: ?Trackbar,
 
     const Self = @This();
 
@@ -79,20 +105,12 @@ pub const Window = struct {
         return castToC(self.name);
     }
 
-    fn getCTrackbarName(self: Self) ![*]const u8 {
-        if (self.trackbar_name) |tn| {
-            return castToC(tn);
-        } else {
-            return error.WindowTrackbarNameNotFoundError;
-        }
-    }
-
-    pub fn init(window_name: []const u8, flags: WindowFlag) Self {
-        c.Window_New(@ptrCast([*]const u8, window_name), WindowFlag.windowFlagToNum(flags, c_int));
+    pub fn init(window_name: []const u8) Self {
+        c.Window_New(castToC(window_name), 0);
         return .{
             .name = window_name,
             .open = true,
-            .trackbar_name = null,
+            .trackbar = null,
         };
     }
 
@@ -101,177 +119,280 @@ pub const Window = struct {
         self.open = false;
     }
 
-    pub fn isOpen(self: Self) bool {
+    pub fn isOpened(self: Self) bool {
         return self.open;
     }
 
-    // SetWindowProperty changes parameters of a window dynamically.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga66e4a6db4d4e06148bcdfe0d70a5df27
-    //
+    /// SetWindowProperty changes parameters of a window dynamically.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga66e4a6db4d4e06148bcdfe0d70a5df27
+    ///
     pub fn setProperty(self: *Self, flag: WindowPropertyFlag, value: WindowFlag) void {
         _ = c.Window_SetProperty(
             self.getCWindowName(),
             @enumToInt(flag),
-            WindowFlag.windowFlagToNum(value, f64),
+            WindowFlag.toNum(flag, value, f64),
         );
     }
 
-    // GetWindowProperty returns properties of a window.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaaf9504b8f9cf19024d9d44a14e461656
-    //
-
-    pub fn getProperty(self: Self, flag: WindowPropertyFlag) WindowFlag {
-        const f: f64 = c.Window_GetProperty(
+    /// GetWindowProperty returns properties of a window.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaaf9504b8f9cf19024d9d44a14e461656
+    ///
+    pub fn getProperty(self: Self, comptime flag: WindowPropertyFlag) WindowFlag {
+        const wf: f64 = c.Window_GetProperty(
             self.getCWindowName(),
             @enumToInt(flag),
         );
-        return WindowFlag.numToWindowFlag(f);
+        const wpf = flag;
+        return WindowFlag.toEnum(wpf, wf);
     }
 
+    /// SetWindowTitle updates window title.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga56f8849295fd10d0c319724ddb773d96
+    ///
     pub fn setTitle(self: *Self, title: []const u8) void {
         _ = c.Window_SetTitle(self.getCWindowName(), castToC(title));
+        self.name = title;
     }
 
-    // WaitKey waits for a pressed key.
-    // This function is the only method in OpenCV's HighGUI that can fetch
-    // and handle events, so it needs to be called periodically
-    // for normal event processing
-    //
-    // For further details, please see:
-    // http://docs.opencv.org/master/d7/dfc/group__highgui.html#ga5628525ad33f52eab17feebcfba38bd7
-    //
-    pub fn waitKey(self: Self, delay: c_int) c_int {
+    /// WaitKey waits for a pressed key.
+    /// This function is the only method in OpenCV's HighGUI that can fetch
+    /// and handle events, so it needs to be called periodically
+    /// for normal event processing
+    ///
+    /// For further details, please see:
+    /// http://docs.opencv.org/master/d7/dfc/group__highgui.html#ga5628525ad33f52eab17feebcfba38bd7
+    ///
+    pub fn waitKey(self: Self, delay: i32) i32 {
         _ = self;
         return c.Window_WaitKey(delay);
     }
 
-    // IMShow displays an image Mat in the specified window.
-    // This function should be followed by the WaitKey function which displays
-    // the image for specified milliseconds. Otherwise, it won't display the image.
-    //
-    // For further details, please see:
-    // http://docs.opencv.org/master/d7/dfc/group__highgui.html#ga453d42fe4cb60e5723281a89973ee563
-    //
+    /// IMShow displays an image Mat in the specified window.
+    /// This function should be followed by the WaitKey function which displays
+    /// the image for specified milliseconds. Otherwise, it won't display the image.
+    ///
+    /// For further details, please see:
+    /// http://docs.opencv.org/master/d7/dfc/group__highgui.html#ga453d42fe4cb60e5723281a89973ee563
+    ///
     pub fn imShow(self: *Self, mat: core.Mat) void {
         _ = c.Window_IMShow(self.getCWindowName(), mat.ptr);
     }
 
-    // MoveWindow moves window to the specified position.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga8d86b207f7211250dbe6e28f76307ffb
-    //
-    pub fn move(self: *Self, x: c_int, y: c_int) void {
+    /// MoveWindow moves window to the specified position.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga8d86b207f7211250dbe6e28f76307ffb
+    ///
+    pub fn move(self: *Self, x: i32, y: i32) void {
         _ = c.Window_Move(self.getCWindowName(), x, y);
     }
 
-    // ResizeWindow resizes window to the specified size.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga9e80e080f7ef33f897e415358aee7f7e
-    //
-    pub fn resize(self: *Self, width: c_int, height: c_int) void {
+    /// ResizeWindow resizes window to the specified size.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga9e80e080f7ef33f897e415358aee7f7e
+    ///
+    pub fn resize(self: *Self, width: i32, height: i32) void {
         _ = c.Window_Resize(self.getCWindowName(), width, height);
     }
 
-    // SelectROI selects a Region Of Interest (ROI) on the given image.
-    // It creates a window and allows user to select a ROI using mouse.
-    //
-    // Controls:
-    // use space or enter to finish selection,
-    // use key c to cancel selection (function will return a zero Rect).
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga8daf4730d3adf7035b6de9be4c469af5
-    //
-    pub fn window_SelectROI(self: *Self, img: Mat) Rect {
+    /// SelectROI selects a Region Of Interest (ROI) on the given image.
+    /// It creates a window and allows user to select a ROI using mouse.
+    ///
+    /// Controls:
+    /// use space or enter to finish selection,
+    /// use key c to cancel selection (function will return a zero Rect).
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga8daf4730d3adf7035b6de9be4c469af5
+    ///
+    pub fn selectROI(self: *Self, img: Mat) Rect {
         const c_rects = c.Window_SelectROI(self.getCWindowName(), img.ptr);
         defer c.Rects_Close(c_rects);
         return Rect.fromC(c_rects);
     }
 
-    // SelectROIs selects multiple Regions Of Interest (ROI) on the given image.
-    // It creates a window and allows user to select ROIs using mouse.
-    //
-    // Controls:
-    // use space or enter to finish current selection and start a new one
-    // use esc to terminate multiple ROI selection process
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga0f11fad74a6432b8055fb21621a0f893
-    //
-    pub fn window_SelectROIs(self: *Self, img: Mat, allocator: std.mem.Allocator) !Rects {
+    /// SelectROIs selects multiple Regions Of Interest (ROI) on the given image.
+    /// It creates a window and allows user to select ROIs using mouse.
+    ///
+    /// Controls:
+    /// use space or enter to finish current selection and start a new one
+    /// use esc to terminate multiple ROI selection process
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga0f11fad74a6432b8055fb21621a0f893
+    ///
+    pub fn selectROIs(self: *Self, img: Mat, allocator: std.mem.Allocator) !Rects {
         const c_rects: c.Rects = c.Window_SelectROIs(self.getCWindowName(), img.ptr);
         defer c.Rects_Close(c_rects);
         return try Rect.toArrayList(c_rects, allocator);
     }
 
-    // CreateTrackbar creates a trackbar and attaches it to the specified window.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
-    //
+    /// CreateTrackbar creates a trackbar and attaches it to the specified window.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
+    ///
     pub fn createTrackbar(self: *Self, trackbar_name: []const u8, max: i32) void {
-        _ = c.Trackbar_Create(self.getCWindowName(), trackbar_name, trackbar_name, max);
-        self.trackbar_name = trackbar_name;
+        self.trackbar = Trackbar.init(&self.name, trackbar_name, max);
     }
 
-    // CreateTrackbarWithValue works like CreateTrackbar but also assigns a
-    // variable value to be a position synchronized with the trackbar.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
-    //
-    pub fn createTrackbarWithValue(self: *Self, trackbar_name: []const u8, value: []c_int, max: i32) void {
-        var c_value = @ptrCast([*]const c_int, value);
-        _ = c.Trackbar_CreateWithValue(self.getCWindowName(), trackbar_name, c_value, max);
-        self.trackbar_name = trackbar_name;
+    /// CreateTrackbarWithValue works like CreateTrackbar but also assigns a
+    /// variable value to be a position synchronized with the trackbar.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
+    ///
+    pub fn createTrackbarWithValue(self: *Self, trackbar_name: []const u8, value: *i32, max: i32) void {
+        self.trackbar = Trackbar.initWithValue(&self.name, trackbar_name, value, max);
     }
 
-    // GetPos returns the trackbar position.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga122632e9e91b9ec06943472c55d9cda8
-    //
-    pub fn trackBarGetPos(self: Self) !c_int {
-        const trackbar_name = try self.getCTrackbarName();
-        return c.Trackbar_GetPos(self.getCWindowName(), trackbar_name);
-    }
+    pub const Trackbar = struct {
+        trackbar_name: []const u8,
+        window_name: *[]const u8,
 
-    // SetPos sets the trackbar position.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga67d73c4c9430f13481fd58410d01bd8d
-    //
-    pub fn trackBarSetPos(self: *Self, pos: c_int) !void {
-        const trackbar_name = try self.getCTrackbarName();
-        _ = c.Trackbar_SetPos(self.getCWindowName(), trackbar_name, pos);
-    }
+        /// CreateTrackbar creates a trackbar and attaches it to the specified window.
+        ///
+        /// For further details, please see:
+        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
+        ///
+        pub fn init(window_name: *[]const u8, trackbar_name: []const u8, max: i32) Trackbar {
+            _ = c.Trackbar_Create(castToC(window_name.*), castToC(trackbar_name), max);
+            return .{ .trackbar_name = trackbar_name, .window_name = window_name };
+        }
 
-    // SetMin sets the trackbar minimum position.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#gabe26ffe8d2b60cc678895595a581b7aa
-    //
-    pub fn trackBarSetMin(self: *Self, pos: c_int) !void {
-        const trackbar_name = try self.getCTrackbarName();
-        _ = c.Trackbar_SetMin(self.getCWindowName(), trackbar_name, pos);
-    }
+        /// CreateTrackbarWithValue works like CreateTrackbar but also assigns a
+        /// variable value to be a position synchronized with the trackbar.
+        ///
+        /// For further details, please see:
+        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
+        ///
+        pub fn initWithValue(window_name: *[]const u8, trackbar_name: []const u8, value: *i32, max: i32) Trackbar {
+            _ = c.Trackbar_CreateWithValue(castToC(window_name.*), castToC(trackbar_name), value, max);
+            return .{ .trackbar_name = trackbar_name, .window_name = window_name };
+        }
 
-    // SetMax sets the trackbar maximum position.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga7e5437ccba37f1154b65210902fc4480
-    //
-    pub fn trackBarSetMax(self: *Self, pos: c_int) !void {
-        const trackbar_name = try self.getCTrackbarName();
-        _ = c.Trackbar_SetMax(self.getCWindowName(), trackbar_name, pos);
-    }
+        /// GetPos returns the trackbar position.
+        ///
+        /// For further details, please see:
+        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga122632e9e91b9ec06943472c55d9cda8
+        ///
+        pub fn getPos(self: Trackbar) i32 {
+            return c.Trackbar_GetPos(castToC(self.window_name.*), castToC(self.trackbar_name));
+        }
+
+        /// SetPos sets the trackbar position.
+        ///
+        /// For further details, please see:
+        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga67d73c4c9430f13481fd58410d01bd8d
+        ///
+        pub fn setPos(self: *Trackbar, pos: i32) void {
+            _ = c.Trackbar_SetPos(castToC(self.window_name.*), castToC(self.trackbar_name), pos);
+        }
+
+        /// SetMin sets the trackbar minimum position.
+        ///
+        /// For further details, please see:
+        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gabe26ffe8d2b60cc678895595a581b7aa
+        ///
+        pub fn setMin(self: *Trackbar, pos: i32) void {
+            _ = c.Trackbar_SetMin(castToC(self.window_name.*), castToC(self.trackbar_name), pos);
+        }
+
+        /// SetMax sets the trackbar maximum position.
+        ///
+        /// For further details, please see:
+        /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga7e5437ccba37f1154b65210902fc4480
+        ///
+        pub fn setMax(self: *Trackbar, pos: i32) void {
+            _ = c.Trackbar_SetMax(castToC(self.window_name.*), castToC(self.trackbar_name), pos);
+        }
+    };
 };
+
+const testing = @import("std").testing;
+test "window" {
+    var window = Window.init("test");
+    try testing.expectEqualStrings("test", window.name);
+
+    var val = window.waitKey(1);
+    try testing.expectEqual(@as(i32, -1), val);
+
+    try testing.expectEqual(true, window.isOpened());
+
+    window.setProperty(.fullscreen, .fullscreen);
+
+    var window_flag = window.getProperty(.fullscreen);
+    try testing.expectEqual(WindowFlag.fullscreen, window_flag);
+
+    window.setTitle("test2");
+    try testing.expectEqualStrings("test2", window.name);
+
+    window.move(100, 100);
+
+    window.resize(100, 100);
+
+    window.deinit();
+    try testing.expectEqual(false, window.isOpened());
+}
+
+test "window imshow" {
+    var window = Window.init("imshow");
+    defer window.deinit();
+
+    var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .unchanged);
+    defer img.deinit();
+    window.imShow(img);
+}
+
+test "window selectROI" {
+    // TODO
+}
+
+test "window selectROIs" {
+    // TODO
+}
+
+test "window trackbar" {
+    var window = Window.init("testtrackbar");
+    defer window.deinit();
+
+    window.createTrackbar("trackme", 100);
+
+    if (window.trackbar != null) {
+        var t = window.trackbar.?;
+        try testing.expectEqual(@as(i32, 0), t.getPos());
+
+        t.setMin(10);
+        t.setMax(150);
+        t.setPos(50);
+        try testing.expectEqual(@as(i32, 50), t.getPos());
+    } else @panic("trackbar not found");
+}
+
+test "window trackbarWithValue" {
+    var window = Window.init("testtrackbarWithValue");
+    defer window.deinit();
+
+    var val: i32 = 20;
+    window.createTrackbarWithValue("trackme", &val, 100);
+
+    if (window.trackbar != null) {
+        var t = window.trackbar.?;
+        try testing.expectEqual(@as(i32, 20), t.getPos());
+
+        t.setMin(10);
+        t.setMax(150);
+        t.setPos(50);
+        try testing.expectEqual(@as(i32, 50), t.getPos());
+    } else @panic("trackbar not found");
+}
 
 //*    implementation done
 //*    pub extern fn Window_New(winname: [*c]const u8, flags: c_int) void;

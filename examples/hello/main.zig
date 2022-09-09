@@ -10,7 +10,7 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "Hello";
-    var window = cv.Window.init(window_name, .normal);
+    var window = cv.Window.init(window_name);
     defer window.deinit();
 
     var img = cv.Mat.init();

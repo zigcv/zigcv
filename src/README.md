@@ -3,7 +3,7 @@
 - [ ]   calib3d.zig
 - [ ]   core.zig
 - [ ]   dnn.zig
-- [ ]   highgui.zig
+- [x]   highgui.zig
 - [ ]   objdetect.zig
 - [x]   imgcodecs.zig
 - [ ]   imgproc.zig
