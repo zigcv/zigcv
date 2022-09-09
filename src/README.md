@@ -4,7 +4,7 @@
 - [ ]   core.zig
 - [ ]   dnn.zig
 - [x]   highgui.zig
-- [ ]   objdetect.zig
+- [x]   objdetect.zig
 - [x]   imgcodecs.zig
 - [ ]   imgproc.zig
 - [ ]   photo.zig
