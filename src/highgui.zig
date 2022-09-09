@@ -2,7 +2,6 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
-const imgcodecs = @import("imgcodecs.zig");
 const castToC = utils.castZigU8ToC;
 const Mat = core.Mat;
 const Rect = core.Rect;
@@ -296,6 +295,7 @@ pub const Window = struct {
 };
 
 const testing = @import("std").testing;
+const imgcodecs = @import("imgcodecs.zig");
 test "window" {
     var window = Window.init("test");
     try testing.expectEqualStrings("test", window.name);
