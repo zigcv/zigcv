@@ -200,16 +200,18 @@ pub const Mat = struct {
         min = 3,
     };
 
+    /// init Mat
     pub fn init() Self {
         return .{ .ptr = c.Mat_New() };
     }
 
+    /// init Mat with size and type
     pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
         return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
     }
 
     pub fn fromScalar(s: Scalar) Self {
-        return .{ .ptr = c.Mat_NewFromScalar(Scalar.fromC(s)) };
+        return .{ .ptr = c.Mat_NewFromScalar(s.toC()) };
     }
 
     pub fn fromC(ptr: c.Mat) !Self {
@@ -254,10 +256,20 @@ pub const Mat = struct {
         return self.ptr;
     }
 
-    pub fn copy(self: Self, dest: *Mat) void {
+    /// CopyTo copies Mat into destination Mat.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a33fd5d125b4c302b0c9aa86980791a77
+    ///
+    pub fn copyTo(self: Self, dest: *Mat) void {
         _ = c.Mat_CopyTo(self.ptr, dest.*.ptr);
     }
 
+    /// CopyToWithMask copies Mat into destination Mat after applying the mask Mat.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a626fe5f96d02525e2604d2ad46dd574f
+    ///
     pub fn copyToWithMask(self: Self, dest: *Mat, mask: Mat) void {
         _ = c.Mat_CopyToWithMask(self.ptr, dest.*.ptr, mask.ptr);
     }

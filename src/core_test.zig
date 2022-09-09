@@ -88,3 +88,75 @@ test "mat ones" {
         }
     }
 }
+
+test "mat copyTo" {
+    var mat = Mat.ones(100, 102, .cv8sc1);
+    defer mat.deinit();
+    var mat2 = Mat.init();
+    defer mat2.deinit();
+    mat.copyTo(&mat2);
+
+    try testing.expectEqual(mat.rows(), mat2.rows());
+    try testing.expectEqual(mat.cols(), mat2.cols());
+    try testing.expectEqual(mat.channels(), mat2.channels());
+    try testing.expectEqual(mat.getType(), mat2.getType());
+    {
+        var i: usize = 0;
+        while (i < mat.rows()) : (i += 1) {
+            var j: usize = 0;
+            while (j < mat.cols()) : (j += 1) {
+                try testing.expectEqual(mat.at(u8, i, j), mat2.at(u8, i, j));
+            }
+        }
+    }
+}
+
+test "mat copyToWithMask" {
+    var mat = Mat.initSize(101, 102, .cv8uc1);
+    defer mat.deinit();
+    var diff = Mat.init();
+    defer diff.deinit();
+    var mask = Mat.initSize(101, 102, .cv8uc1);
+    defer mask.deinit();
+
+    mat.set(u8, 0, 0, 255);
+    mat.set(u8, 0, 1, 255);
+
+    mask.set(u8, 0, 0, 255);
+
+    var copy = Mat.init();
+    defer copy.deinit();
+
+    mat.copyToWithMask(&copy, mask);
+
+    try testing.expectEqual(mat.rows(), copy.rows());
+    try testing.expectEqual(mat.cols(), copy.cols());
+
+    try testing.expectEqual(@as(u8, 255), copy.at(u8, 0, 0));
+    try testing.expectEqual(@as(u8, 0), copy.at(u8, 0, 1));
+}
+
+test "mat clone" {
+    var mat = Mat.ones(100, 102, .cv8sc1);
+    defer mat.deinit();
+
+    mat.set(i8, 0, 0, 3);
+
+    var clone = mat.clone();
+    defer clone.deinit();
+
+    try testing.expectEqual(mat.rows(), clone.rows());
+    try testing.expectEqual(mat.cols(), clone.cols());
+    try testing.expectEqual(mat.channels(), clone.channels());
+    try testing.expectEqual(mat.getType(), clone.getType());
+
+    {
+        var i: usize = 0;
+        while (i < mat.rows()) : (i += 1) {
+            var j: usize = 0;
+            while (j < mat.cols()) : (j += 1) {
+                try testing.expectEqual(mat.at(u8, i, j), clone.at(u8, i, j));
+            }
+        }
+    }
+}
