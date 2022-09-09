@@ -7,98 +7,98 @@ const Mat = core.Mat;
 const Rect = core.Rect;
 const Rects = core.Rects;
 
-pub const WindowFlag = enum {
-    /// WindowNormal indicates a normal window.
-    normal,
-
-    /// WindowAutosize indicates a window sized based on the contents.
-    autosize,
-
-    /// WindowFullscreen indicates a full-screen window.
-    fullscreen,
-
-    /// WindowFreeRatio indicates allow the user to resize without maintaining aspect ratio.
-    free_ratio,
-
-    /// WindowKeepRatio indicates always maintain an aspect ratio that matches the contents.
-    keep_ratio,
-
-    fn toNum(wp: WindowPropertyFlag, wf: WindowFlag, comptime T: type) T {
-        if ((wp == .fullscreen and !(wf == .normal or wf == .fullscreen)) or
-            (wp == .autosize and !(wf == .normal or wf == .autosize)) or
-            (wp == .aspect_ratio and !(wf == .free_ratio or wf == .keep_ratio)))
-        {
-            @panic("invalid window property flag and window flag combination");
-        }
-        return switch (wf) {
-            .normal => 0x00000000,
-            .autosize => 0x00000001,
-            .fullscreen => 1,
-            .free_ratio => 0x00000100,
-            .keep_ratio => 0x00000000,
-        };
-    }
-
-    fn toEnum(wp: WindowPropertyFlag, wf: anytype) WindowFlag {
-        const f = switch (@typeInfo(@TypeOf(wf))) {
-            .Int, .ComptimeInt => @intCast(u32, wf),
-            .Float, .ComptimeFloat => @floatToInt(u32, wf),
-            else => unreachable,
-        };
-        return switch (f) {
-            0x00000000 => blk: {
-                break :blk switch (wp) {
-                    .fullscreen => .normal,
-                    .autosize => .normal,
-                    .aspect_ratio => .keep_ratio,
-                    else => unreachable,
-                };
-            },
-            1 => blk: {
-                break :blk switch (wp) {
-                    .fullscreen => .fullscreen,
-                    .autosize => .autosize,
-                    else => unreachable,
-                };
-            },
-            0x00000100 => .free_ratio,
-            else => @panic("invalid number"),
-        };
-    }
-};
-
-pub const WindowPropertyFlag = enum(u3) {
-    // WindowPropertyFullscreen fullscreen property
-    // (can be WINDOW_NORMAL or WINDOW_FULLSCREEN).
-    fullscreen = 0,
-
-    // WindowPropertyAutosize is autosize property
-    // (can be WINDOW_NORMAL or WINDOW_AUTOSIZE).
-    autosize = 1,
-
-    // WindowPropertyAspectRatio window's aspect ration
-    // (can be set to WINDOW_FREERATIO or WINDOW_KEEPRATIO).
-    aspect_ratio = 2,
-
-    // WindowPropertyOpenGL opengl support.
-    opengl = 3,
-
-    // WindowPropertyVisible or not.
-    visible = 4,
-
-    // WindowPropertyTopMost status bar and tool bar
-    top_most = 5,
-
-    // WindowPropertyVSYNC enables or disables VSYNC (in OpenGL mode)
-    vsync = 6,
-};
-
 pub const Window = struct {
     name: []const u8,
     open: bool,
     trackbar: ?Trackbar,
 
     const Self = @This();
+
+    pub const Flag = enum {
+        /// WindowNormal indicates a normal window.
+        normal,
+
+        /// WindowAutosize indicates a window sized based on the contents.
+        autosize,
+
+        /// WindowFullscreen indicates a full-screen window.
+        fullscreen,
+
+        /// WindowFreeRatio indicates allow the user to resize without maintaining aspect ratio.
+        free_ratio,
+
+        /// WindowKeepRatio indicates always maintain an aspect ratio that matches the contents.
+        keep_ratio,
+
+        fn toNum(wp: PropertyFlag, wf: Flag, comptime T: type) T {
+            if ((wp == .fullscreen and !(wf == .normal or wf == .fullscreen)) or
+                (wp == .autosize and !(wf == .normal or wf == .autosize)) or
+                (wp == .aspect_ratio and !(wf == .free_ratio or wf == .keep_ratio)))
+            {
+                @panic("invalid window property flag and window flag combination");
+            }
+            return switch (wf) {
+                .normal => 0x00000000,
+                .autosize => 0x00000001,
+                .fullscreen => 1,
+                .free_ratio => 0x00000100,
+                .keep_ratio => 0x00000000,
+            };
+        }
+
+        fn toEnum(wp: PropertyFlag, wf: anytype) Flag {
+            const f = switch (@typeInfo(@TypeOf(wf))) {
+                .Int, .ComptimeInt => @intCast(u32, wf),
+                .Float, .ComptimeFloat => @floatToInt(u32, wf),
+                else => unreachable,
+            };
+            return switch (f) {
+                0x00000000 => blk: {
+                    break :blk switch (wp) {
+                        .fullscreen => .normal,
+                        .autosize => .normal,
+                        .aspect_ratio => .keep_ratio,
+                        else => unreachable,
+                    };
+                },
+                1 => blk: {
+                    break :blk switch (wp) {
+                        .fullscreen => .fullscreen,
+                        .autosize => .autosize,
+                        else => unreachable,
+                    };
+                },
+                0x00000100 => .free_ratio,
+                else => @panic("invalid number"),
+            };
+        }
+    };
+
+    pub const PropertyFlag = enum(u3) {
+        // WindowPropertyFullscreen fullscreen property
+        // (can be WINDOW_NORMAL or WINDOW_FULLSCREEN).
+        fullscreen = 0,
+
+        // WindowPropertyAutosize is autosize property
+        // (can be WINDOW_NORMAL or WINDOW_AUTOSIZE).
+        autosize = 1,
+
+        // WindowPropertyAspectRatio window's aspect ration
+        // (can be set to WINDOW_FREERATIO or WINDOW_KEEPRATIO).
+        aspect_ratio = 2,
+
+        // WindowPropertyOpenGL opengl support.
+        opengl = 3,
+
+        // WindowPropertyVisible or not.
+        visible = 4,
+
+        // WindowPropertyTopMost status bar and tool bar
+        top_most = 5,
+
+        // WindowPropertyVSYNC enables or disables VSYNC (in OpenGL mode)
+        vsync = 6,
+    };
 
     fn getCWindowName(self: Self) [*]const u8 {
         return castToC(self.name);
@@ -127,11 +127,11 @@ pub const Window = struct {
     /// For further details, please see:
     /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga66e4a6db4d4e06148bcdfe0d70a5df27
     ///
-    pub fn setProperty(self: *Self, flag: WindowPropertyFlag, value: WindowFlag) void {
+    pub fn setProperty(self: *Self, flag: PropertyFlag, value: Flag) void {
         _ = c.Window_SetProperty(
             self.getCWindowName(),
             @enumToInt(flag),
-            WindowFlag.toNum(flag, value, f64),
+            Flag.toNum(flag, value, f64),
         );
     }
 
@@ -140,13 +140,13 @@ pub const Window = struct {
     /// For further details, please see:
     /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaaf9504b8f9cf19024d9d44a14e461656
     ///
-    pub fn getProperty(self: Self, comptime flag: WindowPropertyFlag) WindowFlag {
+    pub fn getProperty(self: Self, comptime flag: PropertyFlag) Flag {
         const wf: f64 = c.Window_GetProperty(
             self.getCWindowName(),
             @enumToInt(flag),
         );
         const wpf = flag;
-        return WindowFlag.toEnum(wpf, wf);
+        return Flag.toEnum(wpf, wf);
     }
 
     /// SetWindowTitle updates window title.
@@ -308,7 +308,7 @@ test "window" {
     window.setProperty(.fullscreen, .fullscreen);
 
     var window_flag = window.getProperty(.fullscreen);
-    try testing.expectEqual(WindowFlag.fullscreen, window_flag);
+    try testing.expectEqual(Window.Flag.fullscreen, window_flag);
 
     window.setTitle("test2");
     try testing.expectEqualStrings("test2", window.name);
