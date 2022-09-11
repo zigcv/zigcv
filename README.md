@@ -14,7 +14,7 @@ This C-API is currently fixed.
 
 ## How to execute
 
-At first, install openCV. (maybe you can read how to install from [here](https://github.com/hybridgroup/gocv#how-to-install)).  
+At first, install openCV 4.6. (maybe you can read how to install from [here](https://github.com/hybridgroup/gocv#how-to-install)).  
 Then:
 
 ```sh
