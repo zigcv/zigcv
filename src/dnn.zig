@@ -2,127 +2,122 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Size = core.Size;
 const Scalar = core.Scalar;
 const AsyncArray = @import("asyncarray.zig").AsyncArray;
-
-pub const NetBackendType = enum(i32) {
-    // NetBackendDefault is the default backend.
-    default = 0,
-
-    // NetBackendHalide is the Halide backend.
-    halide = 1,
-
-    // NetBackendOpenVINO is the OpenVINO backend.
-    open_vino = 2,
-
-    // NetBackendOpenCV is the OpenCV backend.
-    open_cv = 3,
-
-    // NetBackendVKCOM is the Vulkan backend.
-    vkcom = 4,
-
-    // NetBackendCUDA is the Cuda backend.
-    cuda = 5,
-
-    // ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
-    // - halide
-    // - openvino
-    // - opencv
-    // - vulkan
-    // - cuda
-    // - default
-    pub fn parse(backend: []const u8) @This() {
-        return switch (backend) {
-            "halide" => .halide,
-            "openvino" => .open_vino,
-            "opencv" => .open_cv,
-            "vulkan" => .vkcom,
-            "cuda" => .cuda,
-            else => .default,
-        };
-    }
-};
-
-pub const NetTargetType = enum(i32) {
-    // NetTargetCPU is the default CPU device target.
-    cpu = 0,
-
-    // NetTargetFP32 is the 32-bit OpenCL target.
-    fp32 = 1,
-
-    // NetTargetFP16 is the 16-bit OpenCL target.
-    fp16 = 2,
-
-    // NetTargetVPU is the Movidius VPU target.
-    vpu = 3,
-
-    // NetTargetVulkan is the NVIDIA Vulkan target.
-    vulkan = 4,
-
-    // NetTargetFPGA is the FPGA target.
-    fpga = 5,
-
-    // NetTargetCUDA is the CUDA target.
-    cuda = 6,
-
-    // NetTargetCUDAFP16 is the CUDA target.
-    cuda_fp16 = 7,
-
-    pub fn parse(target: []const u8) @This() {
-        return switch (target) {
-            "fp32" => .fp32,
-            "fp16" => .fp16,
-            "vpu" => .vpu,
-            "vulkan" => .vkcom,
-            "fpga" => .fpga,
-            "cuda" => .cuda,
-            "cuda_fp16" => .cuda_fp16,
-            "cpu" => .cpu,
-            else => .cpu,
-        };
-    }
-};
 
 pub const Net = struct {
     ptr: c.Net,
 
     const Self = @This();
 
-    pub fn init() Self {
-        return Self{ .ptr = null };
-    }
+    pub const BackendType = enum(i32) {
+        // NetBackendDefault is the default backend.
+        default = 0,
 
-    pub fn fromC(ptr: c.Net) !Self {
-        if (ptr == null) {
-            return error.RuntimeError;
+        // NetBackendHalide is the Halide backend.
+        halide = 1,
+
+        // NetBackendOpenVINO is the OpenVINO backend.
+        open_vino = 2,
+
+        // NetBackendOpenCV is the OpenCV backend.
+        open_cv = 3,
+
+        // NetBackendVKCOM is the Vulkan backend.
+        vkcom = 4,
+
+        // NetBackendCUDA is the Cuda backend.
+        cuda = 5,
+
+        // ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
+        // - halide
+        // - openvino
+        // - opencv
+        // - vulkan
+        // - cuda
+        // - default
+        pub fn parse(backend: []const u8) @This() {
+            return switch (backend) {
+                "halide" => .halide,
+                "openvino" => .open_vino,
+                "opencv" => .open_cv,
+                "vulkan" => .vkcom,
+                "cuda" => .cuda,
+                else => .default,
+            };
         }
-        return Self{ .ptr = ptr };
+    };
+
+    pub const TargetType = enum(i32) {
+        // NetTargetCPU is the default CPU device target.
+        cpu = 0,
+
+        // NetTargetFP32 is the 32-bit OpenCL target.
+        fp32 = 1,
+
+        // NetTargetFP16 is the 16-bit OpenCL target.
+        fp16 = 2,
+
+        // NetTargetVPU is the Movidius VPU target.
+        vpu = 3,
+
+        // NetTargetVulkan is the NVIDIA Vulkan target.
+        vulkan = 4,
+
+        // NetTargetFPGA is the FPGA target.
+        fpga = 5,
+
+        // NetTargetCUDA is the CUDA target.
+        cuda = 6,
+
+        // NetTargetCUDAFP16 is the CUDA target.
+        cuda_fp16 = 7,
+
+        pub fn parse(target: []const u8) @This() {
+            return switch (target) {
+                "fp32" => .fp32,
+                "fp16" => .fp16,
+                "vpu" => .vpu,
+                "vulkan" => .vkcom,
+                "fpga" => .fpga,
+                "cuda" => .cuda,
+                "cuda_fp16" => .cuda_fp16,
+                "cpu" => .cpu,
+                else => .cpu,
+            };
+        }
+    };
+
+    pub fn initFromC(ptr: c.Net) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr != null) _ = c.Net_Close(self.ptr);
+        c.Net_Close(self.ptr);
     }
 
     pub fn readNet(model: []const u8, config: []const u8) !Self {
-        return try Self.fromC(c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config)));
+        return try Self.initFromC(c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config)));
     }
 
     pub fn readNetFromCaffe(prototxt: []const u8, caffe_model: []const u8) !Self {
-        return try Self.fromC(c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model)));
+        return try Self.initFromC(c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model)));
     }
 
     pub fn readNetFromTensorflow(model: []const u8) !Self {
-        return try Self.fromC(c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model)));
+        return try Self.initFromC(c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model)));
     }
 
     pub fn readNetFromTorch(model: []const u8) !Self {
-        return try Self.fromC(c.Net_ReadNetFromTorch(utils.castZigU8ToC(model)));
+        return try Self.initFromC(c.Net_ReadNetFromTorch(utils.castZigU8ToC(model)));
     }
 
     pub fn readNetFromONNX(model: []const u8) !Self {
-        return try Self.fromC(c.Net_ReadNetFromONNX(utils.castZigU8ToC(model)));
+        return try Self.initFromC(c.Net_ReadNetFromONNX(utils.castZigU8ToC(model)));
     }
 
     pub fn empty(self: Self) bool {
@@ -130,18 +125,15 @@ pub const Net = struct {
         return c.Net_Empty(self.ptr);
     }
 
-    pub fn setInput(self: *Self, blob: Mat, name: []const u8) !void {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn setInput(self: *Self, blob: Mat, name: []const u8) void {
         _ = c.Net_SetInput(self.ptr, blob.ptr, utils.castZigU8ToC(name));
     }
 
     pub fn forward(self: *Self, output_name: []const u8) !Mat {
-        if (self.ptr == null) return error.nullPointerError;
-        return Mat.fromC(c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name)));
+        return try Mat.initFromC(c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name)));
     }
 
-    pub fn forwardAsync(self: *Self, output_name: []const u8) !AsyncArray {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn forwardAsync(self: *Self, output_name: []const u8) AsyncArray {
         return AsyncArray.fromC(c.Net_ForwardAsync(self.*.ptr, utils.castZigU8ToC(output_name)));
     }
 
@@ -150,8 +142,7 @@ pub const Net = struct {
     // For further details, please see:
     // https://docs.opencv.org/3.4/db/d30/classcv_1_1dnn_1_1Net.html#a7f767df11386d39374db49cd8df8f59e
     //
-    pub fn setPreferableBackend(self: *Self, backend: NetBackendType) !void {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn setPreferableBackend(self: *Self, backend: BackendType) void {
         _ = c.Net_SetPreferableBackend(self.ptr, @enumToInt(backend));
     }
 
@@ -159,8 +150,7 @@ pub const Net = struct {
     //
     // For further details, please see:
     // https://docs.opencv.org/3.4/db/d30/classcv_1_1dnn_1_1Net.html#a9dddbefbc7f3defbe3eeb5dc3d3483f4
-    pub fn setPreferableTarget(self: *Self, target: NetTargetType) !void {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn setPreferableTarget(self: *Self, target: TargetType) void {
         _ = c.Net_SetPreferableTarget(self.ptr, @enumToInt(target));
     }
 
@@ -169,13 +159,11 @@ pub const Net = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/db/d30/classcv_1_1dnn_1_1Net.html#a06ce946f675f75d1c020c5ddbc78aedc
     //
-    pub fn getPerfProfile(self: Self) !f64 {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn getPerfProfile(self: Self) f64 {
         return c.Net_GetPerfProfile(self.ptr);
     }
 
-    pub fn getUnconnectedOutLayers(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn getUnconnectedOutLayers(self: Self, allocator: std.mem.Allocator) std.ArrayList(i32) {
         var res = c.IntVector{};
         defer c.IntVector_Close(res);
         _ = c.Net_GetUnconnectedOutLayers(self.ptr, &res);
@@ -190,25 +178,21 @@ pub const Net = struct {
     }
 
     pub fn getLayerNames(self: *Self) []const u8 {
-        if (self.ptr == null) return error.nullPointerError;
         const c_strs = c.CStrings{};
         defer c.CStrings_Close(c_strs);
         _ = c.Net_GetLayerNames(self.ptr, &c_strs);
         return std.mem.span(c_strs);
     }
 
-    pub fn getLayer(self: Self, layerid: i32) !Layer {
-        if (self.ptr == null) return error.nullPointerError;
-        return Layer.fromC(c.Net_GetLayer(self.ptr, layerid));
+    pub fn getLayer(self: Self, layerid: i32) Layer {
+        return Layer.initFromC(c.Net_GetLayer(self.ptr, layerid));
     }
 
-    pub fn getBlobChannel(self: Self, imgidx: i32, chnidx: i32) !Mat {
-        if (self.ptr == null) return error.nullPointerError;
-        return try Mat.fromC(c.Net_GetBlobChannel(self.ptr, imgidx, chnidx));
+    pub fn getBlobChannel(self: Self, imgidx: i32, chnidx: i32) Mat {
+        return try Mat.initFromC(c.Net_GetBlobChannel(self.ptr, imgidx, chnidx));
     }
 
     pub fn getBlobSize(self: Self, blob: Mat) !Size {
-        if (self.ptr == null) return error.nullPointerError;
         return Size.fromC(c.Net_GetBlobSize(self.ptr, blob.ptr));
     }
 };
@@ -221,7 +205,7 @@ pub const Net = struct {
 // https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#ga152367f253c81b53fe6862b299f5c5cd
 //
 pub fn blobFromImage(image: Mat, scalefactor: f64, size: Size, mean: Scalar, swap_rb: bool, crop: bool) !Mat {
-    return try Mat.fromC(c.Net_BlobFromImage(image.ptr, scalefactor, size.toC(), mean.toC(), swap_rb, crop));
+    return try Mat.initFromC(c.Net_BlobFromImage(image.ptr, scalefactor, size.toC(), mean.toC(), swap_rb, crop));
 }
 
 // BlobFromImages Creates 4-dimensional blob from series of images.
@@ -233,43 +217,40 @@ pub fn blobFromImage(image: Mat, scalefactor: f64, size: Size, mean: Scalar, swa
 //
 pub fn blobFromImages(images: []const Mat, blob: *Mat, scalefactor: f64, size: Size, mean: Scalar, swap_r_b: bool, crop: bool, ddepth: i32, allocator: std.mem.Allocator) !void {
     var c_mats = try core.matsToCMats(images, allocator);
-    c.Net_BlobFromImages(c_mats, blob.*.ptr, scalefactor, size.toC(), mean.toC(), swap_r_b, crop, ddepth);
+    c.Net_BlobFromImages(c_mats, blob.*.toC(), scalefactor, size.toC(), mean.toC(), swap_r_b, crop, ddepth);
 }
 
 pub const Layer = struct {
-    ptr: ?c.Layer,
+    ptr: c.Layer,
 
     const Self = @This();
 
-    pub fn fromC(ptr: c.Layer) Self {
-        return Self{ .ptr = ptr };
+    pub fn initFromC(ptr: c.Layer) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr != null) _ = c.Layer_Close(self.ptr);
+        c.Layer_Close(self.ptr);
     }
 
     pub fn toC(self: Self) c.Layer {
         return self.ptr;
     }
 
-    pub fn inputNameToIndex(self: *Self, name: []const u8) !i32 {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn inputNameToIndex(self: *Self, name: []const u8) i32 {
         return c.Layer_InputNameToIndex(self.ptr, utils.castZigU8ToC(name));
     }
 
-    pub fn outputNameToIndex(self: *Self, name: []const u8) !i32 {
-        if (self.ptr == null) return error.nullPointerError;
+    pub fn outputNameToIndex(self: *Self, name: []const u8) i32 {
         return c.Layer_OutputNameToIndex(self.ptr, utils.castZigU8ToC(name));
     }
 
     pub fn getName(self: Self) ![]const u8 {
-        if (self.ptr == null) return error.nullPointerError;
         return utils.castZigU8ToC(c.Layer_GetName(self.ptr));
     }
 
     pub fn getType(self: Self) ![]const u8 {
-        if (self.ptr == null) return error.nullPointerError;
         return utils.castZigU8ToC(c.Layer_GetType(self.ptr));
     }
 };

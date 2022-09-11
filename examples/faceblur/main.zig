@@ -20,15 +20,15 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "Face Detect";
-    var window = cv.Window.init(window_name);
+    var window = try cv.Window.init(window_name);
     defer window.deinit();
 
     // prepare image matrix
-    var img = cv.Mat.init();
+    var img = try cv.Mat.init();
     defer img.deinit();
 
     // load classifier to recognize faces
-    var classifier = cv.CascadeClassifier.init();
+    var classifier = try cv.CascadeClassifier.init();
     defer classifier.deinit();
 
     classifier.load("./libs/gocv/data/haarcascade_frontalface_default.xml") catch {

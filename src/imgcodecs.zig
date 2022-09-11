@@ -144,7 +144,7 @@ const STDVector = packed struct {
 ///
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
     var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
-    return try Mat.fromC(cMat);
+    return try Mat.initFromC(cMat);
 }
 
 /// IMWrite writes a Mat to an image file.
@@ -201,7 +201,7 @@ pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
         .data = @ptrCast([*]u8, buf),
         .length = @intCast(i32, buf.len),
     };
-    return try Mat.fromC(c.Image_IMDecode(data, @enumToInt(flags)));
+    return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
 
 /// IMEncode encodes an image Mat into a memory buffer.

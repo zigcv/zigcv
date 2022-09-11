@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Rect = core.Rect;
 const Rects = core.Rects;
@@ -17,8 +18,10 @@ pub const CascadeClassifier = struct {
 
     const Self = @This();
 
-    pub fn init() Self {
-        return .{ .ptr = c.CascadeClassifier_New() };
+    pub fn init() !Self {
+        var ptr = c.CascadeClassifier_New();
+        ptr = try epnn(ptr);
+        return Self{ .ptr = ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -88,8 +91,10 @@ pub const HOGDescriptor = struct {
 
     const Self = @This();
 
-    pub fn init() Self {
-        return .{ .ptr = c.HOGDescriptor_New() };
+    pub fn init() !Self {
+        var ptr = c.HOGDescriptor_New();
+        ptr = try epnn(ptr);
+        return .{ .ptr = ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -152,7 +157,7 @@ pub const HOGDescriptor = struct {
     // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
     //
     pub fn getDefaultPeopleDetector() !Mat {
-        return Mat.fromC(c.HOG_GetDefaultPeopleDetector());
+        return Mat.initFromC(c.HOG_GetDefaultPeopleDetector());
     }
 
     // SetSVMDetector sets the data for the HOGDescriptor.
@@ -197,8 +202,10 @@ pub const QRCodeDetector = struct {
 
     const Self = @This();
 
-    pub fn init() Self {
-        return .{ .ptr = c.QRCodeDetector_New() };
+    pub fn init() !Self {
+        var ptr = c.QRCodeDetector_New();
+        ptr = try epnn(ptr);
+        return .{ .ptr = ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -273,13 +280,13 @@ pub const QRCodeDetector = struct {
         var c_decoded: c.CStrings = undefined;
         var c_qr_codes: c.Mats = undefined;
 
-        var points = Mat.init();
+        var points = try Mat.init();
 
         const result = c.QRCodeDetector_DetectAndDecodeMulti(
             self.ptr,
-            input.ptr,
+            input.toC(),
             &c_decoded,
-            points.ptr,
+            points.toC(),
             &c_qr_codes,
         );
         var decoded = try std.ArrayList([]const u8).initCapacity(allocator, @intCast(usize, c_decoded.length));
@@ -295,7 +302,7 @@ pub const QRCodeDetector = struct {
         {
             var i: usize = 0;
             while (i < c_qr_codes.length) : (i += 1) {
-                try qr_codes.append(try Mat.fromC(c_qr_codes.mats[i]));
+                try qr_codes.append(try Mat.initFromC(c_qr_codes.mats[i]));
             }
         }
 
@@ -316,7 +323,7 @@ test "objdetect CascadeClassifier" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    var classifier = CascadeClassifier.init();
+    var classifier = try CascadeClassifier.init();
     defer classifier.deinit();
 
     try classifier.load("libs/gocv/data/haarcascade_frontalface_default.xml");
@@ -332,7 +339,7 @@ test "objdetect CascadeClassifierWithParams" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    var classifier = CascadeClassifier.init();
+    var classifier = try CascadeClassifier.init();
     defer classifier.deinit();
 
     try classifier.load("libs/gocv/data/haarcascade_frontalface_default.xml");
@@ -366,7 +373,7 @@ test "objdetect HOGDescriptor" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    var hog = HOGDescriptor.init();
+    var hog = try HOGDescriptor.init();
     defer hog.deinit();
 
     var d: Mat = try HOGDescriptor.getDefaultPeopleDetector();
@@ -384,7 +391,7 @@ test "objdetect HOGDescriptorWithParams" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    var hog = HOGDescriptor.init();
+    var hog = try HOGDescriptor.init();
     defer hog.deinit();
 
     var d: Mat = try HOGDescriptor.getDefaultPeopleDetector();
@@ -440,12 +447,12 @@ test "objdetect QRCodeDetector" {
     try testing.expectEqual(false, img.isEmpty());
     defer img.deinit();
 
-    var detector = QRCodeDetector.init();
+    var detector = try QRCodeDetector.init();
     defer detector.deinit();
 
-    var bbox = Mat.init();
+    var bbox = try Mat.init();
     defer bbox.deinit();
-    var qr = Mat.init();
+    var qr = try Mat.init();
     defer qr.deinit();
 
     var res = detector.detect(img, &bbox);
@@ -462,12 +469,12 @@ test "objdetect Multi QRCodeDetector" {
     try testing.expectEqual(false, img.isEmpty());
     defer img.deinit();
 
-    var detector = QRCodeDetector.init();
+    var detector = try QRCodeDetector.init();
     defer detector.deinit();
 
-    var mbox = Mat.init();
+    var mbox = try Mat.init();
     defer mbox.deinit();
-    var qr = Mat.init();
+    var qr = try Mat.init();
     defer qr.deinit();
 
     var res = detector.detectMulti(img, &mbox);
@@ -478,12 +485,8 @@ test "objdetect Multi QRCodeDetector" {
     defer res2.deinit();
     try testing.expectEqual(true, res2.is_detected);
     try testing.expectEqual(@as(usize, 2), res2.decoded.items.len);
-    for (res2.decoded.items) |decoded| {
-        std.debug.print("\ndecoded: {s}\n", .{decoded});
-    }
 
-    // TODO: memory error
-    // try testing.expectEqualStrings("foo", res2.decoded.items[0]);
+    try testing.expectEqualStrings("foo", res2.decoded.items[0]);
     try testing.expectEqualStrings("bar", res2.decoded.items[1]);
 }
 

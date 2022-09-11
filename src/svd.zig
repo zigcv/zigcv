@@ -6,7 +6,7 @@ const Mat = core.Mat;
 ///
 /// https://docs.opencv.org/4.1.2/df/df7/classcv_1_1SVD.html#a76f0b2044df458160292045a3d3714c6
 pub fn svdCompute(src: Mat, w: *Mat, u: *Mat, vt: *Mat) void {
-    c.SVD_Compute(src.ptr, w.*.ptr, u.*.ptr, vt.*.ptr);
+    c.SVD_Compute(src.toC(), w.*.toC(), u.*.toC(), vt.*.toC());
 }
 
 //*    implementation done
@@ -20,19 +20,19 @@ test "svd" {
     const result_u = [4]f32{ -0.1346676, -0.99089086, 0.9908908, -0.1346676 };
     const result_vt = [4]f32{ 0.01964448, 0.999807, -0.999807, 0.01964448 };
 
-    var src = Mat.initSize(2, 2, .cv32fc1);
+    var src = try Mat.initSize(2, 2, .cv32fc1);
     src.set(f32, 0, 0, 3.76956568);
     src.set(f32, 0, 1, -0.90478725);
     src.set(f32, 1, 0, 0.634576);
     src.set(f32, 1, 1, 6.10002347);
 
-    var w = Mat.init();
+    var w = try Mat.init();
     defer w.deinit();
 
-    var u = Mat.init();
+    var u = try Mat.init();
     defer u.deinit();
 
-    var vt = Mat.init();
+    var vt = try Mat.init();
     defer vt.deinit();
 
     svdCompute(src, &w, &u, &vt);

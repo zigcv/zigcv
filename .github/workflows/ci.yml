@@ -36,7 +36,7 @@ jobs:
       - name: test
         run: zig build test
       - name: build examples
-        run: zig build examples -fstage1
+        run: zig build examples
       - name: build docs
         if: github.ref == 'refs/heads/main'
         run: zig build docs

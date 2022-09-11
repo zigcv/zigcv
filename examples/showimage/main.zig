@@ -13,7 +13,7 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "Show Image";
-    var window = cv.Window.init(window_name);
+    var window = try cv.Window.init(window_name);
     defer window.deinit();
 
     var img = try cv.imRead(img_PATH, .unchanged);

@@ -28,11 +28,11 @@ pub fn main() anyerror!void {
 
     // open display window
     const window_name = "DNN Detection";
-    var window = cv.Window.init(window_name);
+    var window = try cv.Window.init(window_name);
     defer window.deinit();
 
     // prepare image matrix
-    var img = cv.Mat.init();
+    var img = try cv.Mat.init();
     defer img.deinit();
 
     // open DNN object tracking model
@@ -47,8 +47,8 @@ pub fn main() anyerror!void {
         std.os.exit(1);
     }
 
-    try net.setPreferableBackend(.default);
-    try net.setPreferableTarget(.cpu);
+    net.setPreferableBackend(.default);
+    net.setPreferableTarget(.cpu);
 
     const ratio: f64 = 1;
     const mean = cv.Scalar.init(104, 177, 123, 0);
@@ -66,7 +66,7 @@ pub fn main() anyerror!void {
         var blob = try cv.blobFromImage(img, ratio, cv.Size{ .width = 300, .height = 300 }, mean, swap_rgb, false);
         defer blob.deinit();
 
-        try net.setInput(blob, "");
+        net.setInput(blob, "");
 
         var prob = try net.forward("");
         defer prob.deinit();

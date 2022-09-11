@@ -5,14 +5,14 @@ const core = @import("core.zig");
 const Mat = core.Mat;
 
 test "mat" {
-    var mat = Mat.init();
+    var mat = try Mat.init();
     defer mat.deinit();
     try testing.expectEqual(true, mat.isEmpty());
 }
 
 test "mat size" {
     const size: usize = 10;
-    var mat = Mat.initSize(10, 10, .cv8uc1);
+    var mat = try Mat.initSize(10, 10, .cv8uc1);
     defer mat.deinit();
     const mat_size = try mat.size(allocator);
     defer mat_size.deinit();
@@ -25,26 +25,26 @@ test "mat size" {
 }
 
 test "mat channnel" {
-    var mat = Mat.initSize(1, 1, .cv8uc1);
+    var mat = try Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
     try testing.expectEqual(@as(usize, 1), mat.channels());
 }
 
 test "mat type" {
-    var mat = Mat.initSize(1, 1, .cv8uc1);
+    var mat = try Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
     try testing.expectEqual(core.Mat.MatType.cv8uc1, mat.getType());
 
-    var mat2 = Mat.initSize(1, 1, .cv16sc2);
+    var mat2 = try Mat.initSize(1, 1, .cv16sc2);
     defer mat2.deinit();
 
     try testing.expectEqual(Mat.MatType.cv16sc2, mat2.getType());
 }
 
 test "mat eye" {
-    var mat = Mat.eye(3, 3, .cv8sc1);
+    var mat = try Mat.initEye(3, 3, .cv8sc1);
     defer mat.deinit();
     {
         var i: usize = 0;
@@ -62,7 +62,7 @@ test "mat eye" {
 }
 
 test "mat zeros" {
-    var mat = Mat.zeros(3, 3, .cv8sc1);
+    var mat = try Mat.initZeros(3, 3, .cv8sc1);
     defer mat.deinit();
     {
         var i: usize = 0;
@@ -76,7 +76,7 @@ test "mat zeros" {
 }
 
 test "mat ones" {
-    var mat = Mat.ones(3, 3, .cv8sc1);
+    var mat = try Mat.initOnes(3, 3, .cv8sc1);
     defer mat.deinit();
     {
         var i: usize = 0;
@@ -90,9 +90,9 @@ test "mat ones" {
 }
 
 test "mat copyTo" {
-    var mat = Mat.ones(100, 102, .cv8sc1);
+    var mat = try Mat.initOnes(100, 102, .cv8sc1);
     defer mat.deinit();
-    var mat2 = Mat.init();
+    var mat2 = try Mat.init();
     defer mat2.deinit();
     mat.copyTo(&mat2);
 
@@ -112,11 +112,11 @@ test "mat copyTo" {
 }
 
 test "mat copyToWithMask" {
-    var mat = Mat.initSize(101, 102, .cv8uc1);
+    var mat = try Mat.initSize(101, 102, .cv8uc1);
     defer mat.deinit();
-    var diff = Mat.init();
+    var diff = try Mat.init();
     defer diff.deinit();
-    var mask = Mat.initSize(101, 102, .cv8uc1);
+    var mask = try Mat.initSize(101, 102, .cv8uc1);
     defer mask.deinit();
 
     mat.set(u8, 0, 0, 255);
@@ -124,7 +124,7 @@ test "mat copyToWithMask" {
 
     mask.set(u8, 0, 0, 255);
 
-    var copy = Mat.init();
+    var copy = try Mat.init();
     defer copy.deinit();
 
     mat.copyToWithMask(&copy, mask);
@@ -137,12 +137,12 @@ test "mat copyToWithMask" {
 }
 
 test "mat clone" {
-    var mat = Mat.ones(100, 102, .cv8sc1);
+    var mat = try Mat.initOnes(100, 102, .cv8sc1);
     defer mat.deinit();
 
     mat.set(i8, 0, 0, 3);
 
-    var clone = mat.clone();
+    var clone = try mat.clone();
     defer clone.deinit();
 
     try testing.expectEqual(mat.rows(), clone.rows());

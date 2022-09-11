@@ -104,9 +104,10 @@ pub const Window = struct {
         return castToC(self.name);
     }
 
-    pub fn init(window_name: []const u8) Self {
+    pub fn init(window_name: []const u8) !Self {
+        if (window_name.len == 0) return error.EmptyWindowName;
         c.Window_New(castToC(window_name), 0);
-        return .{
+        return Self{
             .name = window_name,
             .open = true,
             .trackbar = null,
@@ -297,7 +298,7 @@ pub const Window = struct {
 const testing = @import("std").testing;
 const imgcodecs = @import("imgcodecs.zig");
 test "window" {
-    var window = Window.init("test");
+    var window = try Window.init("test");
     try testing.expectEqualStrings("test", window.name);
 
     var val = window.waitKey(1);
@@ -322,7 +323,7 @@ test "window" {
 }
 
 test "window imshow" {
-    var window = Window.init("imshow");
+    var window = try Window.init("imshow");
     defer window.deinit();
 
     var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .unchanged);
@@ -339,7 +340,7 @@ test "window selectROIs" {
 }
 
 test "window trackbar" {
-    var window = Window.init("testtrackbar");
+    var window = try Window.init("testtrackbar");
     defer window.deinit();
 
     window.createTrackbar("trackme", 100);

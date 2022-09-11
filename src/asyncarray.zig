@@ -1,6 +1,8 @@
 const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
+const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 
 pub const AsyncArray = struct {
@@ -8,12 +10,14 @@ pub const AsyncArray = struct {
 
     const Self = @This();
 
-    pub fn init() Self {
-        return .{ .ptr = c.AsyncArray_New() };
+    pub fn init() !Self {
+        var ptr = c.AsyncArray_New();
+        return try Self.initFromC(ptr);
     }
 
-    pub fn fromC(ptr: c.AsyncArray) Self {
-        return Self{ .ptr = ptr };
+    pub fn initFromC(ptr: c.AsyncArray) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -29,7 +33,7 @@ pub const AsyncArray = struct {
 };
 
 test "AsyncArray" {
-    var aa = AsyncArray.init();
+    var aa = try AsyncArray.init();
     defer aa.deinit();
     try std.testing.expect(aa.ptr != null);
 }

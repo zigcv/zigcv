@@ -1,6 +1,7 @@
 const c = @import("c_api.zig");
 const std = @import("std");
 const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
 
 // TermCriteriaType for TermCriteria.
 //
@@ -8,7 +9,6 @@ const utils = @import("utils.zig");
 // https://docs.opencv.org/master/d9/d5d/classcv_1_1TermCriteria.html#a56fecdc291ccaba8aad27d67ccf72c57
 //
 pub const TermCriteriaType = enum(u2) {
-
     // Count is the maximum number of iterations or elements to compute.
     count = 1,
 
@@ -200,25 +200,26 @@ pub const Mat = struct {
         min = 3,
     };
 
+    pub fn initFromC(ptr: c.Mat) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
+    }
+
     /// init Mat
-    pub fn init() Self {
-        return .{ .ptr = c.Mat_New() };
+    pub fn init() !Self {
+        const ptr = c.Mat_New();
+        return try Self.initFromC(ptr);
     }
 
     /// init Mat with size and type
-    pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) Self {
-        return .{ .ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt)) };
+    pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) !Self {
+        const ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt));
+        return try Self.initFromC(ptr);
     }
 
-    pub fn fromScalar(s: Scalar) Self {
-        return .{ .ptr = c.Mat_NewFromScalar(s.toC()) };
-    }
-
-    pub fn fromC(ptr: c.Mat) !Self {
-        if (ptr == null) {
-            return error.RuntimeError;
-        }
-        return Self{ .ptr = ptr };
+    pub fn initFromScalar(s: Scalar) !Self {
+        const ptr = c.Mat_NewFromScalar(s.toC());
+        return try Self.initFromC(ptr);
     }
 
     /// Returns an identity matrix of the specified size and type.
@@ -226,8 +227,9 @@ pub const Mat = struct {
     /// The method returns a Matlab-style identity matrix initializer, similarly to Mat::zeros. Similarly to Mat::ones.
     /// For further details, please see:
     /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a2cf9b9acde7a9852542bbc20ef851ed2
-    pub fn eye(rows_: i32, cols_: i32, mt: MatType) Self {
-        return .{ .ptr = c.Eye(rows_, cols_, @enumToInt(mt)) };
+    pub fn initEye(rows_: i32, cols_: i32, mt: MatType) !Self {
+        const ptr = c.Eye(rows_, cols_, @enumToInt(mt));
+        return try Self.initFromC(ptr);
     }
 
     /// Returns a zero array of the specified size and type.
@@ -235,8 +237,9 @@ pub const Mat = struct {
     /// The method returns a Matlab-style zero array initializer.
     /// For further details, please see:
     /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a0b57b6a326c8876d944d188a46e0f556
-    pub fn zeros(rows_: i32, cols_: i32, mt: MatType) Self {
-        return .{ .ptr = c.Zeros(rows_, cols_, @enumToInt(mt)) };
+    pub fn initZeros(rows_: i32, cols_: i32, mt: MatType) !Self {
+        const ptr = c.Zeros(rows_, cols_, @enumToInt(mt));
+        return try Self.initFromC(ptr);
     }
 
     /// Returns an array of all 1's of the specified size and type.
@@ -244,12 +247,13 @@ pub const Mat = struct {
     /// The method returns a Matlab-style 1's array initializer
     /// For further details, please see:
     /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a69ae0402d116fc9c71908d8508dc2f09
-    pub fn ones(rows_: i32, cols_: i32, mt: MatType) Self {
-        return .{ .ptr = c.Ones(rows_, cols_, @enumToInt(mt)) };
+    pub fn initOnes(rows_: i32, cols_: i32, mt: MatType) !Self {
+        const ptr = c.Ones(rows_, cols_, @enumToInt(mt));
+        return try Self.initFromC(ptr);
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.Mat_Close(self.ptr);
+        c.Mat_Close(self.ptr);
     }
 
     pub fn toC(self: Self) c.Mat {
@@ -274,8 +278,9 @@ pub const Mat = struct {
         _ = c.Mat_CopyToWithMask(self.ptr, dest.*.ptr, mask.ptr);
     }
 
-    pub fn clone(self: Self) Self {
-        return .{ .ptr = c.Mat_Clone(self.ptr) };
+    pub fn clone(self: Self) !Self {
+        const ptr = c.Mat_Clone(self.ptr);
+        return try Self.initFromC(ptr);
     }
 
     // ConvertTo converts Mat into destination Mat.
@@ -1084,7 +1089,7 @@ pub const Scalar = struct {
         };
     }
 
-    pub fn fromC(s: c.Scalar) Self {
+    pub fn initFromC(s: c.Scalar) Self {
         return .{
             .val1 = s.val1,
             .val2 = s.val2,

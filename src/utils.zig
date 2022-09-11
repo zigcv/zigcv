@@ -16,3 +16,16 @@ pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comp
     }
     return arr;
 }
+
+pub fn ensurePtrNotNull(ptr: ?*anyopaque) !*anyopaque {
+    if (ptr == null) return error.AllocationError;
+    return ptr.?;
+}
+
+test "ensureNotNull" {
+    var ptr: ?[*]const u8 = null;
+    try std.testing.expectError(error.AllocationError, ensurePtrNotNull(ptr));
+
+    const ptr2 = opaque {};
+    try std.testing.expectEqual(*anyopaque, @TypeOf(try ensurePtrNotNull(&ptr2)));
+}
