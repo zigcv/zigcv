@@ -5,6 +5,7 @@ const core = @import("core.zig");
 const utils = @import("utils.zig");
 const castToC = utils.castZigU8ToC;
 const Mat = core.Mat;
+const STDVector = core.STDVector;
 
 /// IMReadFlag is one of the valid flags to use for the IMRead function.
 pub const IMReadFlag = enum(i9) {
@@ -127,12 +128,6 @@ pub const FileExt = enum(u2) {
 };
 
 pub const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
-
-const STDVector = packed struct {
-    value: usize,
-    before: usize,
-    after: usize,
-};
 
 /// IMRead reads an image from a file into a Mat.
 /// The flags param is one of the IMReadFlag flags.

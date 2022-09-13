@@ -212,8 +212,19 @@ pub const Mat = struct {
     }
 
     /// init Mat with size and type
-    pub fn initSize(n_rows: c_int, n_cols: c_int, mt: MatType) !Self {
+    pub fn initSize(n_rows: i32, n_cols: i32, mt: MatType) !Self {
         const ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt));
+        return try Self.initFromC(ptr);
+    }
+
+    /// init multidimentional Mat with sizes and type
+    pub fn initSizes(size_array: []const i32, mt: MatType) !Self {
+        const c_size_vector = c.IntVector{
+            .val = @ptrCast([*]i32, size_array),
+            .length = @intCast(i32, size_array.len),
+        };
+
+        const ptr = c.Mat_NewWithSizes(c_size_vector, @enumToInt(mt));
         return try Self.initFromC(ptr);
     }
 
@@ -254,6 +265,7 @@ pub const Mat = struct {
 
     pub fn deinit(self: *Self) void {
         c.Mat_Close(self.ptr);
+        self.ptr = null;
     }
 
     pub fn toC(self: Self) c.Mat {
@@ -295,16 +307,16 @@ pub const Mat = struct {
         _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
     }
 
-    pub fn cols(self: Self) u32 {
-        return @intCast(u32, c.Mat_Cols(self.ptr));
+    pub fn cols(self: Self) i32 {
+        return c.Mat_Cols(self.ptr);
     }
 
-    pub fn rows(self: Self) u32 {
-        return @intCast(u32, c.Mat_Rows(self.ptr));
+    pub fn rows(self: Self) i32 {
+        return c.Mat_Rows(self.ptr);
     }
 
-    pub fn channels(self: Self) u32 {
-        return @intCast(u32, c.Mat_Channels(self.ptr));
+    pub fn channels(self: Self) i32 {
+        return c.Mat_Channels(self.ptr);
     }
 
     pub fn getType(self: Self) MatType {
@@ -334,15 +346,15 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa4d317d43fb0cba9c2503f3c61b866c8
     //
-    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(usize) {
+    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
         var v: c.IntVector = undefined;
         _ = c.Mat_Size(self.ptr, &v);
         const len = @intCast(usize, v.length);
-        var arr = try std.ArrayList(usize).initCapacity(allocator, len);
+        var arr = try std.ArrayList(i32).initCapacity(allocator, len);
         {
             var i: usize = 0;
             while (i < len) : (i += 1) {
-                try arr.append(@intCast(usize, v.val[i]));
+                try arr.append(@intCast(i32, v.val[i]));
             }
         }
         return arr;
@@ -977,6 +989,7 @@ pub const PointVector = struct {
             allocator.free(self.ptr.points);
         } else {
             _ = c.PointVector_Close(self.ptr);
+            self.ptr = null;
         }
     }
 
@@ -1043,6 +1056,7 @@ pub const Point2fVector = struct {
             allocator.free(self.ptr.points);
         } else {
             _ = c.PointVector_Close(self.ptr);
+            self.ptr = null;
         }
     }
 
@@ -1355,6 +1369,12 @@ pub const RNG = struct {
     pub fn next(self: *Self) c_uint {
         return c.RNG_Next(self.ptr);
     }
+};
+
+pub const STDVector = packed struct {
+    value: usize,
+    before: usize,
+    after: usize,
 };
 
 test "core" {

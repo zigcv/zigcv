@@ -11,9 +11,11 @@ test "mat" {
 }
 
 test "mat size" {
-    const size: usize = 10;
-    var mat = try Mat.initSize(10, 10, .cv8uc1);
+    const size: i32 = 10;
+    const mat_type = Mat.MatType.cv8sc1;
+    var mat = try Mat.initSize(size, size, mat_type);
     defer mat.deinit();
+
     const mat_size = try mat.size(allocator);
     defer mat_size.deinit();
     try testing.expectEqual(size, mat_size.items[0]);
@@ -22,13 +24,33 @@ test "mat size" {
 
     try testing.expectEqual(size, mat.rows());
     try testing.expectEqual(size, mat.cols());
+    try testing.expectEqual(mat_type, mat.getType());
+}
+
+test "mat sizes" {
+    const sizes = [3]i32{ 10, 20, 30 };
+    const mat_type = Mat.MatType.cv8sc1;
+    var mat = try Mat.initSizes(sizes[0..], mat_type);
+    defer mat.deinit();
+
+    const mat_size = try mat.size(allocator);
+    defer mat_size.deinit();
+
+    for (mat_size.items) |size, i| {
+        try testing.expectEqual(sizes[i], @intCast(i32, size));
+    }
+
+    try testing.expectEqual(@as(i32, 10 * 20 * 30), mat.total());
+    try testing.expectEqual(@as(i32, -1), mat.rows());
+    try testing.expectEqual(@as(i32, -1), mat.cols());
+    try testing.expectEqual(mat_type, mat.getType());
 }
 
 test "mat channnel" {
     var mat = try Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
-    try testing.expectEqual(@as(usize, 1), mat.channels());
+    try testing.expectEqual(@as(i32, 1), mat.channels());
 }
 
 test "mat type" {
