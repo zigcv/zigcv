@@ -290,19 +290,21 @@ pub const QRCodeDetector = struct {
             &c_qr_codes,
         );
         var decoded = try std.ArrayList([]const u8).initCapacity(allocator, @intCast(usize, c_decoded.length));
-        {
-            var i: usize = 0;
-            while (i < c_decoded.length) : (i += 1) {
-                const str = try allocator.dupe(u8, std.mem.span(c_decoded.strs[i]));
-                try decoded.append(str);
-            }
-        }
-
         var qr_codes = try std.ArrayList(Mat).initCapacity(allocator, @intCast(usize, c_qr_codes.length));
-        {
-            var i: usize = 0;
-            while (i < c_qr_codes.length) : (i += 1) {
-                try qr_codes.append(try Mat.initFromC(c_qr_codes.mats[i]));
+        if (result) {
+            {
+                var i: usize = 0;
+                while (i < c_decoded.length) : (i += 1) {
+                    const str = try allocator.dupe(u8, std.mem.span(c_decoded.strs[i]));
+                    try decoded.append(str);
+                }
+            }
+
+            {
+                var i: usize = 0;
+                while (i < c_qr_codes.length) : (i += 1) {
+                    try qr_codes.append(try Mat.initFromC(c_qr_codes.mats[i]));
+                }
             }
         }
 
