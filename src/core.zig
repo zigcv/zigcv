@@ -909,7 +909,7 @@ pub const Point = struct {
 
     const Self = @This();
 
-    pub fn int(x: i32, y: i32) Self {
+    pub fn init(x: i32, y: i32) Self {
         return .{ .x = x, .y = y };
     }
 
