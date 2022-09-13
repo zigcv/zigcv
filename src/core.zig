@@ -233,6 +233,20 @@ pub const Mat = struct {
         return try Self.initFromC(ptr);
     }
 
+    pub fn initSizeFromScalar(s: Scalar, n_rows: i32, n_cols: i32, mt: MatType) !Self {
+        const ptr = c.Mat_NewWithSizeFromScalar(s.toC(), n_rows, n_cols, @enumToInt(mt));
+        return try Self.initFromC(ptr);
+    }
+
+    pub fn initSizesFromScalar(size_array: []const i32, s: Scalar, mt: MatType) !Self {
+        const c_size_vector = c.IntVector{
+            .val = @ptrCast([*]i32, size_array),
+            .length = @intCast(i32, size_array.len),
+        };
+        const ptr = c.Mat_NewWithSizesFromScalar(c_size_vector, @enumToInt(mt), s.toC());
+        return try Self.initFromC(ptr);
+    }
+
     /// Returns an identity matrix of the specified size and type.
     ///
     /// The method returns a Matlab-style identity matrix initializer, similarly to Mat::zeros. Similarly to Mat::ones.
@@ -1396,11 +1410,11 @@ test "core" {
 //     pub extern fn MultiDMatches_Close(mds: struct_MultiDMatches) void;
 //*    pub extern fn Mat_New(...) Mat;
 //*    pub extern fn Mat_NewWithSize(rows: c_int, cols: c_int, @"type": c_int) Mat;
-//     pub extern fn Mat_NewWithSizes(sizes: struct_IntVector, @"type": c_int) Mat;
-//     pub extern fn Mat_NewWithSizesFromScalar(sizes: IntVector, @"type": c_int, ar: Scalar) Mat;
+//*    pub extern fn Mat_NewWithSizes(sizes: struct_IntVector, @"type": c_int) Mat;
+//*    pub extern fn Mat_NewWithSizesFromScalar(sizes: IntVector, @"type": c_int, ar: Scalar) Mat;
 //     pub extern fn Mat_NewWithSizesFromBytes(sizes: IntVector, @"type": c_int, buf: struct_ByteArray) Mat;
 //*    pub extern fn Mat_NewFromScalar(ar: Scalar, @"type": c_int) Mat;
-//     pub extern fn Mat_NewWithSizeFromScalar(ar: Scalar, rows: c_int, cols: c_int, @"type": c_int) Mat;
+//*    pub extern fn Mat_NewWithSizeFromScalar(ar: Scalar, rows: c_int, cols: c_int, @"type": c_int) Mat;
 //     pub extern fn Mat_NewFromBytes(rows: c_int, cols: c_int, @"type": c_int, buf: struct_ByteArray) Mat;
 //     pub extern fn Mat_FromPtr(m: Mat, rows: c_int, cols: c_int, @"type": c_int, prows: c_int, pcols: c_int) Mat;
 //*    pub extern fn Mat_Close(m: Mat) void;
