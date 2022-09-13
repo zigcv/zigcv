@@ -17,7 +17,7 @@ pub const SeamlessCloneFlag = enum(u2) {
     monochrome_transfer,
 };
 
-pub const EdgeFilter = enum(u1) {
+pub const EdgeFilter = enum(u2) {
     // RecursFilter Recursive Filtering.
     recurs_filter = 1,
 
