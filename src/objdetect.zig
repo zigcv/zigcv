@@ -8,11 +8,11 @@ const Rect = core.Rect;
 const Rects = core.Rects;
 const Size = core.Size;
 
-// CascadeClassifier is a cascade classifier class for object detection.
-//
-// For further details, please see:
-// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html
-//
+/// CascadeClassifier is a cascade classifier class for object detection.
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html
+///
 pub const CascadeClassifier = struct {
     ptr: c.CascadeClassifier,
 
@@ -28,10 +28,10 @@ pub const CascadeClassifier = struct {
         _ = c.CascadeClassifier_Close(self.ptr);
     }
 
-    // Load cascade classifier from a file.
-    //
-    // For further details, please see:
-    // http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#a1a5884c8cc749422f9eb77c2471958bc
+    /// Load cascade classifier from a file.
+    ///
+    /// For further details, please see:
+    /// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#a1a5884c8cc749422f9eb77c2471958bc
     pub fn load(self: *Self, name: []const u8) !void {
         const result = c.CascadeClassifier_Load(self.ptr, utils.castZigU8ToC(name));
         if (result == 0) {
@@ -39,24 +39,24 @@ pub const CascadeClassifier = struct {
         }
     }
 
-    // DetectMultiScale detects objects of different sizes in the input Mat image.
-    // The detected objects are returned as a slice of image.Rectangle structs.
-    //
-    // For further details, please see:
-    // http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#aaf8181cb63968136476ec4204ffca498
-    //
+    /// DetectMultiScale detects objects of different sizes in the input Mat image.
+    /// The detected objects are returned as a slice of image.Rectangle structs.
+    ///
+    /// For further details, please see:
+    /// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#aaf8181cb63968136476ec4204ffca498
+    ///
     pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !Rects {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScale(self.ptr, img.ptr);
         defer Rect.deinitRects(rec);
         return try Rect.toArrayList(rec, allocator);
     }
 
-    // DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
-    // to values other than just the defaults.
-    //
-    // For further details, please see:
-    // http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#aaf8181cb63968136476ec4204ffca498
-    //
+    /// DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
+    /// to values other than just the defaults.
+    ///
+    /// For further details, please see:
+    /// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#aaf8181cb63968136476ec4204ffca498
+    ///
     pub fn detectMultiScaleWithParams(
         self: Self,
         img: Mat,
@@ -81,11 +81,11 @@ pub const CascadeClassifier = struct {
     }
 };
 
-// HOGDescriptor is a Histogram Of Gradiants (HOG) for object detection.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a723b95b709cfd3f95cf9e616de988fc8
-//
+/// HOGDescriptor is a Histogram Of Gradiants (HOG) for object detection.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a723b95b709cfd3f95cf9e616de988fc8
+///
 pub const HOGDescriptor = struct {
     ptr: c.HOGDescriptor,
 
@@ -108,24 +108,24 @@ pub const HOGDescriptor = struct {
         }
     }
 
-    // DetectMultiScale detects objects in the input Mat image.
-    // The detected objects are returned as a slice of image.Rectangle structs.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
-    //
+    /// DetectMultiScale detects objects in the input Mat image.
+    /// The detected objects are returned as a slice of image.Rectangle structs.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
+    ///
     pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !Rects {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScale(self.ptr, img.ptr);
         defer Rect.deinitRects(rec);
         return try Rect.toArrayList(rec, allocator);
     }
 
-    // DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
-    // to values other than just the defaults.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
-    //
+    /// DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
+    /// to values other than just the defaults.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
+    ///
     pub fn detectMultiScaleWithParams(
         self: Self,
         img: Mat,
@@ -151,30 +151,30 @@ pub const HOGDescriptor = struct {
         return try Rect.toArrayList(rec, allocator);
     }
 
-    // HOGDefaultPeopleDetector returns a new Mat with the HOG DefaultPeopleDetector.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
-    //
+    /// HOGDefaultPeopleDetector returns a new Mat with the HOG DefaultPeopleDetector.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
+    ///
     pub fn getDefaultPeopleDetector() !Mat {
         return Mat.initFromC(c.HOG_GetDefaultPeopleDetector());
     }
 
-    // SetSVMDetector sets the data for the HOGDescriptor.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a09e354ad701f56f9c550dc0385dc36f1
-    //
+    /// SetSVMDetector sets the data for the HOGDescriptor.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a09e354ad701f56f9c550dc0385dc36f1
+    ///
     pub fn setSVMDetector(self: Self, det: Mat) void {
         _ = c.HOGDescriptor_SetSVMDetector(self.ptr, det.ptr);
     }
 };
 
-// GroupRectangles groups the object candidate rectangles.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/de/de1/group__objdetect__common.html#ga3dba897ade8aa8227edda66508e16ab9
-//
+/// GroupRectangles groups the object candidate rectangles.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/de/de1/group__objdetect__common.html#ga3dba897ade8aa8227edda66508e16ab9
+///
 pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allocator: std.mem.Allocator) !Rects {
     if (group_threshold < -1) return error.InvalidGroupThreshold;
 
@@ -192,11 +192,11 @@ pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allo
     return Rect.toArrayList(result_c_rects, allocator);
 }
 
-// QRCodeDetector groups the object candidate rectangles.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html
-//
+/// QRCodeDetector groups the object candidate rectangles.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html
+///
 pub const QRCodeDetector = struct {
     ptr: c.QRCodeDetector,
 
@@ -212,52 +212,54 @@ pub const QRCodeDetector = struct {
         _ = c.QRCodeDetector_Close(self.ptr);
     }
 
-    // DetectAndDecode Both detects and decodes QR code.
-    //
-    // Returns true as long as some QR code was detected even in case where the decoding failed
-    // For further details, please see:
-    // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a7290bd6a5d59b14a37979c3a14fbf394
-    //
+    /// DetectAndDecode Both detects and decodes QR code.
+    ///
+    /// Returns true as long as some QR code was detected even in case where the decoding failed
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a7290bd6a5d59b14a37979c3a14fbf394
+    ///
     pub fn detectAndDecode(self: Self, input: Mat, points: *Mat, straight_qrcode: *Mat) []const u8 {
         const result = c.QRCodeDetector_DetectAndDecode(self.ptr, input.ptr, points.*.ptr, straight_qrcode.*.ptr);
         return std.mem.span(result);
     }
 
-    // Detect detects QR code in image and returns the quadrangle containing the code.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a64373f7d877d27473f64fe04bb57d22b
-    //
+    /// Detect detects QR code in image and returns the quadrangle containing the code.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a64373f7d877d27473f64fe04bb57d22b
+    ///
     pub fn detect(self: Self, input: Mat, points: *Mat) bool {
         return c.QRCodeDetector_Detect(self.ptr, input.ptr, points.*.ptr);
     }
 
-    // Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
-    //
+    /// Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
+    ///
     pub fn decode(self: Self, input: Mat, points: Mat, straight_qrcode: *Mat) []const u8 {
         const result = c.QRCodeDetector_Decode(self.ptr, input.ptr, points.ptr, straight_qrcode.*.ptr);
         return std.mem.span(result);
     }
 
-    // Detects QR codes in image and finds of the quadrangles containing the codes.
-    //
-    // Each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
-    // Returns true if QR code was detected
-    // For usage please see TestQRCodeDetector
-    // For further details, please see:
-    // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#aaf2b6b2115b8e8fbc9acf3a8f68872b6
+    /// Detects QR codes in image and finds of the quadrangles containing the codes.
+    ///
+    /// Each quadrangle would be returned as a row in the `points` Mat and each point is a Vecf.
+    /// Returns true if QR code was detected
+    /// For usage please see TestQRCodeDetector
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#aaf2b6b2115b8e8fbc9acf3a8f68872b6
     pub fn detectMulti(self: Self, input: Mat, points: *Mat) bool {
         return c.QRCodeDetector_DetectMulti(self.ptr, input.ptr, points.*.ptr);
     }
 
-    // Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
-    //
+
+    /// Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
+    ///
+    /// TODO: some environments have issues with this test
     pub const ReturnDetectAndDecodeMulti = struct {
         is_detected: bool,
         decoded: std.ArrayList([]const u8),
@@ -488,10 +490,9 @@ test "objdetect Multi QRCodeDetector" {
     try testing.expectEqual(true, res2.is_detected);
     try testing.expectEqual(@as(usize, 2), res2.decoded.items.len);
 
-    std.debug.print("\n", .{});
-    for (res2.decoded.items) |s, i| std.debug.print("decoded string[{d}]: {s}\n", .{ i, s });
-    // try testing.expectEqualStrings("foo", res2.decoded.items[0]);
-    // try testing.expectEqualStrings("bar", res2.decoded.items[1]);
+    // TODO: some environments have issues with this test
+    testing.expectEqualStrings("foo", res2.decoded.items[0]) catch |e| std.debug.print("error:\t{any}\n", .{e});
+    testing.expectEqualStrings("bar", res2.decoded.items[1]) catch |e| std.debug.print("error:\t{any}\n", .{e});
 }
 
 //*    implementation done
