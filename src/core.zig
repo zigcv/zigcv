@@ -494,7 +494,7 @@ pub const Mat = struct {
     // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga191389f8a0e58180bb13a727782cd461
     //
     pub fn meanWithMask(self: Self, mask: Mat) Scalar {
-        return Scalar.fromC(c.Mat_MeanWithMask(self.ptr, mask.ptr));
+        return Scalar.initFromC(c.Mat_MeanWithMask(self.ptr, mask.ptr));
     }
 
     pub fn calcValueInplace(self: *Self, comptime op: OperationType, v: anytype) void {
@@ -798,7 +798,7 @@ pub const Mat = struct {
     //
     //     pub extern fn Mat_Sum(src1: Mat) Scalar;
     pub fn sum(self: Self) Scalar {
-        return Scalar.fromC(c.Mat_Sum(self.ptr));
+        return Scalar.initFromC(c.Mat_Sum(self.ptr));
     }
 
     // PatchNaNs converts NaN's to zeros.
@@ -913,7 +913,7 @@ pub const Point = struct {
         return .{ .x = x, .y = y };
     }
 
-    pub fn fromC(p: c.Point) Self {
+    pub fn initFromC(p: c.Point) Self {
         return .{ .x = p.x, .y = p.y };
     }
 
@@ -932,7 +932,7 @@ pub const Point2f = struct {
         return .{ .x = x, .y = y };
     }
 
-    pub fn fromC(p: c.Point2f) Self {
+    pub fn initFromC(p: c.Point2f) Self {
         return .{ .x = p.x, .y = p.y };
     }
 
@@ -952,7 +952,7 @@ pub const Point3f = struct {
         return .{ .x = x, .y = y, .z = z };
     }
 
-    pub fn fromC(p: c.Point3f) Self {
+    pub fn initFromC(p: c.Point3f) Self {
         return .{ .x = p.x, .y = p.y, .z = p.z };
     }
 
@@ -971,7 +971,7 @@ pub const PointVector = struct {
         return .{ .ptr = c.PointVector_New() };
     }
 
-    pub fn fromMat(mat: Mat) !Self {
+    pub fn initFromMat(mat: Mat) !Self {
         if (mat.ptr == null) {
             return error.RuntimeError;
         }
@@ -1038,14 +1038,14 @@ pub const Point2fVector = struct {
         return .{ .ptr = c.Point2fVector_New() };
     }
 
-    pub fn fromMat(mat: Mat) !Self {
+    pub fn initFromMat(mat: Mat) !Self {
         if (mat.ptr == null) {
             return error.RuntimeError;
         }
         return .{ .ptr = c.Point2fVector_NewFromMat(mat.ptr) };
     }
 
-    pub fn fromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
+    pub fn initFromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
         const len = @intCast(usize, points.len);
         var arr = try std.ArrayList(c.Point).initCapacity(allocator, len);
         {
@@ -1167,7 +1167,7 @@ pub const KeyPoint = struct {
         };
     }
 
-    pub fn fromC(kp: c.KeyPoint) Self {
+    pub fn initFromC(kp: c.KeyPoint) Self {
         return .{
             .x = kp.x,
             .y = kp.y,
@@ -1220,7 +1220,7 @@ pub const Rect = struct {
         };
     }
 
-    pub fn fromC(r: c.Rect) Self {
+    pub fn initFromC(r: c.Rect) Self {
         return .{
             .x = r.x,
             .y = r.y,
@@ -1274,7 +1274,7 @@ pub const RotatedRect = extern struct {
         };
     }
 
-    pub fn fromC(r: c.RotatedRect) Self {
+    pub fn initFromC(r: c.RotatedRect) Self {
         return .{
             .pts = r.pts,
             .boundingRect = r.boundingRect,
@@ -1308,7 +1308,7 @@ pub const Size = struct {
         };
     }
 
-    pub fn fromC(r: c.Size) Self {
+    pub fn initFromC(r: c.Size) Self {
         return .{
             .width = @intCast(u31, r.width),
             .height = @intCast(u31, r.height),
@@ -1337,7 +1337,7 @@ pub const RNG = struct {
         .{ .ptr = c.TheRNG() };
     }
 
-    pub fn fromC(ptr: c.RNG) Self {
+    pub fn initFromC(ptr: c.RNG) Self {
         return .{ .ptr = ptr };
     }
 
