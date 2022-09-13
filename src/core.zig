@@ -1389,6 +1389,23 @@ pub const STDVector = packed struct {
     value: usize,
     before: usize,
     after: usize,
+
+    const self = @This();
+    pub fn init(ptr: *self) void {
+        c.StdByteVectorInitialize(ptr);
+    }
+
+    pub fn deinit(ptr: *self) void {
+        c.StdByteVectorFree(ptr);
+    }
+
+    pub fn len(ptr: *self) usize {
+        return c.StdByteVectorLen(ptr);
+    }
+
+    pub fn data(ptr: *self) [*c]u8 {
+        return c.StdByteVectorData(ptr);
+    }
 };
 
 test "core" {
@@ -1595,10 +1612,10 @@ test "core" {
 //*    pub extern fn RandShuffleWithParams(mat: Mat, iterFactor: f64, rng: RNG) void;
 //*    pub extern fn RandU(mat: Mat, low: Scalar, high: Scalar) void;
 //     pub extern fn copyPointVectorToPoint2fVector(src: PointVector, dest: Point2fVector) void;
-//     pub extern fn StdByteVectorInitialize(data: ?*anyopaque) void;
-//     pub extern fn StdByteVectorFree(data: ?*anyopaque) void;
-//     pub extern fn StdByteVectorLen(data: ?*anyopaque) usize;
-//     pub extern fn StdByteVectorData(data: ?*anyopaque) [*c]u8;
+//*    pub extern fn StdByteVectorInitialize(data: ?*anyopaque) void;
+//*    pub extern fn StdByteVectorFree(data: ?*anyopaque) void;
+//*    pub extern fn StdByteVectorLen(data: ?*anyopaque) usize;
+//*    pub extern fn StdByteVectorData(data: ?*anyopaque) [*c]u8;
 //     pub extern fn Points2fVector_New(...) Points2fVector;
 //     pub extern fn Points2fVector_NewFromPoints(points: Contours2f) Points2fVector;
 //     pub extern fn Points2fVector_Size(ps: Points2fVector) c_int;

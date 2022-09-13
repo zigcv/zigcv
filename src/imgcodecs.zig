@@ -209,11 +209,11 @@ pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
 pub fn imEncode(file_ext: FileExt, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(u8) {
     var c_vector: STDVector = undefined;
     var cvp = &c_vector;
-    c.StdByteVectorInitialize(cvp);
-    defer c.StdByteVectorFree(cvp);
+    STDVector.init(cvp);
+    defer STDVector.deinit(cvp);
     c.Image_IMEncode(castToC(file_ext.toString()), img.ptr, cvp);
-    const data = c.StdByteVectorData(cvp);
-    const len = c.StdByteVectorLen(cvp);
+    const data = STDVector.data(cvp);
+    const len = STDVector.len(cvp);
     var buf = try std.ArrayList(u8).initCapacity(allocator, len);
     {
         var i: usize = 0;
@@ -248,11 +248,11 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
     };
     var c_vector: STDVector = undefined;
     var cvp = &c_vector;
-    c.StdByteVectorInitialize(cvp);
-    defer c.StdByteVectorFree(cvp);
+    STDVector.init(cvp);
+    defer STDVector.deinit(cvp);
     c.Image_IMEncode_WithParams(castToC(file_ext.toString()), img.ptr, c_params, cvp);
-    const data = c.StdByteVectorData(cvp);
-    const len = c.StdByteVectorLen(cvp);
+    const data = STDVector.data(cvp);
+    const len = STDVector.len(cvp);
     var buf = try std.ArrayList(u8).initCapacity(allocator, len);
     {
         var i: usize = 0;
