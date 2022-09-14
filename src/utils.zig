@@ -11,10 +11,14 @@ pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comp
     {
         var i: usize = 0;
         while (i < len) : (i += 1) {
-            try arr.append(to_type.initFromC(from_array[i]));
+            try arr.append(try wrap(to_type, to_type.initFromC(from_array[i])));
         }
     }
     return arr;
+}
+
+fn wrap(comptime T: type, value: T) !T {
+    return value;
 }
 
 pub fn ensurePtrNotNull(ptr: ?*anyopaque) !*anyopaque {
