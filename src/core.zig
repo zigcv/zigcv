@@ -967,15 +967,17 @@ pub const PointVector = struct {
 
     const Self = @This();
 
-    pub fn init() Self {
-        return .{ .ptr = c.PointVector_New() };
+    pub fn init() !Self {
+        const ptr = c.PointVector_New();
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
     }
 
     pub fn initFromMat(mat: Mat) !Self {
-        if (mat.ptr == null) {
-            return error.RuntimeError;
-        }
-        return .{ .ptr = c.PointVector_NewFromMat(mat.ptr) };
+        const mat_ptr = try epnn(mat.ptr);
+        const ptr = c.PointVector_NewFromMat(mat_ptr);
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
     }
 
     pub fn fromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
@@ -1039,10 +1041,10 @@ pub const Point2fVector = struct {
     }
 
     pub fn initFromMat(mat: Mat) !Self {
-        if (mat.ptr == null) {
-            return error.RuntimeError;
-        }
-        return .{ .ptr = c.Point2fVector_NewFromMat(mat.ptr) };
+        const mat_ptr = try epnn(mat.ptr);
+        const ptr = c.Point2fVector_NewFromMat(mat_ptr);
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
     }
 
     pub fn initFromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
