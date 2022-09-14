@@ -111,6 +111,17 @@ test "mat ones" {
     }
 }
 
+test "mat initFromMat" {
+    var mat = try Mat.initSize(101, 102, .cv8sc1);
+    defer mat.deinit();
+
+    var pmat = try mat.initFromMat(11, 12, .cv8uc1, 10, 10);
+    defer pmat.deinit();
+
+    try testing.expectEqual(@as(i32, 11), pmat.rows());
+    try testing.expectEqual(@as(i32, 12), pmat.cols());
+}
+
 test "mat copyTo" {
     var mat = try Mat.initOnes(100, 102, .cv8sc1);
     defer mat.deinit();

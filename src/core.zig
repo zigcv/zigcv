@@ -228,6 +228,12 @@ pub const Mat = struct {
         return try Self.initFromC(ptr);
     }
 
+    pub fn initFromMat(self: *Self, n_rows: i32, n_cols: i32, mt: MatType, prows: i32, pcols: i32) !Self {
+        const mat_ptr = try epnn(self.*.ptr);
+        const ptr = c.Mat_FromPtr(mat_ptr, n_rows, n_cols, @enumToInt(mt), prows, pcols);
+        return try Self.initFromC(ptr);
+    }
+
     pub fn initFromScalar(s: Scalar) !Self {
         const ptr = c.Mat_NewFromScalar(s.toC());
         return try Self.initFromC(ptr);
@@ -1435,7 +1441,7 @@ test "core" {
 //*    pub extern fn Mat_NewFromScalar(ar: Scalar, @"type": c_int) Mat;
 //*    pub extern fn Mat_NewWithSizeFromScalar(ar: Scalar, rows: c_int, cols: c_int, @"type": c_int) Mat;
 //     pub extern fn Mat_NewFromBytes(rows: c_int, cols: c_int, @"type": c_int, buf: struct_ByteArray) Mat;
-//     pub extern fn Mat_FromPtr(m: Mat, rows: c_int, cols: c_int, @"type": c_int, prows: c_int, pcols: c_int) Mat;
+//*    pub extern fn Mat_FromPtr(m: Mat, rows: c_int, cols: c_int, @"type": c_int, prows: c_int, pcols: c_int) Mat;
 //*    pub extern fn Mat_Close(m: Mat) void;
 //*    pub extern fn Mat_Empty(m: Mat) c_int;
 //*    pub extern fn Mat_IsContinuous(m: Mat) bool;
