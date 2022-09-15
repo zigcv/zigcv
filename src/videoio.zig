@@ -279,6 +279,7 @@ pub const VideoCapture = struct {
 
     pub fn deinit(self: *Self) void {
         c.VideoCapture_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     pub fn captureFile(self: *Self, uri: []const u8) !void {
@@ -343,6 +344,7 @@ pub const VideoWriter = struct {
 
     pub fn deinit(self: *Self) void {
         c.VideoWriter_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     pub fn open(

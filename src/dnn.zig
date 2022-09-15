@@ -98,6 +98,7 @@ pub const Net = struct {
 
     pub fn deinit(self: *Self) void {
         c.Net_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     pub fn readNet(model: []const u8, config: []const u8) !Self {
@@ -232,6 +233,7 @@ pub const Layer = struct {
 
     pub fn deinit(self: *Self) void {
         c.Layer_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     pub fn toC(self: Self) c.Layer {

@@ -22,6 +22,7 @@ pub const AsyncArray = struct {
 
     pub fn deinit(self: *Self) void {
         c.AsyncArray_Close(self.ptr);
+        self.ptr = null;
     }
 
     pub fn get(self: Self, mat: *Mat) !void {
