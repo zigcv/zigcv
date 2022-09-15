@@ -646,7 +646,7 @@ pub const BFMatcher = struct {
         train: Mat,
         k: i32,
         allocator: std.mem.Allocator,
-    ) !DMatch.MultiDMatches {
+    ) !MultiDMatches {
         const res: c.MultiDMatches = c.BFMatcher_KnnMatch(self.ptr, query.toC(), train.toC(), k);
         defer c.MultiDMatches_Close(res);
         return try DMatch.toMultiArrayList(res.dmatches[0..@intCast(usize, res.length)], allocator);
@@ -690,7 +690,7 @@ pub const FlannBasedMatcher = struct {
         train: Mat,
         k: i32,
         allocator: std.mem.Allocator,
-    ) !DMatch.MultiDMatches {
+    ) !MultiDMatches {
         const res: c.MultiDMatches = c.FlannBasedMatcher_KnnMatch(self.ptr, query.toC(), train.toC(), k);
         defer c.MultiDMatches_Close(res);
         return try DMatch.toMultiArrayList(res.dmatches[0..@intCast(usize, res.length)], allocator);
@@ -793,18 +793,6 @@ pub const DMatch = struct {
     const Self = @This();
     const CSelf = c.DMatch;
 
-    const DMathes = std.ArrayList(Self);
-    const MultiDMatches = struct {
-        array: std.ArrayList(DMathes),
-
-        pub fn deinit(self: MultiDMatches) void {
-            defer {
-                for (self.array.items) |m| m.deinit();
-                self.array.deinit();
-            }
-        }
-    };
-
     pub fn init(
         query_idx: i32,
         train_idx: i32,
@@ -865,6 +853,18 @@ pub const DMatch = struct {
             try result.append(dmatch_list);
         }
         return .{ .array = result };
+    }
+};
+
+const DMathes = std.ArrayList(DMatch);
+const MultiDMatches = struct {
+    array: std.ArrayList(DMathes),
+
+    pub fn deinit(self: MultiDMatches) void {
+        defer {
+            for (self.array.items) |m| m.deinit();
+            self.array.deinit();
+        }
     }
 };
 
