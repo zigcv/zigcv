@@ -10,19 +10,23 @@ const Tracker = c.Tracker;
 // cv::OPTFLOW_LK_GET_MIN_EIGENVALS = 8,
 // cv::OPTFLOW_FARNEBACK_GAUSSIAN = 256
 // For further details, please see: https://docs.opencv.org/master/dc/d6b/group__video__track.html#gga2c6cc144c9eee043575d5b311ac8af08a9d4430ac75199af0cf6fcdefba30eafe
-pub const OptflowUseInitialFlow = 4;
-pub const OptflowLkGetMinEigenvals = 8;
-pub const OptflowFarnebackGaussian = 256;
+pub const Optflow = enum(u32) {
+    UseInitialFlow = 4,
+    LkGetMinEigenvals = 8,
+    FarnebackGaussian = 256,
+};
 
 // cv::MOTION_TRANSLATION = 0,
 // cv::MOTION_EUCLIDEAN = 1,
 // cv::MOTION_AFFINE = 2,
 // cv::MOTION_HOMOGRAPHY = 3
 // For further details, please see: https://docs.opencv.org/4.x/dc/d6b/group__video__track.html#ggaaedb1f94e6b143cef163622c531afd88a01106d6d20122b782ff25eaeffe9a5be
-pub const MotionTranslation = 0;
-pub const MotionEuclidean = 1;
-pub const MotionAffine = 2;
-pub const MotionHomography = 3;
+pub const Motion = enum(u2) {
+    Translation = 0,
+    Euclidean = 1,
+    Affine = 2,
+    Homography = 3,
+};
 
 // BackgroundSubtractorMOG2 is a wrapper around the cv::BackgroundSubtractorMOG2.
 const BackgroundSubtractorMOG2 = struct {
@@ -61,6 +65,7 @@ const BackgroundSubtractorMOG2 = struct {
     // Close BackgroundSubtractorMOG2.
     pub fn deinit(self: *Self) void {
         _ = c.BackgroundSubtractorMOG2_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     // Apply computes a foreground mask using the current BackgroundSubtractorMOG2.
@@ -128,7 +133,7 @@ pub const BackgroundSubtractorKNN = struct {
 // For further details, please see:
 // https://docs.opencv.org/master/dc/d6b/group__video__track.html#ga5d10ebbd59fe09c5f650289ec0ece5af
 //
-pub fn CalcOpticalFlowFarneback(
+pub fn calcOpticalFlowFarneback(
     prev_img: Mat,
     next_img: Mat,
     flow: *Mat,
