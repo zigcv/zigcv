@@ -16,11 +16,10 @@ test "mat size" {
     var mat = try Mat.initSize(size, size, mat_type);
     defer mat.deinit();
 
-    const mat_size = try mat.size(allocator);
-    defer mat_size.deinit();
-    try testing.expectEqual(size, mat_size.items[0]);
-    try testing.expectEqual(size, mat_size.items[1]);
-    try testing.expectEqual(@as(usize, 2), mat_size.items.len);
+    const mat_size =  mat.size();
+    try testing.expectEqual(size, mat_size[0]);
+    try testing.expectEqual(size, mat_size[1]);
+    try testing.expectEqual(@as(usize, 2), mat_size.len);
 
     try testing.expectEqual(size, mat.rows());
     try testing.expectEqual(size, mat.cols());
@@ -33,10 +32,9 @@ test "mat sizes" {
     var mat = try Mat.initSizes(sizes[0..], mat_type);
     defer mat.deinit();
 
-    const mat_size = try mat.size(allocator);
-    defer mat_size.deinit();
+    const mat_size =  mat.size();
 
-    for (mat_size.items) |size, i| {
+    for (mat_size) |size, i| {
         try testing.expectEqual(sizes[i], @intCast(i32, size));
     }
 

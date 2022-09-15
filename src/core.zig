@@ -366,18 +366,10 @@ pub const Mat = struct {
     // For further details, please see:
     // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#aa4d317d43fb0cba9c2503f3c61b866c8
     //
-    pub fn size(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
+    pub fn size(self: Self) []const i32 {
         var v: c.IntVector = undefined;
         _ = c.Mat_Size(self.ptr, &v);
-        const len = @intCast(usize, v.length);
-        var arr = try std.ArrayList(i32).initCapacity(allocator, len);
-        {
-            var i: usize = 0;
-            while (i < len) : (i += 1) {
-                try arr.append(@intCast(i32, v.val[i]));
-            }
-        }
-        return arr;
+        return v.val[0..@intCast(usize,v.length)];
     }
 
     // getAt returns a value from a specific row/col
