@@ -26,6 +26,7 @@ pub const CascadeClassifier = struct {
 
     pub fn deinit(self: *Self) void {
         _ = c.CascadeClassifier_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     /// Load cascade classifier from a file.
@@ -99,6 +100,7 @@ pub const HOGDescriptor = struct {
 
     pub fn deinit(self: *Self) void {
         _ = c.HOGDescriptor_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     pub fn load(self: *Self, name: []const u8) !void {
@@ -210,6 +212,7 @@ pub const QRCodeDetector = struct {
 
     pub fn deinit(self: *Self) void {
         _ = c.QRCodeDetector_Close(self.ptr);
+        self.*.ptr = null;
     }
 
     /// DetectAndDecode Both detects and decodes QR code.
@@ -252,7 +255,6 @@ pub const QRCodeDetector = struct {
     pub fn detectMulti(self: Self, input: Mat, points: *Mat) bool {
         return c.QRCodeDetector_DetectMulti(self.ptr, input.ptr, points.*.ptr);
     }
-
 
     /// Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
     ///
