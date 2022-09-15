@@ -1212,7 +1212,7 @@ pub const KeyPoint = struct {
             .angle = kp.angle,
             .response = kp.response,
             .octave = kp.octave,
-            .class_id = kp.class_id,
+            .class_id = kp.classID,
         };
     }
 
@@ -1224,7 +1224,7 @@ pub const KeyPoint = struct {
             .angle = self.angle,
             .response = self.response,
             .octave = self.octave,
-            .class_id = self.class_id,
+            .classID = self.class_id,
         };
     }
 
@@ -1443,6 +1443,18 @@ pub const STDVector = packed struct {
     pub fn data(ptr: *self) [*c]u8 {
         return c.StdByteVectorData(ptr);
     }
+};
+
+pub const NormTypes = enum(u6) {
+    inf = 1,
+    l1 = 2,
+    l2 = 4,
+    l2sqr = 5,
+    hamming = 6,
+    hamming2 = 7,
+    // type_mask = 7,
+    relative = 8,
+    min_max = 32,
 };
 
 test "core" {
