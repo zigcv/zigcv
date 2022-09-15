@@ -5,6 +5,7 @@ const utils = @import("utils.zig");
 const Mat = core.Mat;
 const Size = core.Size;
 const Scalar = core.Scalar;
+const Color = core.Color;
 const Rect = core.Rect;
 const Point = core.Point;
 const Point2f = core.Point2f;
@@ -298,32 +299,6 @@ pub const CLAHE = struct {
     }
 };
 
-pub const Color = struct {
-    r: f64 = 0,
-    g: f64 = 0,
-    b: f64 = 0,
-    a: f64 = 0,
-
-    const Self = @This();
-
-    pub fn init(
-        r: f64,
-        g: f64,
-        b: f64,
-        a: f64,
-    ) Self {
-        return .{ .r = r, .g = g, .b = b, .a = a };
-    }
-
-    pub fn toScalar(self: Self) Scalar {
-        return .{
-            .val1 = self.b,
-            .val2 = self.g,
-            .val3 = self.r,
-            .val4 = self.a,
-        };
-    }
-};
 
 pub fn arcLength(curve: PointVector, is_closed: bool) f64 {
     return c.ArcLength(curve.toC(), is_closed);

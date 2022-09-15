@@ -1146,6 +1146,33 @@ pub const Scalar = struct {
     }
 };
 
+pub const Color = struct {
+    r: f64 = 0,
+    g: f64 = 0,
+    b: f64 = 0,
+    a: f64 = 0,
+
+    const Self = @This();
+
+    pub fn init(
+        r: f64,
+        g: f64,
+        b: f64,
+        a: f64,
+    ) Self {
+        return .{ .r = r, .g = g, .b = b, .a = a };
+    }
+
+    pub fn toScalar(self: Self) Scalar {
+        return .{
+            .val1 = self.b,
+            .val2 = self.g,
+            .val3 = self.r,
+            .val4 = self.a,
+        };
+    }
+};
+
 pub const KeyPoint = struct {
     x: f64,
     y: f64,
