@@ -369,7 +369,7 @@ pub const Mat = struct {
     pub fn size(self: Self) []const i32 {
         var v: c.IntVector = undefined;
         _ = c.Mat_Size(self.ptr, &v);
-        return v.val[0..@intCast(usize,v.length)];
+        return v.val[0..@intCast(usize, v.length)];
     }
 
     // getAt returns a value from a specific row/col
@@ -879,20 +879,15 @@ pub const Mat = struct {
         mats.deinit();
     }
 
-    pub fn toCStructs(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
-        const len = @intCast(usize, mats.len);
-        var c_mats = try std.ArrayList(c.Mat).initCapacity(allocator, len);
-        {
-            var i: usize = 0;
-            while (i < len) : (i += 1) {
-                c_mats[i] = mats[i].ptr;
-            }
-        }
-        return .{
-            .mats = c_mats.toOwnedSliceSentinel(0),
-            .length = mats.len,
-        };
-    }
+    // pub fn toCStructs(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
+    //     var c_mat_array = try std.ArrayList(c.Mat).initCapacity(allocator, mats.len);
+    //     for (mats) |mat| try c_mat_array.append(mat.toC());
+    //     return .{
+    //         .length = @intCast(i32, mats.len),
+    //         // .mats = @ptrCast([*]c.Mat, @alignCast(@alignOf(c.Mat), c_mat_array.items)),
+    //         .mats = &[_]*anyopaque{@ptrCast(*anyopaque, c_mat_array.items)},
+    //     };
+    // }
 
     pub fn deinitCStructs(c_mats: c.Mats, allocator: std.mem.Allocator) void {
         allocator.free(c_mats.mats);

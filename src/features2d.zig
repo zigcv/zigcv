@@ -1136,7 +1136,7 @@ test "feature2d FlannBasedMatcher" {
     }
 }
 
-test "feature2d drwaPoints" {
+test "feature2d drawPoints" {
     var img = try imgcodecs.imRead("libs/gocv/images/simple.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
@@ -1144,7 +1144,7 @@ test "feature2d drwaPoints" {
     var ffd = try FastFeatureDetector.init();
     defer ffd.deinit();
 
-    var kp = try ffd.detect(img, std.testing.allocator);
+    var kp = try ffd.detect(img, testing.allocator);
     defer kp.deinit();
 
     var simple_KP = try Mat.init();
