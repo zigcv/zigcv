@@ -68,48 +68,45 @@ pub fn textureFlattening(src: Mat, mask: Mat, dst: *Mat, low_threshold: f32, hig
 // https://docs.opencv.org/master/d1/d79/group__photo__denoise.html#gaa501e71f52fb2dc17ff8ca5e7d2d3619
 //
 // TODO
-// pub fn fastNlMeansDenoisingColoredMulti(
-//     src: []Mat,
-//     dst: *Mat,
-//     img_to_denoise_index: i32,
-//     temporal_window_size: i32,
-//     allocator: std.mem.Allocator,
-// ) !void {
-//     var c_mats = try Mat.toCStructs(src, allocator);
-//     defer Mat.deinitCStructs(c_mats, allocator);
-//     _ = c.FastNlMeansDenoisingColoredMulti(c_mats, dst.*.ptr, img_to_denoise_index, temporal_window_size);
-// }
+pub fn fastNlMeansDenoisingColoredMulti(
+    src: []Mat,
+    dst: *Mat,
+    img_to_denoise_index: i32,
+    temporal_window_size: i32,
+) !void {
+    var c_mats = try Mat.toCStructs(src);
+    defer Mat.deinitCStructs(c_mats);
+    _ = c.FastNlMeansDenoisingColoredMulti(c_mats, dst.*.ptr, img_to_denoise_index, temporal_window_size);
+}
 
 // FastNlMeansDenoisingColoredMulti denoises the selected images.
 //
 // For further details, please see:
 // https://docs.opencv.org/master/d1/d79/group__photo__denoise.html#gaa501e71f52fb2dc17ff8ca5e7d2d3619
 //
-// TODO
-// pub fn fastNlMeansDenoisingColoredMultiWithParams(
-//     src: []Mat,
-//     dst: *Mat,
-//     img_to_denoise_index: i32,
-//     temporal_window_size: i32,
-//     h: f32,
-//     h_color: f32,
-//     template_window_size: i32,
-//     search_window_size: i32,
-//     allocator: std.mem.Allocator,
-// ) !void {
-//     var c_mats = try Mat.toCStructs(src, allocator);
-//     defer Mat.deinitCStructs(c_mats, allocator);
-//     _ = c.FastNlMeansDenoisingColoredMultiWithParams(
-//         c_mats,
-//         dst.*.ptr,
-//         img_to_denoise_index,
-//         temporal_window_size,
-//         h,
-//         h_color,
-//         template_window_size,
-//         search_window_size,
-//     );
-// }
+pub fn fastNlMeansDenoisingColoredMultiWithParams(
+    src: []Mat,
+    dst: *Mat,
+    img_to_denoise_index: i32,
+    temporal_window_size: i32,
+    h: f32,
+    h_color: f32,
+    template_window_size: i32,
+    search_window_size: i32,
+) !void {
+    var c_mats = try Mat.toCStructs(src);
+    defer Mat.deinitCStructs(c_mats);
+    _ = c.FastNlMeansDenoisingColoredMultiWithParams(
+        c_mats,
+        dst.*.ptr,
+        img_to_denoise_index,
+        temporal_window_size,
+        h,
+        h_color,
+        template_window_size,
+        search_window_size,
+    );
+}
 
 // FastNlMeansDenoising performs image denoising using Non-local Means Denoising algorithm
 // http://www.ipol.im/pub/algo/bcm_non_local_means_denoising/
@@ -353,20 +350,35 @@ test "photo textureFlattening" {
     try testing.expectEqual(@as(i32, 20), dst.cols());
 }
 
-// test "photo fastNlMeansDenoisingColoredMulti" {
-// var src: [3]Mat = undefined;
-// for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
-// defer for (src) |*s| s.deinit();
-//
-// var dst = try Mat.init();
-// defer dst.deinit();
-//
-// try fastNlMeansDenoisingColoredMulti(src[0..], &dst, 1, 1, testing.allocator);
-//
-// try testing.expectEqual(false, dst.isEmpty());
-// try testing.expectEqual(src[0].rows(), dst.rows());
-// try testing.expectEqual(src[0].cols(), dst.cols());
-// }
+test "photo fastNlMeansDenoisingColoredMulti" {
+    var src: [3]Mat = undefined;
+    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
+    defer for (src) |*s| s.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    try fastNlMeansDenoisingColoredMulti(src[0..], &dst, 1, 1);
+
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(src[0].rows(), dst.rows());
+    try testing.expectEqual(src[0].cols(), dst.cols());
+}
+
+test "photo fastNlMeansDenoisingColored" {
+    var src: [3]Mat = undefined;
+    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
+    defer for (src) |*s| s.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    try fastNlMeansDenoisingColored(src, &dst, 1, 1, 3, 3, 7, 21);
+
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(src.rows(), dst.rows());
+    try testing.expectEqual(src.cols(), dst.cols());
+}
 
 test "photo fastNlMeansDenoising" {
     var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .gray_scale);

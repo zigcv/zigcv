@@ -20,20 +20,21 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
     cv.setBuildMode(mode);
     cv.force_pic = true;
     cv.addCSourceFiles(&.{
-        srcdir ++ "asyncarray.cpp",
-        srcdir ++ "calib3d.cpp",
-        srcdir ++ "core.cpp",
-        srcdir ++ "dnn.cpp",
-        srcdir ++ "features2d.cpp",
-        srcdir ++ "highgui.cpp",
-        srcdir ++ "imgcodecs.cpp",
-        srcdir ++ "imgproc.cpp",
-        srcdir ++ "objdetect.cpp",
-        srcdir ++ "photo.cpp",
-        srcdir ++ "svd.cpp",
-        srcdir ++ "version.cpp",
-        srcdir ++ "video.cpp",
-        srcdir ++ "videoio.cpp",
+        go_srcdir ++ "asyncarray.cpp",
+        go_srcdir ++ "calib3d.cpp",
+        go_srcdir ++ "core.cpp",
+        go_srcdir ++ "dnn.cpp",
+        go_srcdir ++ "features2d.cpp",
+        go_srcdir ++ "highgui.cpp",
+        go_srcdir ++ "imgcodecs.cpp",
+        go_srcdir ++ "imgproc.cpp",
+        go_srcdir ++ "objdetect.cpp",
+        go_srcdir ++ "photo.cpp",
+        go_srcdir ++ "svd.cpp",
+        go_srcdir ++ "version.cpp",
+        go_srcdir ++ "video.cpp",
+        go_srcdir ++ "videoio.cpp",
+        cpp_dir ++ "zig_core.cpp",
     }, &.{
         "--std=c++11",
     });
@@ -46,7 +47,8 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
 fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
     const target_os = exe.target.toTarget().os.tag;
 
-    exe.addIncludePath(srcdir);
+    exe.addIncludePath(go_srcdir);
+    exe.addIncludePath(cpp_dir);
     switch (target_os) {
         .windows => {
             exe.addIncludePath("c:/msys64/mingw64/include");
@@ -98,7 +100,7 @@ pub const contrib = struct {
         const mode = exe.build_mode;
         const builder = exe.builder;
 
-        const contrib_dir = srcdir ++ "contrib/";
+        const contrib_dir = go_srcdir ++ "contrib/";
 
         const cv_contrib = builder.addStaticLibrary("opencv_contrib", null);
         cv_contrib.setTarget(target);
@@ -141,7 +143,7 @@ pub const cuda = struct {
         const mode = exe.build_mode;
         const builder = exe.builder;
 
-        const cuda_dir = srcdir ++ "cuda/";
+        const cuda_dir = go_srcdir ++ "cuda/";
 
         const cv_cuda = builder.addStaticLibrary("opencv_cuda", null);
         cv_cuda.setTarget(target);
@@ -160,7 +162,7 @@ pub const cuda = struct {
         }, &.{
             "--std=c++11",
         });
-        cv_cuda.addIncludePath(srcdir);
+        cv_cuda.addIncludePath(go_srcdir);
         linkToOpenCV(cv_cuda);
 
         exe.linkLibrary(cv_cuda);
@@ -181,7 +183,8 @@ fn ensureSubmodules(exe: *std.build.LibExeObjStep) void {
     }
 }
 
-const srcdir = getThisDir() ++ "/libs/gocv/";
+const go_srcdir = getThisDir() ++ "/libs/gocv/";
+const cpp_dir = getThisDir() ++ "/src/cpp/";
 
 const Program = struct {
     name: []const u8,

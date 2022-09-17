@@ -879,18 +879,22 @@ pub const Mat = struct {
         mats.deinit();
     }
 
-    // pub fn toCStructs(mats: []const Mat, allocator: std.mem.Allocator) !c.Mats {
-    //     var c_mat_array = try std.ArrayList(c.Mat).initCapacity(allocator, mats.len);
-    //     for (mats) |mat| try c_mat_array.append(mat.toC());
-    //     return .{
-    //         .length = @intCast(i32, mats.len),
-    //         // .mats = @ptrCast([*]c.Mat, @alignCast(@alignOf(c.Mat), c_mat_array.items)),
-    //         .mats = &[_]*anyopaque{@ptrCast(*anyopaque, c_mat_array.items)},
-    //     };
-    // }
+    pub fn toCStructs(mats: []const Mat) !c.Mats {
+        const len = @intCast(i32, mats.len);
+        var c_mats = c.Mats_New(len);
+        if (c_mats.length != len) return error.AllocationError;
+        _ = try epnn(c_mats.mats);
+        {
+            var i: usize = 0;
+            while (i < mats.len) : (i += 1) {
+                c_mats.mats[i] = mats[i].toC();
+            }
+        }
+        return c_mats;
+    }
 
-    pub fn deinitCStructs(c_mats: c.Mats, allocator: std.mem.Allocator) void {
-        allocator.free(c_mats.mats);
+    pub fn deinitCStructs(c_mats: c.Mats) void {
+        c.Mats_Close(c_mats);
     }
 };
 

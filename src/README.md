@@ -9,7 +9,7 @@
 - [x] objdetect.zig
 - [x] imgcodecs.zig
 - [ ] imgproc.zig
-- [ ] photo.zig
+- [x] photo.zig
 - [x] svd.zig
 - [x] version.zig
 - [ ] videoio.zig
