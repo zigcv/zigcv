@@ -7,67 +7,66 @@ const Mats = core.Mats;
 const Point = core.Point;
 
 pub const SeamlessCloneFlag = enum(u2) {
-    // NormalClone The power of the method is fully expressed when inserting objects with complex outlines into a new background.
+    /// NormalClone The power of the method is fully expressed when inserting objects with complex outlines into a new background.
     normal_clone = 0,
 
-    // MixedClone The classic method, color-based selection and alpha masking might be time consuming and often leaves an undesirable halo. Seamless cloning, even averaged with the original image, is not effective. Mixed seamless cloning based on a loose selection proves effective.
+    /// MixedClone The classic method, color-based selection and alpha masking might be time consuming and often leaves an undesirable halo. Seamless cloning, even averaged with the original image, is not effective. Mixed seamless cloning based on a loose selection proves effective.
     mixed_clone,
 
-    // MonochromeTransfer Monochrome transfer allows the user to easily replace certain features of one object by alternative features.
+    /// MonochromeTransfer Monochrome transfer allows the user to easily replace certain features of one object by alternative features.
     monochrome_transfer,
 };
 
 pub const EdgeFilter = enum(u2) {
-    // RecursFilter Recursive Filtering.
+    /// RecursFilter Recursive Filtering.
     recurs_filter = 1,
 
-    // NormconvFilter Normalized Convolution Filtering.
+    /// NormconvFilter Normalized Convolution Filtering.
     normconv_filter = 2,
 };
 
-// ColorChange mix two differently colored versions of an image seamlessly.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/df/da0/group__photo__clone.html#ga6684f35dc669ff6196a7c340dc73b98e
-//
+/// ColorChange mix two differently colored versions of an image seamlessly.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/df/da0/group__photo__clone.html#ga6684f35dc669ff6196a7c340dc73b98e
+///
 pub fn colorChange(src: Mat, mask: Mat, dst: *Mat, red_mul: f32, green_mul: f32, blue_mul: f32) void {
     _ = c.ColorChange(src.ptr, mask.ptr, dst.*.ptr, red_mul, green_mul, blue_mul);
 }
 
-// SeamlessClone blend two image by Poisson Blending.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/df/da0/group__photo__clone.html#ga2bf426e4c93a6b1f21705513dfeca49d
-//
+/// SeamlessClone blend two image by Poisson Blending.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/df/da0/group__photo__clone.html#ga2bf426e4c93a6b1f21705513dfeca49d
+///
 pub fn seamlessClone(src: Mat, dst: *Mat, mask: Mat, p: Point, blend: Mat, flags: SeamlessCloneFlag) void {
     _ = c.SeamlessClone(src.ptr, dst.*.ptr, mask.ptr, p.toC(), blend.ptr, @enumToInt(flags));
 }
 
-// IlluminationChange modifies locally the apparent illumination of an image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/df/da0/group__photo__clone.html#gac5025767cf2febd8029d474278e886c7
-//
+/// IlluminationChange modifies locally the apparent illumination of an image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/df/da0/group__photo__clone.html#gac5025767cf2febd8029d474278e886c7
+///
 pub fn illuminationChange(src: Mat, mask: Mat, dst: *Mat, alpha: f32, beta: f32) void {
     _ = c.IlluminationChange(src.ptr, mask.ptr, dst.*.ptr, alpha, beta);
 }
 
-// TextureFlattening washes out the texture of the selected region, giving its contents a flat aspect.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/df/da0/group__photo__clone.html#gad55df6aa53797365fa7cc23959a54004
-//
+/// TextureFlattening washes out the texture of the selected region, giving its contents a flat aspect.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/df/da0/group__photo__clone.html#gad55df6aa53797365fa7cc23959a54004
+///
 pub fn textureFlattening(src: Mat, mask: Mat, dst: *Mat, low_threshold: f32, high_threshold: f32, kernel_size: i32) void {
     _ = c.TextureFlattening(src.ptr, mask.ptr, dst.*.ptr, low_threshold, high_threshold, kernel_size);
 }
 
-//     pub extern fn FastNlMeansDenoisingColoredMulti(src: struct_Mats, dst: Mat, imgToDenoiseIndex: c_int, temporalWindowSize: c_int) void;
-// FastNlMeansDenoisingColoredMulti denoises the selected images.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d1/d79/group__photo__denoise.html#gaa501e71f52fb2dc17ff8ca5e7d2d3619
-//
-// TODO
+///     pub extern fn FastNlMeansDenoisingColoredMulti(src: struct_Mats, dst: Mat, imgToDenoiseIndex: c_int, temporalWindowSize: c_int) void;
+/// FastNlMeansDenoisingColoredMulti denoises the selected images.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d1/d79/group__photo__denoise.html#gaa501e71f52fb2dc17ff8ca5e7d2d3619
+///
 pub fn fastNlMeansDenoisingColoredMulti(
     src: []Mat,
     dst: *Mat,
@@ -79,11 +78,11 @@ pub fn fastNlMeansDenoisingColoredMulti(
     _ = c.FastNlMeansDenoisingColoredMulti(c_mats, dst.*.ptr, img_to_denoise_index, temporal_window_size);
 }
 
-// FastNlMeansDenoisingColoredMulti denoises the selected images.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d1/d79/group__photo__denoise.html#gaa501e71f52fb2dc17ff8ca5e7d2d3619
-//
+/// FastNlMeansDenoisingColoredMulti denoises the selected images.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d1/d79/group__photo__denoise.html#gaa501e71f52fb2dc17ff8ca5e7d2d3619
+///
 pub fn fastNlMeansDenoisingColoredMultiWithParams(
     src: []Mat,
     dst: *Mat,
@@ -108,22 +107,22 @@ pub fn fastNlMeansDenoisingColoredMultiWithParams(
     );
 }
 
-// FastNlMeansDenoising performs image denoising using Non-local Means Denoising algorithm
-// http://www.ipol.im/pub/algo/bcm_non_local_means_denoising/
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga4c6b0031f56ea3f98f768881279ffe93
-//
+/// FastNlMeansDenoising performs image denoising using Non-local Means Denoising algorithm
+/// http://www.ipol.im/pub/algo/bcm_non_local_means_denoising/
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga4c6b0031f56ea3f98f768881279ffe93
+///
 pub fn fastNlMeansDenoising(src: Mat, dst: *Mat) void {
     _ = c.FastNlMeansDenoising(src.ptr, dst.*.ptr);
 }
 
-// FastNlMeansDenoisingWithParams performs image denoising using Non-local Means Denoising algorithm
-// http://www.ipol.im/pub/algo/bcm_non_local_means_denoising/
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga4c6b0031f56ea3f98f768881279ffe93
-//
+/// FastNlMeansDenoisingWithParams performs image denoising using Non-local Means Denoising algorithm
+/// http://www.ipol.im/pub/algo/bcm_non_local_means_denoising/
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga4c6b0031f56ea3f98f768881279ffe93
+///
 pub fn fastNlMeansDenoisingWithParams(
     src: Mat,
     dst: *Mat,
@@ -140,20 +139,20 @@ pub fn fastNlMeansDenoisingWithParams(
     );
 }
 
-// FastNlMeansDenoisingColored is a modification of fastNlMeansDenoising function for colored images.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga21abc1c8b0e15f78cd3eff672cb6c476
-//
+/// FastNlMeansDenoisingColored is a modification of fastNlMeansDenoising function for colored images.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga21abc1c8b0e15f78cd3eff672cb6c476
+///
 pub fn fastNlMeansDenoisingColored(src: Mat, dst: *Mat) void {
     _ = c.FastNlMeansDenoisingColored(src.ptr, dst.*.ptr);
 }
 
-// FastNlMeansDenoisingColoredWithParams is a modification of fastNlMeansDenoising function for colored images.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga21abc1c8b0e15f78cd3eff672cb6c476
-//
+/// FastNlMeansDenoisingColoredWithParams is a modification of fastNlMeansDenoising function for colored images.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/d1/d79/group__photo__denoise.html#ga21abc1c8b0e15f78cd3eff672cb6c476
+///
 pub fn fastNlMeansDenoisingColoredWithParams(
     src: Mat,
     dst: *Mat,
@@ -172,24 +171,49 @@ pub fn fastNlMeansDenoisingColoredWithParams(
     );
 }
 
+/// MergeMertens is a wrapper around the cv::MergeMertens.
 pub const MergeMertens = struct {
     ptr: c.MergeMertens,
 
     const Self = @This();
 
+    /// NewMergeMertens returns returns a new MergeMertens white LDR merge algorithm.
+    /// of type MergeMertens with default parameters.
+    /// MergeMertens algorithm merge the ldr image should result in a HDR image.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html
+    /// https://docs.opencv.org/master/d7/dd6/classcv_1_1MergeMertens.html
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga79d59aa3cb3a7c664e59a4b5acc1ccb6
+    ///
     pub fn init() Self {
         return .{ .ptr = c.MergeMertens_Create() };
     }
 
+    /// NewMergeMertensWithParams returns a new MergeMertens white LDR merge algorithm
+    /// of type MergeMertens with customized parameters.
+    /// MergeMertens algorithm merge the ldr image should result in a HDR image.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html
+    /// https://docs.opencv.org/master/d7/dd6/classcv_1_1MergeMertens.html
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga79d59aa3cb3a7c664e59a4b5acc1ccb6
+    ///
     pub fn initWithParams(contrast_weight: f32, saturation_weight: f32, exposure_weight: f32) Self {
         return .{ .ptr = c.MergeMertens_CreateWithParams(contrast_weight, saturation_weight, exposure_weight) };
     }
 
+    ///Close MergeMertens
     pub fn deinit(self: *Self) void {
         _ = c.MergeMertens_Destroy(self.ptr);
         self.*.ptr = null;
     }
 
+    /// BalanceWhite computes merge LDR images using the current MergeMertens.
+    /// Return a image MAT : 8bits 3 channel image ( RGB 8 bits )
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/dd6/classcv_1_1MergeMertens.html#a2d2254b2aab722c16954de13a663644d
+    ///
     pub fn process(self: *Self, src: []const Mat, dst: *Mat, allocator: std.mem.Allocator) !void {
         var c_mats: c.struct_Mats = try Mat.toCStructs(src, allocator);
         defer Mat.deinitCStructs(c_mats, allocator);
@@ -197,24 +221,49 @@ pub const MergeMertens = struct {
     }
 };
 
+/// AlignMTB is a wrapper around the cv::AlignMTB.
 pub const AlignMTB = struct {
     ptr: c.AlignMTB,
 
     const Self = @This();
 
+    /// NewAlignMTB returns an AlignMTB for converts images to median threshold bitmaps.
+    /// of type AlignMTB converts images to median threshold bitmaps (1 for pixels
+    /// brighter than median luminance and 0 otherwise) and than aligns the resulting
+    /// bitmaps using bit operations.
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html
+    /// https://docs.opencv.org/master/d7/db6/classcv_1_1AlignMTB.html
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga2f1fafc885a5d79dbfb3542e08db0244
+    ///
     pub fn init() Self {
         return .{ .ptr = c.AlignMTB_Create() };
     }
 
+    /// NewAlignMTBWithParams returns an AlignMTB for converts images to median threshold bitmaps.
+    /// of type AlignMTB converts images to median threshold bitmaps (1 for pixels
+    /// brighter than median luminance and 0 otherwise) and than aligns the resulting
+    /// bitmaps using bit operations.
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html
+    /// https://docs.opencv.org/master/d7/db6/classcv_1_1AlignMTB.html
+    /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga2f1fafc885a5d79dbfb3542e08db0244
+    ///
     pub fn initWithParams(max_bits: i32, exclude_range: i32, cut: bool) Self {
         return .{ .ptr = c.AlignMTB_CreateWithParams(max_bits, exclude_range, cut) };
     }
 
+    ///Close AlignMTB
     pub fn deinit(self: *Self) void {
         _ = c.AlignMTB_Destroy(self.ptr);
         self.*.ptr = null;
     }
 
+    /// Process computes an alignment using the current AlignMTB.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d7/db6/classcv_1_1AlignMTB.html#a37b3417d844f362d781f34155cbcb201
+    ///
     pub fn process(self: Self, src: []const Mat, allocator: std.mem.Allocator) !Mats {
         var c_mats: c.struct_Mats = try Mat.toCStructs(src, allocator);
         defer Mat.deinitCStructs(c_mats, allocator);
@@ -224,52 +273,52 @@ pub const AlignMTB = struct {
     }
 };
 
-// DetailEnhance filter enhances the details of a particular image
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gae5930dd822c713b36f8529b21ddebd0c
-//
+/// DetailEnhance filter enhances the details of a particular image
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gae5930dd822c713b36f8529b21ddebd0c
+///
 pub fn detailEnhance(src: Mat, dst: *Mat, sigma_s: f32, sigma_r: f32) void {
     _ = c.DetailEnhance(src.ptr, dst.*.ptr, sigma_s, sigma_r);
 }
 
-// EdgePreservingFilter filtering is the fundamental operation in image and video processing.
-// Edge-preserving smoothing filters are used in many different applications.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gafaee2977597029bc8e35da6e67bd31f7
-//
+/// EdgePreservingFilter filtering is the fundamental operation in image and video processing.
+/// Edge-preserving smoothing filters are used in many different applications.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gafaee2977597029bc8e35da6e67bd31f7
+///
 pub fn edgePreservingFilter(src: Mat, dst: *Mat, flags: EdgeFilter, sigma_s: f32, sigma_r: f32) void {
     _ = c.EdgePreservingFilter(src.ptr, dst.*.ptr, @enumToInt(flags), sigma_s, sigma_r);
 }
 
-// EdgePreservingFilter filtering is the fundamental operation in image and video processing.
-// Edge-preserving smoothing filters are used in many different applications.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gafaee2977597029bc8e35da6e67bd31f7
-//
+/// EdgePreservingFilter filtering is the fundamental operation in image and video processing.
+/// Edge-preserving smoothing filters are used in many different applications.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gafaee2977597029bc8e35da6e67bd31f7
+///
 pub fn edgePreservingFilterWithKernel(src: Mat, dst: *Mat, kernel: Mat) void {
     _ = c.EdgePreservingFilterWithKernel(src.ptr, dst.*.ptr, kernel.ptr);
 }
 
-// PencilSketch pencil-like non-photorealistic line drawing.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gae5930dd822c713b36f8529b21ddebd0c
-//
+/// PencilSketch pencil-like non-photorealistic line drawing.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gae5930dd822c713b36f8529b21ddebd0c
+///
 pub fn pencilSketch(src: Mat, dst1: *Mat, dst2: *Mat, sigma_s: f32, sigma_r: f32, shade_factor: f32) void {
     _ = c.PencilSketch(src.ptr, dst1.*.ptr, dst2.*.ptr, sigma_s, sigma_r, shade_factor);
 }
 
-// Stylization aims to produce digital imagery with a wide variety of effects
-// not focused on photorealism. Edge-aware filters are ideal for stylization,
-// as they can abstract regions of low contrast while preserving, or enhancing,
-// high-contrast features.
-//
-// For further details, please see:
-// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gacb0f7324017df153d7b5d095aed53206
-//
+/// Stylization aims to produce digital imagery with a wide variety of effects
+/// not focused on photorealism. Edge-aware filters are ideal for stylization,
+/// as they can abstract regions of low contrast while preserving, or enhancing,
+/// high-contrast features.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gacb0f7324017df153d7b5d095aed53206
+///
 pub fn stylization(src: Mat, dst: *Mat, sigma_s: f32, sigma_r: f32) void {
     _ = c.Stylization(src.ptr, dst.*.ptr, sigma_s, sigma_r);
 }
