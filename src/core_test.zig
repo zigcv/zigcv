@@ -16,7 +16,7 @@ test "mat size" {
     var mat = try Mat.initSize(size, size, mat_type);
     defer mat.deinit();
 
-    const mat_size =  mat.size();
+    const mat_size = mat.size();
     try testing.expectEqual(size, mat_size[0]);
     try testing.expectEqual(size, mat_size[1]);
     try testing.expectEqual(@as(usize, 2), mat_size.len);
@@ -32,7 +32,7 @@ test "mat sizes" {
     var mat = try Mat.initSizes(sizes[0..], mat_type);
     defer mat.deinit();
 
-    const mat_size =  mat.size();
+    const mat_size = mat.size();
 
     for (mat_size) |size, i| {
         try testing.expectEqual(sizes[i], @intCast(i32, size));
@@ -72,9 +72,9 @@ test "mat eye" {
             var j: usize = 0;
             while (j < 3) : (j += 1) {
                 if (i == j) {
-                    try testing.expectEqual(@as(u8, 1), mat.at(u8, i, j));
+                    try testing.expectEqual(@as(u8, 1), mat.get(u8, i, j));
                 } else {
-                    try testing.expectEqual(@as(u8, 0), mat.at(u8, i, j));
+                    try testing.expectEqual(@as(u8, 0), mat.get(u8, i, j));
                 }
             }
         }
@@ -89,7 +89,7 @@ test "mat zeros" {
         while (i < 3) : (i += 1) {
             var j: usize = 0;
             while (j < 3) : (j += 1) {
-                try testing.expectEqual(@as(u8, 0), mat.at(u8, i, j));
+                try testing.expectEqual(@as(u8, 0), mat.get(u8, i, j));
             }
         }
     }
@@ -103,7 +103,7 @@ test "mat ones" {
         while (i < 3) : (i += 1) {
             var j: usize = 0;
             while (j < 3) : (j += 1) {
-                try testing.expectEqual(@as(u8, 1), mat.at(u8, i, j));
+                try testing.expectEqual(@as(u8, 1), mat.get(u8, i, j));
             }
         }
     }
@@ -136,7 +136,7 @@ test "mat copyTo" {
         while (i < mat.rows()) : (i += 1) {
             var j: usize = 0;
             while (j < mat.cols()) : (j += 1) {
-                try testing.expectEqual(mat.at(u8, i, j), mat2.at(u8, i, j));
+                try testing.expectEqual(mat.get(u8, i, j), mat2.get(u8, i, j));
             }
         }
     }
@@ -163,8 +163,8 @@ test "mat copyToWithMask" {
     try testing.expectEqual(mat.rows(), copy.rows());
     try testing.expectEqual(mat.cols(), copy.cols());
 
-    try testing.expectEqual(@as(u8, 255), copy.at(u8, 0, 0));
-    try testing.expectEqual(@as(u8, 0), copy.at(u8, 0, 1));
+    try testing.expectEqual(@as(u8, 255), copy.get(u8, 0, 0));
+    try testing.expectEqual(@as(u8, 0), copy.get(u8, 0, 1));
 }
 
 test "mat clone" {
@@ -186,7 +186,7 @@ test "mat clone" {
         while (i < mat.rows()) : (i += 1) {
             var j: usize = 0;
             while (j < mat.cols()) : (j += 1) {
-                try testing.expectEqual(mat.at(u8, i, j), clone.at(u8, i, j));
+                try testing.expectEqual(mat.get(u8, i, j), clone.get(u8, i, j));
             }
         }
     }

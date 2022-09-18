@@ -39,6 +39,11 @@ pub const Mat = struct {
         not_,
     };
 
+    // TODO:apply packed struct like this
+    // pub const MatType = packed struct {
+    //     type: u3,
+    //     channel: u2,
+    // };
     pub const MatType = enum(u5) {
         // MatTypeCV8UC1 is a Mat of 8-bit unsigned int with a single channel
         cv8uc1 = cv8u + channels1,
@@ -379,7 +384,7 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn at(self: Self, comptime T: type, row: usize, col: usize) T {
+    pub fn get(self: Self, comptime T: type, row: usize, col: usize) T {
         const row_ = @intCast(u31, row);
         const col_ = @intCast(u31, col);
         return switch (T) {
@@ -400,7 +405,7 @@ pub const Mat = struct {
     // in this Mat expecting it to be of type int aka CV_32S.
     // in this Mat expecting it to be of type float aka CV_32F.
     // in this Mat expecting it to be of type double aka CV_64F.
-    pub fn at3(self: Self, comptime T: type, x: usize, y: usize, z: usize) T {
+    pub fn get3(self: Self, comptime T: type, x: usize, y: usize, z: usize) T {
         const x_ = @intCast(u31, x);
         const y_ = @intCast(u31, y);
         const z_ = @intCast(u31, z);
