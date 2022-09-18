@@ -1334,7 +1334,7 @@ pub const Size = struct {
 
     const Self = @This();
 
-    pub fn init(width: u32, height: u32) Self {
+    pub fn init(width: i32, height: i32) Self {
         return .{
             .width = @intCast(u31, width),
             .height = @intCast(u31, height),
