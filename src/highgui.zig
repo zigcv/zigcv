@@ -297,7 +297,7 @@ pub const Window = struct {
 
 const testing = @import("std").testing;
 const imgcodecs = @import("imgcodecs.zig");
-test "window" {
+test "highgui window" {
     var window = try Window.init("test");
     try testing.expectEqualStrings("test", window.name);
 
@@ -322,7 +322,7 @@ test "window" {
     try testing.expectEqual(false, window.isOpened());
 }
 
-test "window imshow" {
+test "highgui window imshow" {
     var window = try Window.init("imshow");
     defer window.deinit();
 
@@ -331,15 +331,15 @@ test "window imshow" {
     window.imShow(img);
 }
 
-test "window selectROI" {
+test "highgui window selectROI" {
     // TODO
 }
 
-test "window selectROIs" {
+test "highgui window selectROIs" {
     // TODO
 }
 
-test "window trackbar" {
+test "highgui window trackbar" {
     var window = try Window.init("testtrackbar");
     defer window.deinit();
 

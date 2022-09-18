@@ -67,6 +67,10 @@ pub fn build(b: *std.build.Builder) void {
     const exe_tests = b.addTest("src/main.zig");
     zigcv.link(exe_tests);
     zigcv.addAsPackage(exe_tests);
+
+    const test_filter = b.option([]const u8, "test-filter", "Skip tests that do not match filter");
+    if (test_filter) |filter| exe_tests.filter = filter;
+
     exe_tests.setTarget(target);
     exe_tests.setBuildMode(mode);
 
