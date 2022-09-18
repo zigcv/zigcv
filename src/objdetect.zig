@@ -270,7 +270,6 @@ pub const QRCodeDetector = struct {
         allocator: std.mem.Allocator,
 
         pub fn deinit(self: *@This()) void {
-            for (self.decoded.items) |item| self.allocator.free(item);
             self.decoded.deinit();
             self.qr_codes.deinit();
             self.points.deinit();
@@ -293,14 +292,13 @@ pub const QRCodeDetector = struct {
             points.toC(),
             &c_qr_codes,
         );
-        var decoded = try std.ArrayList([]const u8).initCapacity(allocator, @intCast(usize, c_decoded.length));
-        var qr_codes = try std.ArrayList(Mat).initCapacity(allocator, @intCast(usize, c_qr_codes.length));
+        var decoded = try std.ArrayList([]const u8).initCapacity(allocator, if (result) @intCast(usize, c_decoded.length) else 0);
+        var qr_codes = try std.ArrayList(Mat).initCapacity(allocator, if (result) @intCast(usize, c_qr_codes.length) else 0);
         if (result) {
             {
                 var i: usize = 0;
                 while (i < c_decoded.length) : (i += 1) {
-                    const str = try allocator.dupe(u8, std.mem.span(c_decoded.strs[i]));
-                    try decoded.append(str);
+                    try decoded.append(std.mem.span(c_decoded.strs[i]));
                 }
             }
 
