@@ -183,7 +183,7 @@ pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allo
     var c_rects_array = try allocator.alloc(c.Rect, rects.len);
     defer allocator.free(c_rects_array);
     for (rects) |rect, i| c_rects_array[i] = rect.toC();
-    var c_rects = c.Rects{
+    const c_rects = c.Rects{
         .rects = @ptrCast([*]const c.Rect, c_rects_array.ptr),
         .length = @intCast(i32, c_rects_array.len),
     };
