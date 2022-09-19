@@ -265,13 +265,13 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
 
 const testing = std.testing;
 const face_detect_img_path = "libs/gocv/images/face-detect.jpg";
-test "imread" {
+test "imgcodecs imread" {
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
-test "imwrite" {
+test "imgcodecs imwrite" {
     const filename = "test_imwrite0.jpg";
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
@@ -281,7 +281,7 @@ test "imwrite" {
     defer std.fs.cwd().deleteFile(filename) catch @panic("cannot delete " ++ filename);
 }
 
-test "imwriteWithParams" {
+test "imgcodecs imwriteWithParams" {
     const filename = "test_imwrite1.jpg";
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
@@ -292,7 +292,7 @@ test "imwriteWithParams" {
     defer std.fs.cwd().deleteFile(filename) catch @panic("cannot delete " ++ filename);
 }
 
-test "imencode" {
+test "imgcodecs imencode" {
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
 
@@ -301,7 +301,7 @@ test "imencode" {
     try testing.expect(buf.items.len > 43000);
 }
 
-test "imencodeWithParams" {
+test "imgcodecs imencodeWithParams" {
     // TODO: Failed on M1 Mac
     if (builtin.os.tag == .macos and builtin.target.cpu.arch == .aarch64) {
         std.log.warn("\nimEncodeWithParams is not supported on M1 Mac\n", .{});
@@ -316,27 +316,27 @@ test "imencodeWithParams" {
     try testing.expect(buf.items.len > 18000);
 }
 
-test "imdecode empty" {
+test "imgcodecs imdecode empty" {
     var img_empty = try imDecode(&[0]u8{}, .color);
     defer img_empty.deinit();
     try testing.expectEqual(true, img_empty.isEmpty());
 }
 
-test "imdecode jpg" {
+test "imgcodecs imdecode jpg" {
     const content = @embedFile("./test/images/face.jpg");
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
-test "imdecode png" {
+test "imgcodecs imdecode png" {
     const content = @embedFile("./test/images/zigcv.png");
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
-test "imdecode webp" {
+test "imgcodecs imdecode webp" {
     const content = @embedFile("./test/images/sample.webp");
     var img = try imDecode(content, .color);
     defer img.deinit();
