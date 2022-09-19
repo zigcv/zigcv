@@ -180,12 +180,12 @@ pub const HOGDescriptor = struct {
 pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allocator: std.mem.Allocator) !Rects {
     if (group_threshold < -1) return error.InvalidGroupThreshold;
 
-    var c_rects_array = try std.ArrayList(c.Rect).initCapacity(allocator, rects.len);
-    defer c_rects_array.deinit();
-    for (rects) |rect| try c_rects_array.append(rect.toC());
+    var c_rects_array = try allocator.alloc(c.Rect, rects.len);
+    defer allocator.free(c_rects_array);
+    for (rects) |rect, i| c_rects_array[i] = rect.toC();
     var c_rects = c.Rects{
-        .rects = @ptrCast([*]const c.Rect, c_rects_array.items.ptr),
-        .length = @intCast(i32, c_rects_array.items.len),
+        .rects = @ptrCast([*]const c.Rect, c_rects_array.ptr),
+        .length = @intCast(i32, c_rects_array.len),
     };
 
     const result_c_rects = c.GroupRectangles(c_rects, group_threshold, eps);

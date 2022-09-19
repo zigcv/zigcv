@@ -744,28 +744,28 @@ pub fn drawMatches(
     flags: DrawMatchesFlag,
     allocator: std.mem.Allocator,
 ) !void {
-    var c_keypoints_array1 = try std.ArrayList(c.KeyPoint).initCapacity(allocator, kp1.len);
-    defer c_keypoints_array1.deinit();
-    for (kp1) |keypoint| try c_keypoints_array1.append(keypoint.toC());
+    var c_keypoints_array1 = try allocator.alloc(c.KeyPoint, kp1.len);
+    defer allocator.free(c_keypoints_array1);
+    for (kp1) |keypoint, i| c_keypoints_array1[i] = keypoint.toC();
     const c_keypoints1 = c.KeyPoints{
         .length = @intCast(i32, kp1.len),
-        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array1.items),
+        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array1.ptr),
     };
 
-    var c_keypoints_array2 = try std.ArrayList(c.KeyPoint).initCapacity(allocator, kp2.len);
-    defer c_keypoints_array2.deinit();
-    for (kp2) |keypoint| try c_keypoints_array2.append(keypoint.toC());
+    var c_keypoints_array2 = try allocator.alloc(c.KeyPoint, kp2.len);
+    defer allocator.free(c_keypoints_array2);
+    for (kp2) |keypoint, i| c_keypoints_array2[i] = keypoint.toC();
     const c_keypoints2 = c.KeyPoints{
         .length = @intCast(i32, kp2.len),
-        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array2.items),
+        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array2.ptr),
     };
 
-    var c_matches1to2_array = try std.ArrayList(c.DMatch).initCapacity(allocator, matches1to2.len);
-    defer c_matches1to2_array.deinit();
-    for (matches1to2) |match| try c_matches1to2_array.append(match.toC());
+    var c_matches1to2_array = try allocator.alloc(c.DMatch, matches1to2.len);
+    defer allocator.free(c_matches1to2_array);
+    for (matches1to2) |match, i| c_matches1to2_array[i] = match.toC();
     const c_matches1to2 = c.DMatches{
         .length = @intCast(i32, matches1to2.len),
-        .dmatches = @ptrCast([*]c.DMatch, c_matches1to2_array.items),
+        .dmatches = @ptrCast([*]c.DMatch, c_matches1to2_array.ptr),
     };
 
     var c_matches_mask = c.toByteArray(utils.castZigU8ToC(matches_mask), @intCast(i32, matches_mask.len));
