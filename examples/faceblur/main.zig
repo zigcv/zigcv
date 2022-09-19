@@ -14,7 +14,7 @@ pub fn main() anyerror!void {
     const device_id = try std.fmt.parseUnsigned(c_int, device_id_char, 10);
 
     // open webcam
-    var webcam = cv.VideoCapture.init();
+    var webcam = try cv.VideoCapture.init();
     try webcam.openDevice(device_id);
     defer webcam.deinit();
 

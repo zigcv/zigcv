@@ -1,280 +1,267 @@
+const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
-
-// Select preferred API for a capture object.
-// Note: Backends are available only if they have been built with your OpenCV binaries
-pub const VideoCaptureAPI = enum(i32) {
-    // Auto detect == 0
-    VideoCaptureAny = 0,
-
-    // Video For Windows (obsolete, removed)
-    VideoCaptureVFW = 200,
-
-    // V4L/V4L2 capturing support
-    VideoCaptureV4L = 200,
-
-    // Same as VideoCaptureV4L
-    VideoCaptureV4L2 = 200,
-
-    // IEEE 1394 drivers
-    VideoCaptureFirewire = 300,
-
-    // Same value as VideoCaptureFirewire
-    VideoCaptureFireware = 300,
-
-    // Same value as VideoCaptureFirewire
-    VideoCaptureIEEE1394 = 300,
-
-    // Same value as VideoCaptureFirewire
-    VideoCaptureDC1394 = 300,
-
-    // Same value as VideoCaptureFirewire
-    VideoCaptureCMU1394 = 300,
-
-    // QuickTime (obsolete, removed)
-    VideoCaptureQT = 500,
-
-    // Unicap drivers (obsolete, removed)
-    VideoCaptureUnicap = 600,
-
-    // DirectShow (via videoInput)
-    VideoCaptureDshow = 700,
-
-    // PvAPI, Prosilica GigE SDK
-    VideoCapturePvAPI = 800,
-
-    // OpenNI (for Kinect)
-    VideoCaptureOpenNI = 900,
-
-    // OpenNI (for Asus Xtion)
-    VideoCaptureOpenNIAsus = 910,
-
-    // Android - not used
-    VideoCaptureAndroid = 1000,
-
-    // XIMEA Camera API
-    VideoCaptureXiAPI = 1100,
-
-    // AVFoundation framework for iOS (OS X Lion will have the same API)
-    VideoCaptureAVFoundation = 1200,
-
-    // Smartek Giganetix GigEVisionSDK
-    VideoCaptureGiganetix = 1300,
-
-    // Microsoft Media Foundation (via videoInput)
-    VideoCaptureMSMF = 1400,
-
-    // Microsoft Windows Runtime using Media Foundation
-    VideoCaptureWinRT = 1410,
-
-    // RealSense (former Intel Perceptual Computing SDK)
-    VideoCaptureIntelPerc = 1500,
-
-    // Synonym for VideoCaptureIntelPerc
-    VideoCaptureRealsense = 1500,
-
-    // OpenNI2 (for Kinect)
-    VideoCaptureOpenNI2 = 1600,
-
-    // OpenNI2 (for Asus Xtion and Occipital Structure sensors)
-    VideoCaptureOpenNI2Asus = 1610,
-
-    // gPhoto2 connection
-    VideoCaptureGPhoto2 = 1700,
-
-    // GStreamer
-    VideoCaptureGstreamer = 1800,
-
-    // Open and record video file or stream using the FFMPEG library
-    VideoCaptureFFmpeg = 1900,
-
-    // OpenCV Image Sequence (e.g. img_%02d.jpg)
-    VideoCaptureImages = 2000,
-
-    // Aravis SDK
-    VideoCaptureAravis = 2100,
-
-    // Built-in OpenCV MotionJPEG codec
-    VideoCaptureOpencvMjpeg = 2200,
-
-    // Intel MediaSDK
-    VideoCaptureIntelMFX = 2300,
-
-    // XINE engine (Linux)
-    VideoCaptureXINE = 2400,
-};
-
-// VideoCaptureProperties are the properties used for VideoCapture operations.
-pub const VideoCaptureProperties = enum(i32) {
-    // VideoCapturePosMsec contains current position of the
-    // video file in milliseconds.
-    VideoCapturePosMsec = 0,
-
-    // VideoCapturePosFrames 0-based index of the frame to be
-    // decoded/captured next.
-    VideoCapturePosFrames = 1,
-
-    // VideoCapturePosAVIRatio relative position of the video file:
-    // 0=start of the film, 1=end of the film.
-    VideoCapturePosAVIRatio = 2,
-
-    // VideoCaptureFrameWidth is width of the frames in the video stream.
-    VideoCaptureFrameWidth = 3,
-
-    // VideoCaptureFrameHeight controls height of frames in the video stream.
-    VideoCaptureFrameHeight = 4,
-
-    // VideoCaptureFPS controls capture frame rate.
-    VideoCaptureFPS = 5,
-
-    // VideoCaptureFOURCC contains the 4-character code of codec.
-    // see VideoWriter::fourcc for details.
-    VideoCaptureFOURCC = 6,
-
-    // VideoCaptureFrameCount contains number of frames in the video file.
-    VideoCaptureFrameCount = 7,
-
-    // VideoCaptureFormat format of the Mat objects returned by
-    // VideoCapture::retrieve().
-    VideoCaptureFormat = 8,
-
-    // VideoCaptureMode contains backend-specific value indicating
-    // the current capture mode.
-    VideoCaptureMode = 9,
-
-    // VideoCaptureBrightness is brightness of the image
-    // (only for those cameras that support).
-    VideoCaptureBrightness = 10,
-
-    // VideoCaptureContrast is contrast of the image
-    // (only for cameras that support it).
-    VideoCaptureContrast = 11,
-
-    // VideoCaptureSaturation saturation of the image
-    // (only for cameras that support).
-    VideoCaptureSaturation = 12,
-
-    // VideoCaptureHue hue of the image (only for cameras that support).
-    VideoCaptureHue = 13,
-
-    // VideoCaptureGain is the gain of the capture image.
-    // (only for those cameras that support).
-    VideoCaptureGain = 14,
-
-    // VideoCaptureExposure is the exposure of the capture image.
-    // (only for those cameras that support).
-    VideoCaptureExposure = 15,
-
-    // VideoCaptureConvertRGB is a boolean flags indicating whether
-    // images should be converted to RGB.
-    VideoCaptureConvertRGB = 16,
-
-    // VideoCaptureWhiteBalanceBlueU is currently unsupported.
-    VideoCaptureWhiteBalanceBlueU = 17,
-
-    // VideoCaptureRectification is the rectification flag for stereo cameras.
-    // Note: only supported by DC1394 v 2.x backend currently.
-    VideoCaptureRectification = 18,
-
-    // VideoCaptureMonochrome indicates whether images should be
-    // converted to monochrome.
-    VideoCaptureMonochrome = 19,
-
-    // VideoCaptureSharpness controls image capture sharpness.
-    VideoCaptureSharpness = 20,
-
-    // VideoCaptureAutoExposure controls the DC1394 exposure control
-    // done by camera, user can adjust reference level using this feature.
-    VideoCaptureAutoExposure = 21,
-
-    // VideoCaptureGamma controls video capture gamma.
-    VideoCaptureGamma = 22,
-
-    // VideoCaptureTemperature controls video capture temperature.
-    VideoCaptureTemperature = 23,
-
-    // VideoCaptureTrigger controls video capture trigger.
-    VideoCaptureTrigger = 24,
-
-    // VideoCaptureTriggerDelay controls video capture trigger delay.
-    VideoCaptureTriggerDelay = 25,
-
-    // VideoCaptureWhiteBalanceRedV controls video capture setting for
-    // white balance.
-    VideoCaptureWhiteBalanceRedV = 26,
-
-    // VideoCaptureZoom controls video capture zoom.
-    VideoCaptureZoom = 27,
-
-    // VideoCaptureFocus controls video capture focus.
-    VideoCaptureFocus = 28,
-
-    // VideoCaptureGUID controls video capture GUID.
-    VideoCaptureGUID = 29,
-
-    // VideoCaptureISOSpeed controls video capture ISO speed.
-    VideoCaptureISOSpeed = 30,
-
-    // VideoCaptureBacklight controls video capture backlight.
-    VideoCaptureBacklight = 32,
-
-    // VideoCapturePan controls video capture pan.
-    VideoCapturePan = 33,
-
-    // VideoCaptureTilt controls video capture tilt.
-    VideoCaptureTilt = 34,
-
-    // VideoCaptureRoll controls video capture roll.
-    VideoCaptureRoll = 35,
-
-    // VideoCaptureIris controls video capture iris.
-    VideoCaptureIris = 36,
-
-    // VideoCaptureSettings is the pop up video/camera filter dialog. Note:
-    // only supported by DSHOW backend currently. The property value is ignored.
-    VideoCaptureSettings = 37,
-
-    // VideoCaptureBufferSize controls video capture buffer size.
-    VideoCaptureBufferSize = 38,
-
-    // VideoCaptureAutoFocus controls video capture auto focus..
-    VideoCaptureAutoFocus = 39,
-
-    // VideoCaptureSarNumerator controls the sample aspect ratio: num/den (num)
-    VideoCaptureSarNumerator = 40,
-
-    // VideoCaptureSarDenominator controls the sample aspect ratio: num/den (den)
-    VideoCaptureSarDenominator = 41,
-
-    // VideoCaptureBackend is the current api backend (VideoCaptureAPI). Read-only property.
-    VideoCaptureBackend = 42,
-
-    // VideoCaptureChannel controls the video input or channel number (only for those cameras that support).
-    VideoCaptureChannel = 43,
-
-    // VideoCaptureAutoWB controls the auto white-balance.
-    VideoCaptureAutoWB = 44,
-
-    // VideoCaptureWBTemperature controls the white-balance color temperature
-    VideoCaptureWBTemperature = 45,
-
-    // VideoCaptureCodecPixelFormat shows the the codec's pixel format (4-character code). Read-only property.
-    // Subset of AV_PIX_FMT_* or -1 if unknown.
-    VideoCaptureCodecPixelFormat = 46,
-
-    // VideoCaptureBitrate displays the video bitrate in kbits/s. Read-only property.
-    VideoCaptureBitrate = 47,
-};
+const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
+const Mat = core.Mat;
 
 pub const VideoCapture = struct {
     ptr: c.VideoCapture,
 
     const Self = @This();
 
-    pub fn init() Self {
-        return Self{
-            .ptr = c.VideoCapture_New(),
-        };
+    /// Select preferred API for a capture object.
+    /// Note: Backends are available only if they have been built with your OpenCV binaries
+    pub const API = enum(u30) {
+        /// Auto detect == 0
+        any = 0,
+
+        /// V4L/V4L2 capturing support
+        v4l = 200,
+
+        /// IEEE 1394/Firewire drivers
+        firewire = 300,
+
+        /// QuickTime (obsolete, removed)
+        qt = 500,
+
+        /// Unicap drivers (obsolete, removed)
+        unicap = 600,
+
+        /// DirectShow (via videoInput)
+        d_show = 700,
+
+        /// PvAPI, Prosilica GigE SDK
+        pv_api = 800,
+
+        /// OpenNI (for Kinect)
+        open_ni = 900,
+
+        /// OpenNI (for Asus Xtion)
+        open_ni_asus = 910,
+
+        /// Android - not used
+        android = 1000,
+
+        /// XIMEA Camera API
+        xi_api = 1100,
+
+        /// AVFoundation framework for iOS (OS X Lion will have the same API)
+        av_foundation = 1200,
+
+        /// Smartek Giganetix GigEVisionSDK
+        gigabetix = 1300,
+
+        /// Microsoft Media Foundation (via videoInput)
+        msmf = 1400,
+
+        /// Microsoft Windows Runtime using Media Foundation
+        win_rt = 1410,
+
+        /// RealSense (former Intel Perceptual Computing SDK)
+        intel_perc = 1500,
+
+        /// OpenNI2 (for Kinect)
+        open_ni2 = 1600,
+
+        /// OpenNI2 (for Asus Xtion and Occipital Structure sensors)
+        open_ni2_asus = 1610,
+
+        /// gPhoto2 connection
+        g_photo2 = 1700,
+
+        /// GStreamer
+        g_streamer = 1800,
+
+        /// Open and record video file or stream using the FFMPEG library
+        ffmpeg = 1900,
+
+        /// OpenCV Image Sequence (e.g. img_%02d.jpg)
+        images = 2000,
+
+        /// Aravis SDK
+        aravis = 2100,
+
+        /// Built-in OpenCV MotionJPEG codec
+        opencv_mjpeg = 2200,
+
+        /// Intel MediaSDK
+        intel_mfx = 2300,
+
+        /// XINE engine (Linux)
+        xine = 2400,
+    };
+
+    /// VideoCaptureProperties are the properties used for VideoCapture operations.
+    pub const Properties = enum(u6) {
+        /// VideoCapturePosMsec contains current position of the
+        /// video file in milliseconds.
+        pos_msec = 0,
+
+        /// VideoCapturePosFrames 0-based index of the frame to be
+        /// decoded/captured next.
+        pos_frames = 1,
+
+        /// VideoCapturePosAVIRatio relative position of the video file:
+        /// 0=start of the film, 1=end of the film.
+        pos_avi_ratio = 2,
+
+        /// VideoCaptureFrameWidth is width of the frames in the video stream.
+        frame_width = 3,
+
+        /// VideoCaptureFrameHeight controls height of frames in the video stream.
+        frame_height = 4,
+
+        /// VideoCaptureFPS controls capture frame rate.
+        fps = 5,
+
+        /// VideoCaptureFOURCC contains the 4-character code of codec.
+        /// see VideoWriter::fourcc for details.
+        fourcc = 6,
+
+        /// VideoCaptureFrameCount contains number of frames in the video file.
+        frame_count = 7,
+
+        /// VideoCaptureFormat format of the Mat objects returned by
+        /// VideoCapture::retrieve().
+        format = 8,
+
+        /// VideoCaptureMode contains backend-specific value indicating
+        /// the current capture mode.
+        mode = 9,
+
+        /// VideoCaptureBrightness is brightness of the image
+        /// (only for those cameras that support).
+        brightness = 10,
+
+        /// VideoCaptureContrast is contrast of the image
+        /// (only for cameras that support it).
+        contrast = 11,
+
+        /// VideoCaptureSaturation saturation of the image
+        /// (only for cameras that support).
+        saturation = 12,
+
+        /// VideoCaptureHue hue of the image (only for cameras that support).
+        hue = 13,
+
+        /// VideoCaptureGain is the gain of the capture image.
+        /// (only for those cameras that support).
+        gain = 14,
+
+        /// VideoCaptureExposure is the exposure of the capture image.
+        /// (only for those cameras that support).
+        exposure = 15,
+
+        /// VideoCaptureConvertRGB is a boolean flags indicating whether
+        /// images should be converted to RGB.
+        convert_rgb = 16,
+
+        /// VideoCaptureWhiteBalanceBlueU is currently unsupported.
+        white_balance_blue_u = 17,
+
+        /// VideoCaptureRectification is the rectification flag for stereo cameras.
+        /// Note: only supported by DC1394 v 2.x backend currently.
+        rectification = 18,
+
+        /// VideoCaptureMonochrome indicates whether images should be
+        /// converted to monochrome.
+        monochrome = 19,
+
+        /// VideoCaptureSharpness controls image capture sharpness.
+        sharpness = 20,
+
+        /// VideoCaptureAutoExposure controls the DC1394 exposure control
+        // done by camera, user can adjust reference level using this feature.
+        auto_exposure = 21,
+
+        /// VideoCaptureGamma controls video capture gamma.
+        gamma = 22,
+
+        /// VideoCaptureTemperature controls video capture temperature.
+        temperature = 23,
+
+        /// VideoCaptureTrigger controls video capture trigger.
+        trigger = 24,
+
+        /// VideoCaptureTriggerDelay controls video capture trigger delay.
+        trigger_delay = 25,
+
+        /// VideoCaptureWhiteBalanceRedV controls video capture setting for
+        // white balance.
+        white_balance_red_v = 26,
+
+        /// VideoCaptureZoom controls video capture zoom.
+        zoom = 27,
+
+        /// VideoCaptureFocus controls video capture focus.
+        focus = 28,
+
+        /// VideoCaptureGUID controls video capture GUID.
+        guid = 29,
+
+        /// VideoCaptureISOSpeed controls video capture ISO speed.
+        iso_speed = 30,
+
+        /// VideoCaptureBacklight controls video capture backlight.
+        backlight = 32,
+
+        /// VideoCapturePan controls video capture pan.
+        pan = 33,
+
+        /// VideoCaptureTilt controls video capture tilt.
+        tilt = 34,
+
+        /// VideoCaptureRoll controls video capture roll.
+        roll = 35,
+
+        /// VideoCaptureIris controls video capture iris.
+        iris = 36,
+
+        /// VideoCaptureSettings is the pop up video/camera filter dialog. Note:
+        /// only supported by DSHOW backend currently. The property value is ignored.
+        settings = 37,
+
+        /// VideoCaptureBufferSize controls video capture buffer size.
+        buffer_size = 38,
+
+        /// VideoCaptureAutoFocus controls video capture auto focus..
+        auto_focus = 39,
+
+        /// VideoCaptureSarNumerator controls the sample aspect ratio: num/den (num)
+        sar_numerator = 40,
+
+        /// VideoCaptureSarDenominator controls the sample aspect ratio: num/den (den)
+        sar_denominator = 41,
+
+        /// VideoCaptureBackend is the current api backend (VideoCaptureAPI). Read-only property.
+        backend = 42,
+
+        /// VideoCaptureChannel controls the video input or channel number (only for those cameras that support).
+        channel = 43,
+
+        /// VideoCaptureAutoWB controls the auto white-balance.
+        auto_wb = 44,
+
+        /// VideoCaptureWBTemperature controls the white-balance color temperature
+        wb_temperature = 45,
+
+        /// VideoCaptureCodecPixelFormat shows the the codec's pixel format (4-character code). Read-only property.
+        /// Subset of AV_PIX_FMT_* or -1 if unknown.
+        codec_pixel_format = 46,
+
+        /// VideoCaptureBitrate displays the video bitrate in kbits/s. Read-only property.
+        bitrate = 47,
+    };
+
+    pub fn init() !Self {
+        const ptr = c.VideoCapture_New();
+        return try initFromC(ptr);
+    }
+
+    pub fn initFromC(ptr: c.VideoCapture) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -289,7 +276,7 @@ pub const VideoCapture = struct {
         }
     }
 
-    pub fn captureFileWithAPI(self: *Self, uri: []const u8, apiPreference: VideoCaptureAPI) !void {
+    pub fn captureFileWithAPI(self: *Self, uri: []const u8, apiPreference: API) !void {
         const cURI = @ptrCast([*]const u8, uri);
         if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @enumToInt(apiPreference))) {
             return error.VideoCaptureOpenFileError;
@@ -302,17 +289,17 @@ pub const VideoCapture = struct {
         }
     }
 
-    pub fn openDeviceWithAPI(self: *Self, device: i32, apiPreference: VideoCaptureAPI) !void {
+    pub fn openDeviceWithAPI(self: *Self, device: i32, apiPreference: API) !void {
         if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @enumToInt(apiPreference))) {
             return error.VideoCaptureError;
         }
     }
 
-    pub fn get(self: Self, prop: VideoCaptureProperties) f64 {
+    pub fn get(self: Self, prop: Properties) f64 {
         return c.VideoCapture_Get(self.ptr, @enumToInt(prop));
     }
 
-    pub fn set(self: *Self, prop: VideoCaptureProperties, param: f64) void {
+    pub fn set(self: *Self, prop: Properties, param: f64) void {
         return c.VideoCapture_Set(self.ptr, @enumToInt(prop), param);
     }
 
@@ -320,10 +307,48 @@ pub const VideoCapture = struct {
         c.VideoCapture_Grab(self.ptr, skip);
     }
 
-    pub fn read(self: Self, buf: *core.Mat) !void {
+    pub fn read(self: Self, buf: *Mat) !void {
         if (c.VideoCapture_Read(self.ptr, buf.*.ptr) == 0) {
             return error.VideCaptureError;
         }
+    }
+
+    const ConvertStruct = packed struct {
+        c1: u8,
+        c2: u8,
+        c3: u8,
+        c4: u8,
+    };
+
+    /// returns a string representation of FourCC bytes, i.e. the name of a codec
+    pub fn getCodecString(self: Self) [4]u8 {
+        const fourcc_f = get(self, .fourcc);
+        const fourcc = @floatToInt(u32, fourcc_f);
+        const ps_fourcc = @bitCast(ConvertStruct, fourcc);
+        const result =
+            [4]u8{
+            ps_fourcc.c1,
+            ps_fourcc.c2,
+            ps_fourcc.c3,
+            ps_fourcc.c4,
+        };
+        return result;
+    }
+
+    /// ToCodec returns an float64 representation of FourCC bytes
+    pub fn toCodec(self: Self, codec: []const u8) !f64 {
+        _ = self;
+        if (codec.len != 4) {
+            return error.InvalidCodec;
+        }
+        const ps_fourcc = ConvertStruct{
+            .c1 = codec[0],
+            .c2 = codec[1],
+            .c3 = codec[2],
+            .c4 = codec[3],
+        };
+        const u_fourcc = @bitCast(u32, ps_fourcc);
+        return @intToFloat(f64, u_fourcc);
     }
 
     pub fn isOpened(self: Self) bool {
@@ -336,10 +361,14 @@ pub const VideoWriter = struct {
 
     const Self = @This();
 
-    pub fn init() Self {
-        return Self{
-            .ptr = c.VideoWriter_New(),
-        };
+    pub fn init() !Self {
+        const ptr = c.VideoWriter_New();
+        return try initFromC(ptr);
+    }
+
+    pub fn initFromC(ptr: c.VideoWriter) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -369,14 +398,115 @@ pub const VideoWriter = struct {
         );
     }
 
-    pub fn write(self: *Self, img: *core.Mat) void {
-        _ = c.VideoWriter_Write(self.ptr, img.*.ptr);
+    pub fn write(self: *Self, img: *Mat) !void {
+        _ = try epnn(img.*.ptr);
+        _ = c.VideoWriter_Write(self.ptr, img.*.toC());
     }
 
     pub fn isOpened(self: *Self) bool {
         return c.VideoWriter_IsOpened(self.ptr) != 0;
     }
 };
+
+const testing = std.testing;
+const video_path = "libs/gocv/images/small.mp4";
+const imgcodecs = @import("imgcodecs.zig");
+test "videoio VideoCapture captureFile" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    try vc.captureFile(video_path);
+    try testing.expectEqual(true, vc.isOpened());
+
+    try testing.expectEqual(@as(f64, 560), vc.get(.frame_width));
+    try testing.expectEqual(@as(f64, 320), vc.get(.frame_height));
+
+    vc.grab(10);
+    vc.set(.brightness, 100);
+
+    var img = try Mat.init();
+    defer img.deinit();
+
+    try vc.read(&img);
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "videoio VideoCapture captureFileWithAPI" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    try vc.captureFileWithAPI(video_path, .any);
+
+    var backend = vc.get(.backend);
+    try testing.expect(@as(f64, @enumToInt(VideoCapture.API.any)) != backend);
+}
+
+test "videoio VideoCapture captureFile invalid file" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    var e = vc.captureFile(video_path ++ "4");
+    try testing.expectError(error.VideoCaptureOpenFileError, e);
+}
+
+test "videoio VideoCapture captureFileWithAPI invalid file" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    var e = vc.captureFileWithAPI(video_path ++ "4", .any);
+    try testing.expectError(error.VideoCaptureOpenFileError, e);
+}
+
+test "videoio VideoCapture openDevice unknown error" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    var e = vc.openDevice(std.math.maxInt(i32));
+    try testing.expectError(error.VideoCaptureError, e);
+}
+
+test "videoio VideoCapture openDeviceWithAPI unknown error" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    var e = vc.openDeviceWithAPI(std.math.maxInt(i32), .any);
+    try testing.expectError(error.VideoCaptureError, e);
+}
+
+test "videoio VideoCapture getCodecString" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    try vc.captureFile(video_path);
+    const res = vc.getCodecString();
+    try testing.expect(!std.mem.eql(u8, "", res[0..]));
+}
+
+test "videoio VideoCapture toCodec" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    try vc.captureFile(video_path);
+    const codec = vc.getCodecString();
+    const r_codec = try vc.toCodec(codec[0..]);
+    try testing.expectEqual(vc.get(.fourcc), r_codec);
+}
+
+test "videoio VideoCapture toCodec failed" {
+    var vc = try VideoCapture.init();
+    defer vc.deinit();
+    var e = vc.toCodec("123");
+    try testing.expectError(error.InvalidCodec, e);
+}
+
+test "videoio VideoWriter" {
+    const write_filename = "test_write_video.avi";
+    var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .color);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    var vw = try VideoWriter.init();
+    vw.open(write_filename, "MJPG", 25, img.cols(), img.rows(), true);
+    defer vw.deinit();
+
+    try testing.expectEqual(true, vw.isOpened());
+
+    try vw.write(&img);
+
+    defer std.fs.cwd().deleteFile(write_filename) catch @panic("cannot delete " ++ write_filename);
+}
 
 //*    implementation done
 //*    pub const VideoCapture = ?*anyopaque;

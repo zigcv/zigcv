@@ -4,7 +4,7 @@ const cv_c_api = cv.c_api;
 
 pub fn main() anyerror!void {
     // open webcam
-    var webcam = cv.VideoCapture.init();
+    var webcam = try cv.VideoCapture.init();
     try webcam.openDevice(0);
     defer webcam.deinit();
 

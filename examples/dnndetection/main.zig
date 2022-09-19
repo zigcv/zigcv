@@ -17,12 +17,21 @@ const Mat = cv.Mat;
 
 const model_path = thisDir() ++ "/res10_300x300_ssd_iter_140000.caffemodel";
 const config_path = thisDir() ++ "/deploy.ptototxt";
-const device_id = 1;
 
 pub fn main() anyerror!void {
+    var allocator = std.heap.page_allocator;
+    var args = try std.process.argsWithAllocator(allocator);
+    const prog = args.next();
+    const device_id_char = args.next() orelse {
+        std.log.err("usage: {s} [cameraID]", .{prog.?});
+        std.os.exit(1);
+    };
+    args.deinit();
+
+    const device_id = try std.fmt.parseUnsigned(c_int, device_id_char, 10);
 
     // open webcam
-    var webcam = cv.VideoCapture.init();
+    var webcam = try cv.VideoCapture.init();
     try webcam.openDevice(device_id);
     defer webcam.deinit();
 
