@@ -14,6 +14,7 @@ const Point2fVector = core.Point2fVector;
 const RotatedRect = core.RotatedRect;
 const MatType = Mat.MatType;
 const TermCriteria = core.TermCriteria;
+const ColorConversionCode = @import("imgproc/color_codes.zig").ColorConversionCode;
 
 pub const ConnectedComponentsAlgorithmType = enum(u2) {
 
@@ -299,7 +300,6 @@ pub const CLAHE = struct {
     }
 };
 
-
 pub fn arcLength(curve: PointVector, is_closed: bool) f64 {
     return c.ArcLength(curve.toC(), is_closed);
 }
@@ -308,8 +308,8 @@ pub fn approxPolyDP(curve: PointVector, epsilon: f64, closed: bool) PointVector 
     return .{ .ptr = c.ApproxPolyDP(curve.toC(), epsilon, closed) };
 }
 
-pub fn cvtColor(src: Mat, dst: *Mat, code: i32) void {
-    c.cvtColor(src.ptr, dst.*.ptr, code);
+pub fn cvtColor(src: Mat, dst: *Mat, code: ColorConversionCode) void {
+    c.CvtColor(src.ptr, dst.*.ptr, @enumToInt(code));
 }
 
 pub fn equalizeHist(src: Mat, dst: *Mat) void {
@@ -899,6 +899,10 @@ pub fn accumulatedWeighted(src: Mat, dst: *Mat, alpha: f64) void {
 //
 pub fn accumulatedWeightedWithMask(src: Mat, dst: *Mat, alpha: f64, mask: Mat) void {
     _ = c.AccumulatedWeightedWithMask(src.ptr, dst.*.ptr, alpha, mask.ptr);
+}
+
+test "imgproc" {
+    _ = @import("imgproc/test.zig");
 }
 
 //*    implementation done
