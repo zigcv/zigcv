@@ -34,7 +34,7 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
         go_srcdir ++ "version.cpp",
         go_srcdir ++ "video.cpp",
         go_srcdir ++ "videoio.cpp",
-        cpp_dir ++ "zig_core.cpp",
+        zig_src_dir ++ "/core/zig_core.cpp",
     }, &.{
         "--std=c++11",
     });
@@ -48,7 +48,7 @@ fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
     const target_os = exe.target.toTarget().os.tag;
 
     exe.addIncludePath(go_srcdir);
-    exe.addIncludePath(cpp_dir);
+    exe.addIncludePath(zig_src_dir);
     switch (target_os) {
         .windows => {
             exe.addIncludePath("c:/msys64/mingw64/include");
@@ -184,7 +184,7 @@ fn ensureSubmodules(exe: *std.build.LibExeObjStep) void {
 }
 
 const go_srcdir = getThisDir() ++ "/libs/gocv/";
-const cpp_dir = getThisDir() ++ "/src/cpp/";
+const zig_src_dir = getThisDir() ++ "/src";
 
 const Program = struct {
     name: []const u8,

@@ -1,7 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 const allocator = std.testing.allocator;
-const core = @import("core.zig");
+const core = @import("../core.zig");
 const Mat = core.Mat;
 
 test "mat" {
@@ -55,7 +55,7 @@ test "mat type" {
     var mat = try Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
-    try testing.expectEqual(core.Mat.MatType.cv8uc1, mat.getType());
+    try testing.expectEqual(Mat.MatType.cv8uc1, mat.getType());
 
     var mat2 = try Mat.initSize(1, 1, .cv16sc2);
     defer mat2.deinit();

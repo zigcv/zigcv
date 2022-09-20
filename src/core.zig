@@ -1454,7 +1454,7 @@ pub const NormTypes = enum(u6) {
 };
 
 test "core" {
-    _ = @import("core_test.zig");
+    _ = @import("core/test.zig");
 }
 
 //*    implementation done
