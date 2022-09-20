@@ -276,9 +276,9 @@ pub const VideoCapture = struct {
         }
     }
 
-    pub fn captureFileWithAPI(self: *Self, uri: []const u8, apiPreference: API) !void {
+    pub fn captureFileWithAPI(self: *Self, uri: []const u8, api_preference: API) !void {
         const cURI = @ptrCast([*]const u8, uri);
-        if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @enumToInt(apiPreference))) {
+        if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @enumToInt(api_preference))) {
             return error.VideoCaptureOpenFileError;
         }
     }
@@ -289,8 +289,8 @@ pub const VideoCapture = struct {
         }
     }
 
-    pub fn openDeviceWithAPI(self: *Self, device: i32, apiPreference: API) !void {
-        if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @enumToInt(apiPreference))) {
+    pub fn openDeviceWithAPI(self: *Self, device: i32, api_preference: API) !void {
+        if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @enumToInt(api_preference))) {
             return error.VideoCaptureError;
         }
     }
