@@ -315,21 +315,21 @@ test "imgcodecs imdecode empty" {
 }
 
 test "imgcodecs imdecode jpg" {
-    const content = @embedFile("./test/images/face.jpg");
+    const content = @embedFile("./images/face.jpg");
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
 test "imgcodecs imdecode png" {
-    const content = @embedFile("./test/images/zigcv.png");
+    const content = @embedFile("./images/box.png");
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
 test "imgcodecs imdecode webp" {
-    const content = @embedFile("./test/images/sample.webp");
+    const content = @embedFile("./images/sample.webp");
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
