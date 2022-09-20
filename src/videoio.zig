@@ -285,13 +285,13 @@ pub const VideoCapture = struct {
 
     pub fn openDevice(self: *Self, device: i32) !void {
         if (!c.VideoCapture_OpenDevice(self.ptr, device)) {
-            return error.VideoCaptureError;
+            return error.VideoCaptureOpenDeviceError;
         }
     }
 
     pub fn openDeviceWithAPI(self: *Self, device: i32, api_preference: API) !void {
         if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @enumToInt(api_preference))) {
-            return error.VideoCaptureError;
+            return error.VideoCaptureOpenDeviceError;
         }
     }
 
@@ -457,14 +457,14 @@ test "videoio VideoCapture openDevice unknown error" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
     var e = vc.openDevice(std.math.maxInt(i32));
-    try testing.expectError(error.VideoCaptureError, e);
+    try testing.expectError(error.VideoCaptureOpenDeviceError, e);
 }
 
 test "videoio VideoCapture openDeviceWithAPI unknown error" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
     var e = vc.openDeviceWithAPI(std.math.maxInt(i32), .any);
-    try testing.expectError(error.VideoCaptureError, e);
+    try testing.expectError(error.VideoCaptureOpenDeviceError, e);
 }
 
 test "videoio VideoCapture getCodecString" {
