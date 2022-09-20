@@ -4,13 +4,13 @@ const allocator = std.testing.allocator;
 const core = @import("../core.zig");
 const Mat = core.Mat;
 
-test "mat" {
+test "core mat" {
     var mat = try Mat.init();
     defer mat.deinit();
     try testing.expectEqual(true, mat.isEmpty());
 }
 
-test "mat size" {
+test "core mat size" {
     const size: i32 = 10;
     const mat_type = Mat.MatType.cv8sc1;
     var mat = try Mat.initSize(size, size, mat_type);
@@ -26,7 +26,7 @@ test "mat size" {
     try testing.expectEqual(mat_type, mat.getType());
 }
 
-test "mat sizes" {
+test "core mat sizes" {
     const sizes = [3]i32{ 10, 20, 30 };
     const mat_type = Mat.MatType.cv8sc1;
     var mat = try Mat.initSizes(sizes[0..], mat_type);
@@ -44,14 +44,14 @@ test "mat sizes" {
     try testing.expectEqual(mat_type, mat.getType());
 }
 
-test "mat channnel" {
+test "core mat channnel" {
     var mat = try Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
     try testing.expectEqual(@as(i32, 1), mat.channels());
 }
 
-test "mat type" {
+test "core mat type" {
     var mat = try Mat.initSize(1, 1, .cv8uc1);
     defer mat.deinit();
 
@@ -63,7 +63,7 @@ test "mat type" {
     try testing.expectEqual(Mat.MatType.cv16sc2, mat2.getType());
 }
 
-test "mat eye" {
+test "core mat eye" {
     var mat = try Mat.initEye(3, 3, .cv8sc1);
     defer mat.deinit();
     {
@@ -81,7 +81,7 @@ test "mat eye" {
     }
 }
 
-test "mat zeros" {
+test "core mat zeros" {
     var mat = try Mat.initZeros(3, 3, .cv8sc1);
     defer mat.deinit();
     {
@@ -95,7 +95,7 @@ test "mat zeros" {
     }
 }
 
-test "mat ones" {
+test "core mat ones" {
     var mat = try Mat.initOnes(3, 3, .cv8sc1);
     defer mat.deinit();
     {
@@ -109,7 +109,7 @@ test "mat ones" {
     }
 }
 
-test "mat initFromMat" {
+test "core mat initFromMat" {
     var mat = try Mat.initSize(101, 102, .cv8sc1);
     defer mat.deinit();
 
@@ -120,7 +120,7 @@ test "mat initFromMat" {
     try testing.expectEqual(@as(i32, 12), pmat.cols());
 }
 
-test "mat copyTo" {
+test "core mat copyTo" {
     var mat = try Mat.initOnes(100, 102, .cv8sc1);
     defer mat.deinit();
     var mat2 = try Mat.init();
@@ -142,7 +142,7 @@ test "mat copyTo" {
     }
 }
 
-test "mat copyToWithMask" {
+test "core mat copyToWithMask" {
     var mat = try Mat.initSize(101, 102, .cv8uc1);
     defer mat.deinit();
     var diff = try Mat.init();
@@ -167,7 +167,7 @@ test "mat copyToWithMask" {
     try testing.expectEqual(@as(u8, 0), copy.get(u8, 0, 1));
 }
 
-test "mat clone" {
+test "core mat clone" {
     var mat = try Mat.initOnes(100, 102, .cv8sc1);
     defer mat.deinit();
 
