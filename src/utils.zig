@@ -5,20 +5,21 @@ pub fn castZigU8ToC(str: []const u8) [*]const u8 {
     return @ptrCast([*]const u8, str);
 }
 
-pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comptime to_type: type, allocator: std.mem.Allocator) !std.ArrayList(to_type) {
+pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comptime ToType: type, allocator: std.mem.Allocator) !std.ArrayList(ToType) {
     const len = @intCast(usize, from_array_length);
-    var arr = try std.ArrayList(to_type).initCapacity(allocator, len);
+    var arr = try std.ArrayList(ToType).initCapacity(allocator, len);
     {
         var i: usize = 0;
         while (i < len) : (i += 1) {
-            try arr.append(try wrap(to_type, to_type.initFromC(from_array[i])));
+            const elem = ToType.initFromC(from_array[i]);
+            if (comptime (@typeInfo(@TypeOf(elem)) == .ErrorUnion)) {
+                try arr.append(try elem);
+            } else {
+                try arr.append(elem);
+            }
         }
     }
     return arr;
-}
-
-fn wrap(comptime T: type, value: anytype) !T {
-    return value;
 }
 
 pub fn ensurePtrNotNull(ptr: ?*anyopaque) !*anyopaque {
