@@ -314,25 +314,25 @@ pub const VideoCapture = struct {
     }
 
     const ConvertStruct = packed struct {
+        c0: u8,
         c1: u8,
         c2: u8,
         c3: u8,
-        c4: u8,
     };
 
     /// returns a string representation of FourCC bytes, i.e. the name of a codec
-    pub fn getCodecString(self: Self) [4]u8 {
+    pub fn getCodecString(self: Self) []const u8 {
         const fourcc_f = get(self, .fourcc);
         const fourcc = @floatToInt(u32, fourcc_f);
         const ps_fourcc = @bitCast(ConvertStruct, fourcc);
         const result =
-            [4]u8{
+            [_]u8{
+            ps_fourcc.c0,
             ps_fourcc.c1,
             ps_fourcc.c2,
             ps_fourcc.c3,
-            ps_fourcc.c4,
         };
-        return result;
+        return std.mem.span(&result);
     }
 
     /// ToCodec returns an float64 representation of FourCC bytes
@@ -342,10 +342,10 @@ pub const VideoCapture = struct {
             return error.InvalidCodec;
         }
         const ps_fourcc = ConvertStruct{
-            .c1 = codec[0],
-            .c2 = codec[1],
-            .c3 = codec[2],
-            .c4 = codec[3],
+            .c0 = codec[0],
+            .c1 = codec[1],
+            .c2 = codec[2],
+            .c3 = codec[3],
         };
         const u_fourcc = @bitCast(u32, ps_fourcc);
         return @intToFloat(f64, u_fourcc);
@@ -472,7 +472,7 @@ test "videoio VideoCapture getCodecString" {
     defer vc.deinit();
     try vc.captureFile(video_path);
     const res = vc.getCodecString();
-    try testing.expect(!std.mem.eql(u8, "", res[0..]));
+    try testing.expect(!std.mem.eql(u8, "", res));
 }
 
 test "videoio VideoCapture toCodec" {
@@ -480,7 +480,7 @@ test "videoio VideoCapture toCodec" {
     defer vc.deinit();
     try vc.captureFile(video_path);
     const codec = vc.getCodecString();
-    const r_codec = try vc.toCodec(codec[0..]);
+    const r_codec = try vc.toCodec(codec);
     try testing.expectEqual(vc.get(.fourcc), r_codec);
 }
 
