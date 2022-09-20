@@ -137,6 +137,7 @@ pub const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
 /// http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
 ///
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
+    _ = try std.fs.cwd().statFile(filename);
     var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
     return try Mat.initFromC(cMat);
 }
@@ -266,6 +267,11 @@ test "imgcodecs imread" {
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imgcodecs imread not found error" {
+    var e = imRead(face_detect_img_path ++ "aaa", .color);
+    try testing.expectError(error.FileNotFound, e);
 }
 
 test "imgcodecs imwrite" {
