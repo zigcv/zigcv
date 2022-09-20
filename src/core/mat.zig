@@ -5,6 +5,7 @@ const core = @import("../core.zig");
 const epnn = utils.ensurePtrNotNull;
 const Rect = core.Rect;
 const Scalar = core.Scalar;
+const Point = core.Point;
 const RNG = core.RNG;
 
 ptr: CSelf,
@@ -891,6 +892,73 @@ pub fn toCStructs(mats: []const Self) !c.Mats {
 
 pub fn deinitCStructs(c_mats: c.Mats) void {
     c.Mats_Close(c_mats);
+}
+
+const MinMaxIdxReturn = struct {
+    min_val: f64,
+    max_val: f64,
+    min_idx: i32,
+    max_idx: i32,
+};
+/// MinMaxIdx finds the global minimum and maximum in an array.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga7622c466c628a75d9ed008b42250a73f
+///
+pub fn minMaxIdx(self: Self) MinMaxIdxReturn {
+    var minval: f64 = undefined;
+    var maxval: f64 = undefined;
+    var minidx: i32 = undefined;
+    var maxidx: i32 = undefined;
+    c.Mat_MinMaxIdx(
+        self.ptr,
+        &minval,
+        &maxval,
+        &minidx,
+        &maxidx,
+    );
+    return .{
+        .min_val = minval,
+        .max_val = maxval,
+        .min_idx = minidx,
+        .max_idx = maxidx,
+    };
+}
+
+/// MinMaxLoc finds the global minimum and maximum in an array.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/trunk/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
+///
+const MinMaxLocReturn = struct {
+    min_val: f64,
+    max_val: f64,
+    min_loc: Point,
+    max_loc: Point,
+};
+pub fn minMaxLoc(self: Self) MinMaxLocReturn {
+    var minval: f64 = undefined;
+    var maxval: f64 = undefined;
+    var c_minloc: c.Point = undefined;
+    var c_maxloc: c.Point = undefined;
+
+    c.Mat_MinMaxLoc(
+        self.ptr,
+        &minval,
+        &maxval,
+        &c_minloc,
+        &c_maxloc,
+    );
+
+    const min_loc = Point.initFromC(c_minloc);
+    const max_loc = Point.initFromC(c_maxloc);
+
+    return .{
+        .min_val = minval,
+        .max_val = maxval,
+        .min_loc = min_loc,
+        .max_loc = max_loc,
+    };
 }
 
 pub const Mats = std.ArrayList(Self);

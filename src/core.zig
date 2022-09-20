@@ -740,8 +740,8 @@ pub const TermCriteria = struct {
 //     pub extern fn Mat_MeanStdDev(src: Mat, dstMean: Mat, dstStdDev: Mat) void;
 //     pub extern fn Mat_Merge(mats: struct_Mats, dst: Mat) void;
 //     pub extern fn Mat_Min(src1: Mat, src2: Mat, dst: Mat) void;
-//     pub extern fn Mat_MinMaxIdx(m: Mat, minVal: [*c]f64, maxVal: [*c]f64, minIdx: [*c]c_int, maxIdx: [*c]c_int) void;
-//     pub extern fn Mat_MinMaxLoc(m: Mat, minVal: [*c]f64, maxVal: [*c]f64, minLoc: [*c]Point, maxLoc: [*c]Point) void;
+//*    pub extern fn Mat_MinMaxIdx(m: Mat, minVal: [*c]f64, maxVal: [*c]f64, minIdx: [*c]c_int, maxIdx: [*c]c_int) void;
+//*    pub extern fn Mat_MinMaxLoc(m: Mat, minVal: [*c]f64, maxVal: [*c]f64, minLoc: [*c]Point, maxLoc: [*c]Point) void;
 //     pub extern fn Mat_MixChannels(src: struct_Mats, dst: struct_Mats, fromTo: struct_IntVector) void;
 //     pub extern fn Mat_MulSpectrums(a: Mat, b: Mat, c: Mat, flags: c_int) void;
 //*    pub extern fn Mat_Multiply(src1: Mat, src2: Mat, dst: Mat) void;
@@ -768,7 +768,7 @@ pub const TermCriteria = struct {
 //     pub extern fn Mat_Pow(src: Mat, power: f64, dst: Mat) void;
 //     pub extern fn Mat_Phase(x: Mat, y: Mat, angle: Mat, angleInDegrees: bool) void;
 //*    pub extern fn Mat_Sum(src1: Mat) Scalar;
-//     pub extern fn TermCriteria_New(typ: c_int, maxCount: c_int, epsilon: f64) TermCriteria;
+//*    pub extern fn TermCriteria_New(typ: c_int, maxCount: c_int, epsilon: f64) TermCriteria;
 //     pub extern fn GetCVTickCount(...) i64;
 //     pub extern fn GetTickFrequency(...) f64;
 //     pub extern fn Mat_rowRange(m: Mat, startrow: c_int, endrow: c_int) Mat;
