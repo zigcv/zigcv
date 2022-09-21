@@ -1115,11 +1115,11 @@ test "feature2d FlannBasedMatcher" {
     const img_path = "libs/gocv/images/sift_descriptor.png";
     var desc1 = try imgcodecs.imRead(img_path, .gray_scale);
     defer desc1.deinit();
-    desc1.converTo(&desc1, .cv32fc1);
+    desc1.convertTo(&desc1, .cv32fc1);
 
     var desc2 = try imgcodecs.imRead(img_path, .gray_scale);
     defer desc2.deinit();
-    desc2.converTo(&desc2, .cv32fc1);
+    desc2.convertTo(&desc2, .cv32fc1);
 
     var fbm = try FlannBasedMatcher.init();
     defer fbm.deinit();

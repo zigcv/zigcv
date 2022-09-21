@@ -313,7 +313,7 @@ pub fn clone(self: Self) !Self {
 // For further details, please see:
 // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#adf88c60c5b4980e05bb556080916978b
 //
-pub fn converTo(self: Self, dst: *Self, mt: MatType) void {
+pub fn convertTo(self: Self, dst: *Self, mt: MatType) void {
     _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @enumToInt(mt));
 }
 pub fn convertToWithParams(self: Self, dst: *Self, mt: MatType, alpha: f32, beta: f32) void {

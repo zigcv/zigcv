@@ -72,6 +72,10 @@ pub const PointVector = struct {
 
     pub fn init() !Self {
         const ptr = c.PointVector_New();
+        return try initFromC(ptr);
+    }
+
+    pub fn initFromC(ptr: c.PointVector) !Self {
         const nn_ptr = try epnn(ptr);
         return .{ .ptr = nn_ptr };
     }
@@ -79,8 +83,7 @@ pub const PointVector = struct {
     pub fn initFromMat(mat: Mat) !Self {
         const mat_ptr = try epnn(mat.ptr);
         const ptr = c.PointVector_NewFromMat(mat_ptr);
-        const nn_ptr = try epnn(ptr);
-        return .{ .ptr = nn_ptr };
+        return try initFromC(ptr);
     }
 
     pub fn fromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
@@ -439,8 +442,8 @@ pub const RotatedRect = extern struct {
 };
 
 pub const Size = struct {
-    width: u31,
-    height: u31,
+    width: i32,
+    height: i32,
 
     const Self = @This();
 
