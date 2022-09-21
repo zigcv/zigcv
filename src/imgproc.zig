@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Size = core.Size;
 const Scalar = core.Scalar;
@@ -17,176 +18,175 @@ const TermCriteria = core.TermCriteria;
 const ColorConversionCode = @import("imgproc/color_codes.zig").ColorConversionCode;
 
 pub const ConnectedComponentsAlgorithmType = enum(u2) {
-
-    // SAUF algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
+    /// SAUF algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
     wu = 0,
 
-    // BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
+    /// BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
     default = 1,
 
-    // BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity
+    /// BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity
     grana = 2,
 };
 
 pub const ConnectedComponentsTypes = enum(u3) {
-    //The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
+    ///The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
     stat_left = 0,
 
-    //The topmost (y) coordinate which is the inclusive start of the bounding box in the vertical direction.
+    ///The topmost (y) coordinate which is the inclusive start of the bounding box in the vertical direction.
     stat_top = 1,
 
-    // The horizontal size of the bounding box.
+    /// The horizontal size of the bounding box.
     stat_width = 2,
 
-    // The vertical size of the bounding box.
+    /// The vertical size of the bounding box.
     stat_height = 3,
 
-    // The total area (in pixels) of the connected component.
+    /// The total area (in pixels) of the connected component.
     stat_area = 4,
 
     stat_max = 5,
 };
 
 pub const BorderType = enum(u5) {
-    // BorderConstant border type
+    /// BorderConstant border type
     constant = 0,
 
-    // BorderReplicate border type
+    /// BorderReplicate border type
     replicate = 1,
 
-    // BorderReflect border type
+    /// BorderReflect border type
     reflect = 2,
 
-    // BorderWrap border type
+    /// BorderWrap border type
     wrap = 3,
 
-    // BorderReflect101 border type
+    /// BorderReflect101 border type
     reflect101 = 4,
 
-    // BorderTransparent border type
+    /// BorderTransparent border type
     transparent = 5,
 
-    // BorderIsolated border type
+    /// BorderIsolated border type
     isolated = 16,
 
     pub const default = BorderType.reflect101;
 };
 
 pub const MorphType = enum(u3) {
-    // MorphErode operation
+    /// MorphErode operation
     erode = 0,
 
-    // MorphDilate operation
+    /// MorphDilate operation
     dilate = 1,
 
-    // MorphOpen operation
+    /// MorphOpen operation
     open = 2,
 
-    // MorphClose operation
+    /// MorphClose operation
     close = 3,
 
-    // MorphGradient operation
+    /// MorphGradient operation
     gradient = 4,
 
-    // MorphTophat operation
+    /// MorphTophat operation
     tophat = 5,
 
-    // MorphBlackhat operation
+    /// MorphBlackhat operation
     blackhat = 6,
 
-    // MorphHitmiss operation
+    /// MorphHitmiss operation
     hitmiss = 7,
 };
 
 pub const HoughMode = enum(u2) {
-    // HoughStandard is the classical or standard Hough transform.
+    /// HoughStandard is the classical or standard Hough transform.
     standard = 0,
-    // HoughProbabilistic is the probabilistic Hough transform (more efficient
-    // in case if the picture contains a few long linear segments).
+    /// HoughProbabilistic is the probabilistic Hough transform (more efficient
+    /// in case if the picture contains a few long linear segments).
     probabilistic = 1,
-    // HoughMultiScale is the multi-scale variant of the classical Hough
-    // transform.
+    /// HoughMultiScale is the multi-scale variant of the classical Hough
+    /// transform.
     multi_scale = 2,
-    // HoughGradient is basically 21HT, described in: HK Yuen, John Princen,
-    // John Illingworth, and Josef Kittler. Comparative study of hough
-    // transform methods for circle finding. Image and Vision Computing,
-    // 8(1):71–77, 1990.
+    /// HoughGradient is basically 21HT, described in: HK Yuen, John Princen,
+    /// John Illingworth, and Josef Kittler. Comparative study of hough
+    /// transform methods for circle finding. Image and Vision Computing,
+    /// 8(1):71–77, 1990.
     gradient = 3,
 };
 
 pub const GrabCutMode = enum(u2) {
-    // GCInitWithRect makes the function initialize the state and the mask using the provided rectangle.
-    // After that it runs the itercount iterations of the algorithm.
+    /// GCInitWithRect makes the function initialize the state and the mask using the provided rectangle.
+    /// After that it runs the itercount iterations of the algorithm.
     init_with_rect = 0,
-    // GCInitWithMask makes the function initialize the state using the provided mask.
-    // GCInitWithMask and GCInitWithRect can be combined.
-    // Then all the pixels outside of the ROI are automatically initialized with GC_BGD.
+    /// GCInitWithMask makes the function initialize the state using the provided mask.
+    /// GCInitWithMask and GCInitWithRect can be combined.
+    /// Then all the pixels outside of the ROI are automatically initialized with GC_BGD.
     init_with_mask = 1,
-    // GCEval means that the algorithm should just resume.
+    /// GCEval means that the algorithm should just resume.
     eval = 2,
-    // GCEvalFreezeModel means that the algorithm should just run a single iteration of the GrabCut algorithm
-    // with the fixed model
+    /// GCEvalFreezeModel means that the algorithm should just run a single iteration of the GrabCut algorithm
+    /// with the fixed model
     eval_freeze_model = 3,
 };
 
 pub const LineType = enum(i6) {
-    // Filled line
+    /// Filled line
     filled = -1,
-    // Line4 4-connected line
+    /// Line4 4-connected line
     line4 = 4,
-    // Line8 8-connected line
+    /// Line8 8-connected line
     line8 = 8,
-    // LineAA antialiased line
+    /// LineAA antialiased line
     lineAA = 16,
 };
 
 pub const HersheyFont = enum(u5) {
-    // FontHersheySimplex is normal size sans-serif font.
+    /// FontHersheySimplex is normal size sans-serif font.
     simplex = 0,
-    // FontHersheyPlain issmall size sans-serif font.
+    /// FontHersheyPlain issmall size sans-serif font.
     plain = 1,
-    // FontHersheyDuplex normal size sans-serif font
-    // (more complex than FontHersheySIMPLEX).
+    /// FontHersheyDuplex normal size sans-serif font
+    /// (more complex than FontHersheySIMPLEX).
     duplex = 2,
-    // FontHersheyComplex i a normal size serif font.
+    /// FontHersheyComplex i a normal size serif font.
     complex = 3,
-    // FontHersheyTriplex is a normal size serif font
-    // (more complex than FontHersheyCOMPLEX).
+    /// FontHersheyTriplex is a normal size serif font
+    /// (more complex than FontHersheyCOMPLEX).
     triplex = 4,
-    // FontHersheyComplexSmall is a smaller version of FontHersheyCOMPLEX.
+    /// FontHersheyComplexSmall is a smaller version of FontHersheyCOMPLEX.
     complex_small = 5,
-    // FontHersheyScriptSimplex is a hand-writing style font.
+    /// FontHersheyScriptSimplex is a hand-writing style font.
     script_simplex = 6,
-    // FontHersheyScriptComplex is a more complex variant of FontHersheyScriptSimplex.
+    /// FontHersheyScriptComplex is a more complex variant of FontHersheyScriptSimplex.
     script_complex = 7,
-    // FontItalic is the flag for italic font.
+    /// FontItalic is the flag for italic font.
     italic = 16,
 };
 
 pub const InterpolationFlag = enum(u5) {
-    // InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
+    /// InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
     nearest_neighbor = 0,
 
-    // InterpolationLinear is bilinear interpolation.
+    /// InterpolationLinear is bilinear interpolation.
     linear = 1,
 
-    // InterpolationCubic is bicube interpolation.
+    /// InterpolationCubic is bicube interpolation.
     cubic = 2,
 
-    // InterpolationArea uses pixel area relation. It is preferred for image
-    // decimation as it gives moire-free results.
+    /// InterpolationArea uses pixel area relation. It is preferred for image
+    /// decimation as it gives moire-free results.
     area = 3,
 
-    // InterpolationLanczos4 is Lanczos interpolation over 8x8 neighborhood.
+    /// InterpolationLanczos4 is Lanczos interpolation over 8x8 neighborhood.
     lanczos4 = 4,
 
-    // InterpolationMax indicates use maximum interpolation.
+    /// InterpolationMax indicates use maximum interpolation.
     max = 7,
 
-    // WarpFillOutliers fills all of the destination image pixels. If some of them correspond to outliers in the source image, they are set to zero.
+    /// WarpFillOutliers fills all of the destination image pixels. If some of them correspond to outliers in the source image, they are set to zero.
     warp_fill_outliers = 8,
 
-    // WarpInverseMap, inverse transformation.
+    /// WarpInverseMap, inverse transformation.
     warp_inverse_map = 16,
 
     pub const default = InterpolationFlag.linear;
@@ -214,10 +214,10 @@ pub const HomographyMethod = enum(u4) {
     ransac = 8,
 };
 
-// DistanceType types for Distance Transform and M-estimatorss
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#gaa2bfbebbc5c320526897996aafa1d8eb
+/// DistanceType types for Distance Transform and M-estimatorss
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#gaa2bfbebbc5c320526897996aafa1d8eb
 pub const DistanceType = enum(u3) {
     user = 0,
     l1 = 1,
@@ -241,62 +241,87 @@ pub const DistanceTransformMask = enum(u1) {
 };
 
 pub const ThresholdType = enum(u5) {
-    // ThresholdBinary threshold type
+    /// ThresholdBinary threshold type
     binary = 0,
 
-    // ThresholdBinaryInv threshold type
+    /// ThresholdBinaryInv threshold type
     binary_inv = 1,
 
-    // ThresholdTrunc threshold type
+    /// ThresholdTrunc threshold type
     trunc = 2,
 
-    // ThresholdToZero threshold type
+    /// ThresholdToZero threshold type
     to_zero = 3,
 
-    // ThresholdToZeroInv threshold type
+    /// ThresholdToZeroInv threshold type
     to_zero_inv = 4,
 
-    // ThresholdMask threshold type
+    /// ThresholdMask threshold type
     mask = 7,
 
-    // ThresholdOtsu threshold type
+    /// ThresholdOtsu threshold type
     otsu = 8,
 
-    // ThresholdTriangle threshold type
+    /// ThresholdTriangle threshold type
     triangle = 16,
 };
 
 pub const AdaptiveThresholdType = enum(u1) {
-    // AdaptiveThresholdMean threshold type
+    //// AdaptiveThresholdMean threshold type
     mean = 0,
 
-    // AdaptiveThresholdGaussian threshold type
+    //// AdaptiveThresholdGaussian threshold type
     gaussian = 1,
 };
 
+/// CLAHE is a wrapper around the cv::CLAHE algorithm.
 pub const CLAHE = struct {
-    ptr: c.CLANE,
+    ptr: c.CLAHE,
 
     const Self = @This();
 
-    pub fn init() Self {
-        return .{ .ptr = c.CLAHE_Create() };
+    /// NewCLAHE returns a new CLAHE algorithm
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/db6/classcv_1_1CLAHE.html
+    ///
+    pub fn init() !Self {
+        const ptr = c.CLAHE_Create();
+        return initFromC(ptr);
     }
 
-    pub fn initWithParams(clip_limit: f64, tile_grid_size: Size) Self {
-        return .{ .ptr = c.CLAHE_CreateWithParams(clip_limit, tile_grid_size.toC()) };
+    /// NewCLAHEWithParams returns a new CLAHE algorithm
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/db6/classcv_1_1CLAHE.html
+    ///
+    pub fn initWithParams(clip_limit: f64, tile_grid_size: Size) !Self {
+        const ptr = c.CLAHE_CreateWithParams(clip_limit, tile_grid_size.toC());
+        return initFromC(ptr);
     }
 
+    fn initFromC(ptr: c.CLAHE) !Self {
+        const nn_ptr = try epnn(ptr);
+        return Self{ .ptr = nn_ptr };
+    }
+
+    /// Close the CLAHE algorithm
     pub fn deinit(self: *Self) void {
         c.CLAHE_Close(self.ptr);
+        self.ptr = null;
     }
 
     pub fn toC(self: Self) c.CLANE {
         return self.ptr;
     }
 
+    /// Apply CLAHE.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/db6/classcv_1_1CLAHE.html#a4e92e0e427de21be8d1fae8dcd862c5e
+    ///
     pub fn apply(self: Self, src: Mat, dst: *Mat) void {
-        c.CLAHE_Apply(self.ptr, src, dst.*);
+        c.CLAHE_Apply(self.ptr, src.toC(), dst.toC());
     }
 };
 
@@ -308,6 +333,13 @@ pub fn approxPolyDP(curve: PointVector, epsilon: f64, closed: bool) PointVector 
     return .{ .ptr = c.ApproxPolyDP(curve.toC(), epsilon, closed) };
 }
 
+/// CvtColor converts an image from one color space to another.
+/// It converts the src Mat image to the dst Mat using the
+/// code param containing the desired ColorConversionCode color space.
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga4e0972be5de079fed4e3a10e24ef5ef0
+///
 pub fn cvtColor(src: Mat, dst: *Mat, code: ColorConversionCode) void {
     c.CvtColor(src.ptr, dst.*.ptr, @enumToInt(code));
 }
@@ -316,9 +348,8 @@ pub fn equalizeHist(src: Mat, dst: *Mat) void {
     return c.equalizeHist(src.ptr, dst.*.ptr);
 }
 
-// pub fn calcHist(mats: struct_Mats, chans: IntVector, mask: Mat, hist: Mat, sz: IntVector, rng: FloatVector, acc: bool) void;
-// pub fn calcBackProject(mats: struct_Mats, chans: IntVector, hist: Mat, backProject: Mat, rng: FloatVector, uniform: bool) void;
-
+/// pub fn calcHist(mats: struct_Mats, chans: IntVector, mask: Mat, hist: Mat, sz: IntVector, rng: FloatVector, acc: bool) void;
+/// pub fn calcBackProject(mats: struct_Mats, chans: IntVector, hist: Mat, backProject: Mat, rng: FloatVector, uniform: bool) void;
 pub fn compareHist(hist1: Mat, hist2: Mat, method: i32) f64 {
     return c.CompareHist(hist1.ptr, hist2.ptr, method);
 }
@@ -400,11 +431,11 @@ pub fn pointPolygonTest(pts: PointVector, pt: Point, measure_dist: bool) f64 {
     return c.PointPolygonTest(pts.toC(), pt.toC(), measure_dist);
 }
 
-// // ConnectedComponents computes the connected components labeled image of boolean image.
-// //
-// // For further details, please see:
-// // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
-// //
+/// ConnectedComponents computes the connected components labeled image of boolean image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
+///
 pub fn connectedComponents(src: Mat, labels: *Mat) i32 {
     return c.ConnectedComponents(
         src.ptr,
