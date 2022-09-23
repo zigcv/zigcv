@@ -11,6 +11,7 @@ const Rect = core.Rect;
 const Point = core.Point;
 const Point2f = core.Point2f;
 const PointVector = core.PointVector;
+const PointsVector = core.PointsVector;
 const Point2fVector = core.Point2fVector;
 const RotatedRect = core.RotatedRect;
 const MatType = Mat.MatType;
@@ -28,7 +29,7 @@ pub const ConnectedComponentsAlgorithmType = enum(u2) {
     grana = 2,
 };
 
-pub const ConnectedComponentsTypes = enum(u3) {
+pub const ConnectedComponentsType = enum(u3) {
     ///The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
     stat_left = 0,
 
@@ -137,7 +138,7 @@ pub const LineType = enum(i6) {
     /// Line8 8-connected line
     line8 = 8,
     /// LineAA antialiased line
-    lineAA = 16,
+    line_aa = 16,
 };
 
 pub const HersheyFont = enum(u5) {
@@ -266,12 +267,60 @@ pub const ThresholdType = enum(u5) {
     triangle = 16,
 };
 
+/// AdaptiveThresholdType type of adaptive threshold operation.
 pub const AdaptiveThresholdType = enum(u1) {
     //// AdaptiveThresholdMean threshold type
     mean = 0,
 
     //// AdaptiveThresholdGaussian threshold type
     gaussian = 1,
+};
+
+/// RetrievalMode is the mode of the contour retrieval algorithm.
+pub const RetrievalMode = enum(u3) {
+    /// RetrievalExternal retrieves only the extreme outer contours.
+    /// It sets `hierarchy[i][2]=hierarchy[i][3]=-1` for all the contours.
+    external = 0,
+
+    /// RetrievalList retrieves all of the contours without establishing
+    /// any hierarchical relationships.
+    list = 1,
+
+    /// RetrievalCComp retrieves all of the contours and organizes them into
+    /// a two-level hierarchy. At the top level, there are external boundaries
+    /// of the components. At the second level, there are boundaries of the holes.
+    /// If there is another contour inside a hole of a connected component, it
+    /// is still put at the top level.
+    c_comp = 2,
+
+    /// RetrievalTree retrieves all of the contours and reconstructs a full
+    /// hierarchy of nested contours.
+    tree = 3,
+
+    /// RetrievalFloodfill lacks a description in the original header.
+    floodfill = 4,
+};
+
+/// ContourApproximationMode is the mode of the contour approximation algorithm.
+pub const ContourApproximationMode = enum(u3) {
+    /// ChainApproxNone stores absolutely all the contour points. That is,
+    /// any 2 subsequent points (x1,y1) and (x2,y2) of the contour will be
+    /// either horizontal, vertical or diagonal neighbors, that is,
+    /// max(abs(x1-x2),abs(y2-y1))==1.
+    none = 1,
+
+    /// ChainApproxSimple compresses horizontal, vertical, and diagonal segments
+    /// and leaves only their end points.
+    /// For example, an up-right rectangular contour is encoded with 4 points.
+    simple = 2,
+
+    /// ChainApproxTC89L1 applies one of the flavors of the Teh-Chin chain
+    /// approximation algorithms.
+    tc89L1 = 3,
+
+    /// ChainApproxTC89KCOS applies one of the flavors of the Teh-Chin chain
+    /// approximation algorithms.
+    tc89kcos = 4,
 };
 
 /// CLAHE is a wrapper around the cv::CLAHE algorithm.
@@ -329,8 +378,9 @@ pub fn arcLength(curve: PointVector, is_closed: bool) f64 {
     return c.ArcLength(curve.toC(), is_closed);
 }
 
-pub fn approxPolyDP(curve: PointVector, epsilon: f64, closed: bool) PointVector {
-    return .{ .ptr = c.ApproxPolyDP(curve.toC(), epsilon, closed) };
+pub fn approxPolyDP(curve: PointVector, epsilon: f64, closed: bool) !PointVector {
+    const ptr = c.ApproxPolyDP(curve.toC(), epsilon, closed);
+    return try PointVector.initFromC(ptr);
 }
 
 /// CvtColor converts an image from one color space to another.
@@ -427,6 +477,27 @@ pub fn fitEllipse(pts: PointVector) RotatedRect {
     return RotatedRect.fromC(c.FitEllipse(pts.toC()));
 }
 
+/// FindContours finds contours in a binary image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga95f5b48d01abc7c2e0732db24689837b
+///
+//     pub extern fn FindContours(src: Mat, hierarchy: Mat, mode: c_int, method: c_int) PointsVector;
+pub fn findContours(src: Mat, mode: RetrievalMode, method: ContourApproximationMode) !PointsVector {
+    var hierarchy = try Mat.init();
+    defer hierarchy.deinit();
+    return try findContoursWithParams(src, &hierarchy, mode, method);
+}
+
+/// FindContoursWithParams finds contours in a binary image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a
+///
+pub fn findContoursWithParams(src: Mat, hierarchy: *Mat, mode: RetrievalMode, method: ContourApproximationMode) !PointsVector {
+    return try PointsVector.initFromC(c.FindContours(src.ptr, hierarchy.*.ptr, @enumToInt(mode), @enumToInt(method)));
+}
+
 pub fn pointPolygonTest(pts: PointVector, pt: Point, measure_dist: bool) f64 {
     return c.PointPolygonTest(pts.toC(), pt.toC(), measure_dist);
 }
@@ -461,7 +532,7 @@ pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: i32, 
 // For further details, please see:
 // https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
 //
-pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsTypes) i32 {
+pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsType) i32 {
     return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
@@ -602,7 +673,7 @@ pub fn ellipseWithParams(img: *Mat, center: Point, axes: Point, angle: f64, star
     _ = c.EllipseWithParams(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
-pub fn line(img: Mat, pt1: Point, pt2: Point, color: Color, thickness: i32) void {
+pub fn line(img: *Mat, pt1: Point, pt2: Point, color: Color, thickness: i32) void {
     _ = c.Line(img.ptr, pt1.toC(), pt2.toC(), color.toScalar().toC(), thickness);
 }
 
@@ -618,27 +689,31 @@ pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: i32, 
 // pub fn fillPolyWithParams(img: *Mat, points: PointsVector, color: Color, line_type: LineType, shift: c_int, offset: Point) void;
 // pub fn polylines(img: Mat, points: PointsVector, isClosed: bool, color: Scalar, thickness: c_int) void;
 
-// GetTextSize calculates the width and height of a text string.
-// It returns an image.Point with the size required to draw text using
-// a specific font face, scale, and thickness.
-//
-// For further details, please see:
-// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
-//
+/// GetTextSize calculates the width and height of a text string.
+/// It returns an image.Point with the size required to draw text using
+/// a specific font face, scale, and thickness.
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
+///
 pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
-    return Size.fromC(c.GetTextSize(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness));
+    return Size.initFromC(c.GetTextSize(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness));
 }
 
-// GetTextSizeWithBaseline calculates the width and height of a text string including the basline of the text.
-// It returns an image.Point with the size required to draw text using
-// a specific font face, scale, and thickness as well as its baseline.
-//
-// For further details, please see:
-// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
-//
-pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
-    const baseline = 0;
-    return Size.fromC(c.GetTextSizeWithBaseline(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness, &baseline));
+/// GetTextSizeWithBaseline calculates the width and height of a text string including the basline of the text.
+/// It returns an image.Point with the size required to draw text using
+/// a specific font face, scale, and thickness as well as its baseline.
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
+///
+pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) struct { size: Size, baseline: i32 } {
+    var baseline: i32 = 0;
+    const size = Size.initFromC(c.GetTextSizeWithBaseline(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness, &baseline));
+    return .{
+        .size = size,
+        .baseline = baseline,
+    };
 }
 
 // PutText draws a text string.
@@ -662,18 +737,18 @@ pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, 
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32, line_type: LineType, bottom_left_origin: bool) void {
-    _ = c.PutTextWithParams(img.*.ptr, utils.castZigU8ToC(text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), @boolToInt(bottom_left_origin));
+    _ = c.PutTextWithParams(img.*.ptr, utils.castZigU8ToC(text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), bottom_left_origin);
 }
 
-// Resize resizes an image.
-// It resizes the image src down to or up to the specified size, storing the
-// result in dst. Note that src and dst may be the same image. If you wish to
-// scale by factor, an empty sz may be passed and non-zero fx and fy. Likewise,
-// if you wish to scale to an explicit size, a non-empty sz may be passed with
-// zero for both fx and fy.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga47a974309e9102f5f08231edc7e7529d
+/// Resize resizes an image.
+/// It resizes the image src down to or up to the specified size, storing the
+/// result in dst. Note that src and dst may be the same image. If you wish to
+/// scale by factor, an empty sz may be passed and non-zero fx and fy. Likewise,
+/// if you wish to scale to an explicit size, a non-empty sz may be passed with
+/// zero for both fx and fy.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga47a974309e9102f5f08231edc7e7529d
 pub fn resize(src: Mat, dst: *Mat, sz: Size, fx: f64, fy: f64, interp: InterpolationFlag) void {
     _ = c.Resize(src.ptr, dst.*.ptr, sz.toC(), fx, fy, @enumToInt(interp));
 }

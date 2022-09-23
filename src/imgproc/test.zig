@@ -5,8 +5,12 @@ const imgcodecs = @import("../imgcodecs.zig");
 const imgproc = @import("../imgproc.zig");
 const Mat = core.Mat;
 const Size = core.Size;
+const Color = core.Color;
+const Point = core.Point;
+const Rect = core.Rect;
 
-const face_filepath = "./libs/gocv/images/face-detect.jpg";
+const img_dir = "./libs/gocv/images/";
+const face_filepath = img_dir ++ "face-detect.jpg";
 
 test "imgproc CLAHE" {
     var img = try imgcodecs.imRead(face_filepath, .gray_scale);
@@ -52,6 +56,19 @@ test "imgproc CLAHE WithParams" {
     try testing.expectEqual(img.cols(), dst.cols());
 }
 
+test "imgproc approxPolyDP" {
+    var img = try Mat.initSize(100, 200, .cv8uc1);
+    defer img.deinit();
+
+    const white = Color.init(255, 255, 255, 255);
+
+    // Draw a triangle
+    imgproc.line(&img, Point.init(25, 25), Point.init(25, 75), white, 1);
+    imgproc.line(&img, Point.init(25, 75), Point.init(25, 75), white, 1);
+    imgproc.line(&img, Point.init(75, 50), Point.init(25, 75), white, 1);
+    imgproc.rectangle(&img, Rect.init(125, 25, 175, 75), white, 1);
+}
+
 test "imgproc cvtColor" {
     var img = try imgcodecs.imRead(face_filepath, .color);
     defer img.deinit();
@@ -64,4 +81,55 @@ test "imgproc cvtColor" {
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(img.rows(), dst.rows());
     try testing.expectEqual(img.cols(), dst.cols());
+}
+
+test "imgproc textSize" {
+    const size = imgproc.getTextSize("test", .simplex, 1.2, 1);
+
+    try testing.expectEqual(@as(i32, 72), size.width);
+    try testing.expectEqual(@as(i32, 26), size.height);
+
+    const res = imgproc.getTextSizeWithBaseline("text", .simplex, 1.2, 1);
+
+    try testing.expectEqual(@as(i32, 72), res.size.width);
+    try testing.expectEqual(@as(i32, 26), res.size.height);
+    try testing.expectEqual(@as(i32, 11), res.baseline);
+}
+
+test "imgproc putText" {
+    var img = try Mat.initSize(150, 150, .cv8uc1);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    imgproc.putText(&img, "Testing", Point.init(10, 10), .plain, 1.2, Color.init(0, 0, 255, 0), 2);
+
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imgproc putTextWithParams" {
+    var img = try Mat.initSize(150, 150, .cv8uc1);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    imgproc.putTextWithParams(&img, "Testing", Point.init(10, 10), .plain, 1.2, Color.init(0, 0, 255, 0), 2, .line_aa, false);
+
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imgproc resize" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    imgproc.resize(img, &dst, Size.init(0, 0), 0.5, 0.5, imgproc.InterpolationFlag.default);
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(@as(i32, 172), dst.rows());
+    try testing.expectEqual(@as(i32, 200), dst.cols());
+
+    imgproc.resize(img, &dst, Size.init(440, 377), 0, 0, imgproc.InterpolationFlag.default);
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(@as(i32, 377), dst.rows());
+    try testing.expectEqual(@as(i32, 440), dst.cols());
 }
