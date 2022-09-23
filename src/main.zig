@@ -1,4 +1,3 @@
-pub const c_api = @import("c_api.zig");
 pub const asyncarray = @import("asyncarray.zig");
 pub const core = @import("core.zig");
 pub const calib3d = @import("calib3d.zig");
@@ -13,6 +12,9 @@ pub const svd = @import("svd.zig");
 pub const version = @import("version.zig");
 pub const videoio = @import("videoio.zig");
 pub const video = @import("video.zig");
+
+pub const c_api = @import("c_api.zig");
+pub const utils = @import("utils.zig");
 
 pub usingnamespace asyncarray;
 pub usingnamespace core;
