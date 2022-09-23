@@ -373,8 +373,8 @@ pub fn size(self: Self) []const i32 {
 // in this Mat expecting it to be of type float aka CV_32F.
 // in this Mat expecting it to be of type double aka CV_64F.
 pub fn get(self: Self, comptime T: type, row: usize, col: usize) T {
-    const row_ = @intCast(u31, row);
-    const col_ = @intCast(u31, col);
+    const row_ = @intCast(i32, row);
+    const col_ = @intCast(i32, col);
     return switch (T) {
         u8 => c.Mat_GetUChar(self.ptr, row_, col_),
         i8 => c.Mat_GetSChar(self.ptr, row_, col_),
@@ -394,9 +394,9 @@ pub fn get(self: Self, comptime T: type, row: usize, col: usize) T {
 // in this Mat expecting it to be of type float aka CV_32F.
 // in this Mat expecting it to be of type double aka CV_64F.
 pub fn get3(self: Self, comptime T: type, x: usize, y: usize, z: usize) T {
-    const x_ = @intCast(u31, x);
-    const y_ = @intCast(u31, y);
-    const z_ = @intCast(u31, z);
+    const x_ = @intCast(i32, x);
+    const y_ = @intCast(i32, y);
+    const z_ = @intCast(i32, z);
     return switch (T) {
         u8 => c.Mat_GetUChar3(self.ptr, x_, y_, z_),
         i8 => c.Mat_GetSChar3(self.ptr, x_, y_, z_),
