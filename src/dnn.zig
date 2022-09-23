@@ -279,16 +279,16 @@ pub const Blob = struct {
         swap_rb: bool,
         crop: bool,
     ) !Self {
-        var new_c_blob = c.Net_BlobFromImage(
-            image.ptr,
+        const new_c_blob = c.Net_BlobFromImage(
+            image.toC(),
             scalefactor,
             size.toC(),
             mean.toC(),
             swap_rb,
             crop,
         );
-        var new_blob = try Mat.initFromC(new_c_blob);
-        return try initFromMat(new_blob);
+        var new_blob_mat = try Mat.initFromC(new_c_blob);
+        return try initFromMat(new_blob_mat);
     }
 
     // BlobFromImages Creates 4-dimensional blob from series of images.
@@ -307,11 +307,11 @@ pub const Blob = struct {
         crop: bool,
         ddepth: Mat.MatType,
     ) !Self {
-        var new_blob = try Mat.init();
+        var new_blob_mat = try Mat.init();
         var c_mats = try Mat.toCStructs(images);
         c.Net_BlobFromImages(
             c_mats,
-            new_blob.toC(),
+            new_blob_mat.toC(),
             scalefactor,
             size.toC(),
             mean.toC(),
@@ -319,7 +319,7 @@ pub const Blob = struct {
             crop,
             @enumToInt(ddepth),
         );
-        return try initFromMat(new_blob);
+        return try initFromMat(new_blob_mat);
     }
 
     pub fn initFromMat(mat: Mat) !Self {
