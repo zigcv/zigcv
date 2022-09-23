@@ -3,6 +3,7 @@ const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
 const castToC = utils.castZigU8ToC;
+const ensureFileExists = utils.ensureFileExists;
 const Mat = core.Mat;
 const STDVector = core.STDVector;
 
@@ -137,7 +138,7 @@ pub const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
 /// http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
 ///
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
-    _ = try std.fs.cwd().statFile(filename);
+    try ensureFileExists(filename, true);
     var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
     return try Mat.initFromC(cMat);
 }
