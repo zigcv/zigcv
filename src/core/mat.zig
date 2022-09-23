@@ -718,6 +718,14 @@ pub fn bitwiseXorWithMask(self: Self, m: Self, dest: *Self, mask: Self) void {
     return self.bitwiseWithMask(self, .xor_, m, dest, mask);
 }
 
+pub fn compare(self: Self, m: Self, dest: *Self, comptime op: CompareType) void {
+    _ = c.Mat_Compare(self.ptr, m.ptr, dest.*.ptr, @enumToInt(op));
+}
+
+pub fn countNonZero(self: Self) i32 {
+    return c.Mat_CountNonZero(self.ptr);
+}
+
 pub fn dataPtr(self: Self, comptime T: type) ![]T {
     if (switch (T) {
         u8 => @enumToInt(self.getType()) & MatType.cv8u != MatType.cv8u,

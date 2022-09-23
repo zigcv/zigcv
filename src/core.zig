@@ -704,7 +704,7 @@ pub const TermCriteria = struct {
 //*    pub extern fn Mat_BitwiseOrWithMask(src1: Mat, src2: Mat, dst: Mat, mask: Mat) void;
 //*    pub extern fn Mat_BitwiseXor(src1: Mat, src2: Mat, dst: Mat) void;
 //*    pub extern fn Mat_BitwiseXorWithMask(src1: Mat, src2: Mat, dst: Mat, mask: Mat) void;
-//     pub extern fn Mat_Compare(src1: Mat, src2: Mat, dst: Mat, ct: c_int) void;
+//*    pub extern fn Mat_Compare(src1: Mat, src2: Mat, dst: Mat, ct: c_int) void;
 //     pub extern fn Mat_BatchDistance(src1: Mat, src2: Mat, dist: Mat, dtype: c_int, nidx: Mat, normType: c_int, K: c_int, mask: Mat, update: c_int, crosscheck: bool) void;
 //     pub extern fn Mat_BorderInterpolate(p: c_int, len: c_int, borderType: c_int) c_int;
 //     pub extern fn Mat_CalcCovarMatrix(samples: Mat, covar: Mat, mean: Mat, flags: c_int, ctype: c_int) void;
@@ -713,7 +713,7 @@ pub const TermCriteria = struct {
 //     pub extern fn Mat_CompleteSymm(m: Mat, lowerToUpper: bool) void;
 //     pub extern fn Mat_ConvertScaleAbs(src: Mat, dst: Mat, alpha: f64, beta: f64) void;
 //     pub extern fn Mat_CopyMakeBorder(src: Mat, dst: Mat, top: c_int, bottom: c_int, left: c_int, right: c_int, borderType: c_int, value: Scalar) void;
-//     pub extern fn Mat_CountNonZero(src: Mat) c_int;
+//*    pub extern fn Mat_CountNonZero(src: Mat) c_int;
 //     pub extern fn Mat_DCT(src: Mat, dst: Mat, flags: c_int) void;
 //     pub extern fn Mat_Determinant(m: Mat) f64;
 //     pub extern fn Mat_DFT(m: Mat, dst: Mat, flags: c_int) void;
