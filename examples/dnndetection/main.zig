@@ -51,7 +51,7 @@ pub fn main() anyerror!void {
     };
     defer net.deinit();
 
-    if (net.empty()) {
+    if (net.isEmpty()) {
         std.debug.print("Error: could not load model\n", .{});
         std.os.exit(1);
     }
@@ -72,7 +72,7 @@ pub fn main() anyerror!void {
             continue;
         }
 
-        var blob = try cv.blobFromImage(img, ratio, cv.Size{ .width = 300, .height = 300 }, mean, swap_rgb, false);
+        var blob = try cv.Blob.initFromImage(img, ratio, cv.Size{ .width = 300, .height = 300 }, mean, swap_rgb, false);
         defer blob.deinit();
 
         net.setInput(blob, "");

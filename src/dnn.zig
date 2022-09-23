@@ -4,8 +4,10 @@ const core = @import("core.zig");
 const utils = @import("utils.zig");
 const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
+const Mats = core.Mats;
 const Size = core.Size;
 const Scalar = core.Scalar;
+const Rect = core.Rect;
 const AsyncArray = @import("asyncarray.zig").AsyncArray;
 
 pub const Net = struct {
@@ -14,32 +16,32 @@ pub const Net = struct {
     const Self = @This();
 
     pub const BackendType = enum(i32) {
-        // NetBackendDefault is the default backend.
+        /// NetBackendDefault is the default backend.
         default = 0,
 
-        // NetBackendHalide is the Halide backend.
+        /// NetBackendHalide is the Halide backend.
         halide = 1,
 
-        // NetBackendOpenVINO is the OpenVINO backend.
+        /// NetBackendOpenVINO is the OpenVINO backend.
         open_vino = 2,
 
-        // NetBackendOpenCV is the OpenCV backend.
+        /// NetBackendOpenCV is the OpenCV backend.
         open_cv = 3,
 
-        // NetBackendVKCOM is the Vulkan backend.
+        /// NetBackendVKCOM is the Vulkan backend.
         vkcom = 4,
 
-        // NetBackendCUDA is the Cuda backend.
+        /// NetBackendCUDA is the Cuda backend.
         cuda = 5,
 
-        // ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
-        // - halide
-        // - openvino
-        // - opencv
-        // - vulkan
-        // - cuda
-        // - default
-        pub fn parse(backend: []const u8) @This() {
+        /// ParseNetBackend returns a valid NetBackendType given a string. Valid values are:
+        /// - halide
+        /// - openvino
+        /// - opencv
+        /// - vulkan
+        /// - cuda
+        /// - default
+        pub fn toEnum(backend: []const u8) BackendType {
             return switch (backend) {
                 "halide" => .halide,
                 "openvino" => .open_vino,
@@ -52,31 +54,31 @@ pub const Net = struct {
     };
 
     pub const TargetType = enum(i32) {
-        // NetTargetCPU is the default CPU device target.
+        /// NetTargetCPU is the default CPU device target.
         cpu = 0,
 
-        // NetTargetFP32 is the 32-bit OpenCL target.
+        /// NetTargetFP32 is the 32-bit OpenCL target.
         fp32 = 1,
 
-        // NetTargetFP16 is the 16-bit OpenCL target.
+        /// NetTargetFP16 is the 16-bit OpenCL target.
         fp16 = 2,
 
-        // NetTargetVPU is the Movidius VPU target.
+        /// NetTargetVPU is the Movidius VPU target.
         vpu = 3,
 
-        // NetTargetVulkan is the NVIDIA Vulkan target.
+        /// NetTargetVulkan is the NVIDIA Vulkan target.
         vulkan = 4,
 
-        // NetTargetFPGA is the FPGA target.
+        /// NetTargetFPGA is the FPGA target.
         fpga = 5,
 
-        // NetTargetCUDA is the CUDA target.
+        /// NetTargetCUDA is the CUDA target.
         cuda = 6,
 
-        // NetTargetCUDAFP16 is the CUDA target.
+        /// NetTargetCUDAFP16 is the CUDA target.
         cuda_fp16 = 7,
 
-        pub fn parse(target: []const u8) @This() {
+        pub fn toEnum(target: []const u8) TargetType {
             return switch (target) {
                 "fp32" => .fp32,
                 "fp16" => .fp16,
@@ -91,9 +93,9 @@ pub const Net = struct {
         }
     };
 
-    pub fn initFromC(ptr: c.Net) !Self {
+    fn initFromC(ptr: c.Net) !Self {
         const nn_ptr = try epnn(ptr);
-        return Self{ .ptr = nn_ptr };
+        return .{ .ptr = nn_ptr };
     }
 
     pub fn deinit(self: *Self) void {
@@ -102,40 +104,92 @@ pub const Net = struct {
     }
 
     pub fn readNet(model: []const u8, config: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config)));
+        const nn_ptr = c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config));
+        return try initFromC(nn_ptr);
+    }
+
+    pub fn readNetFromBytes(framework: []const u8, model: []const u8, config: []const u8) !Self {
+        if (framework.len == 0) return error.InvalidFramework;
+        if (model.len == 0) return error.ModelIsNotProvided;
+        if (config.len == 0) return error.ConfigIsNotProvided;
+        const c_model = core.toByteArray(model);
+        const c_config = core.toByteArray(config);
+        const c_framework = utils.castZigU8ToC(framework);
+        const nn_ptr = c.Net_ReadNetBytes(c_framework, c_model, c_config);
+        return try initFromC(nn_ptr);
     }
 
     pub fn readNetFromCaffe(prototxt: []const u8, caffe_model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model)));
+        const nn_ptr = c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model));
+        return try initFromC(nn_ptr);
+    }
+
+    pub fn readNetFromCaffeBytes(prototxt: []const u8, caffe_model: []const u8) !Self {
+        const c_prototxt = core.toByteArray(prototxt);
+        const c_caffe_model = core.toByteArray(caffe_model);
+        const nn_ptr = c.Net_ReadNetFromCaffeBytes(c_prototxt, c_caffe_model);
+        return try initFromC(nn_ptr);
     }
 
     pub fn readNetFromTensorflow(model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model)));
+        const nn_ptr = c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model));
+        return try initFromC(nn_ptr);
+    }
+
+    pub fn readNetFromTensorflowBytes(model: []const u8) !Self {
+        const c_model = core.toByteArray(model);
+        const nn_ptr = c.Net_ReadNetFromTensorflowBytes(c_model);
+        return try initFromC(nn_ptr);
     }
 
     pub fn readNetFromTorch(model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromTorch(utils.castZigU8ToC(model)));
+        const nn_ptr = c.Net_ReadNetFromTorch(utils.castZigU8ToC(model));
+        return try initFromC(nn_ptr);
     }
 
     pub fn readNetFromONNX(model: []const u8) !Self {
-        return try Self.initFromC(c.Net_ReadNetFromONNX(utils.castZigU8ToC(model)));
+        const nn_ptr = c.Net_ReadNetFromONNX(utils.castZigU8ToC(model));
+        return try initFromC(nn_ptr);
     }
 
-    pub fn empty(self: Self) bool {
+    pub fn readNetFromONNXBytes(model: []const u8) !Self {
+        const c_model = core.toByteArray(model);
+        const nn_ptr = c.Net_ReadNetFromONNXBytes(c_model);
+        return try initFromC(nn_ptr);
+    }
+
+    pub fn isEmpty(self: Self) bool {
         if (self.ptr == null) return false;
         return c.Net_Empty(self.ptr);
     }
 
-    pub fn setInput(self: *Self, blob: Mat, name: []const u8) void {
-        _ = c.Net_SetInput(self.ptr, blob.ptr, utils.castZigU8ToC(name));
+    pub fn setInput(self: *Self, blob: Blob, name: []const u8) void {
+        _ = c.Net_SetInput(self.ptr, blob.mat.toC(), utils.castZigU8ToC(name));
     }
 
     pub fn forward(self: *Self, output_name: []const u8) !Mat {
-        return try Mat.initFromC(c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name)));
+        const mat_ptr = c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name));
+        return try Mat.initFromC(mat_ptr);
     }
 
-    pub fn forwardAsync(self: *Self, output_name: []const u8) AsyncArray {
-        return AsyncArray.fromC(c.Net_ForwardAsync(self.*.ptr, utils.castZigU8ToC(output_name)));
+    pub fn forwardLayers(self: Self, output_blob_names: [][]const u8, allocator: std.mem.Allocator) !Mats {
+        var c_mats: c.Mats = undefined;
+        var c_string_array = try allocator.alloc([*c]const u8, output_blob_names.len);
+        defer allocator.free(c_string_array);
+        for (output_blob_names) |name, i| c_string_array[i] = utils.castZigU8ToC(name);
+
+        const c_strings = c.CStrings{
+            .strs = @ptrCast([*c][*c]const u8, c_string_array.ptr),
+            .length = @intCast(i32, output_blob_names.len),
+        };
+
+        c.Net_ForwardLayers(self.ptr, &c_mats, c_strings);
+        return try Mat.toArrayList(c_mats, allocator);
+    }
+
+    pub fn forwardAsync(self: *Self, output_name: []const u8) !AsyncArray {
+        const aa_ptr = c.Net_ForwardAsync(self.*.ptr, utils.castZigU8ToC(output_name));
+        return try AsyncArray.initFromC(aa_ptr);
     }
 
     // SetPreferableBackend ask network to use specific computation backend.
@@ -161,11 +215,11 @@ pub const Net = struct {
     // https://docs.opencv.org/master/db/d30/classcv_1_1dnn_1_1Net.html#a06ce946f675f75d1c020c5ddbc78aedc
     //
     pub fn getPerfProfile(self: Self) f64 {
-        return c.Net_GetPerfProfile(self.ptr);
+        return @intToFloat(f64, c.Net_GetPerfProfile(self.ptr));
     }
 
-    pub fn getUnconnectedOutLayers(self: Self, allocator: std.mem.Allocator) std.ArrayList(i32) {
-        var res = c.IntVector{};
+    pub fn getUnconnectedOutLayers(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
+        var res: c.IntVector = undefined;
         defer c.IntVector_Close(res);
         _ = c.Net_GetUnconnectedOutLayers(self.ptr, &res);
         var return_res = std.ArrayList(i32).init(allocator);
@@ -178,48 +232,117 @@ pub const Net = struct {
         return return_res;
     }
 
-    pub fn getLayerNames(self: *Self) []const u8 {
-        const c_strs = c.CStrings{};
-        defer c.CStrings_Close(c_strs);
+    pub fn getLayerNames(self: *Self, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
+        var c_strs: c.CStrings = undefined;
         _ = c.Net_GetLayerNames(self.ptr, &c_strs);
-        return std.mem.span(c_strs);
+        const len = @intCast(usize, c_strs.length);
+        var return_arraylist = try std.ArrayList([]const u8).initCapacity(allocator, len);
+        {
+            var i: usize = 0;
+            while (i < len) : (i += 1) {
+                try return_arraylist.append(std.mem.span(c_strs.strs[i]));
+            }
+        }
+        return return_arraylist;
     }
 
-    pub fn getLayer(self: Self, layerid: i32) Layer {
-        return Layer.initFromC(c.Net_GetLayer(self.ptr, layerid));
-    }
-
-    pub fn getBlobChannel(self: Self, imgidx: i32, chnidx: i32) Mat {
-        return try Mat.initFromC(c.Net_GetBlobChannel(self.ptr, imgidx, chnidx));
-    }
-
-    pub fn getBlobSize(self: Self, blob: Mat) !Size {
-        return Size.fromC(c.Net_GetBlobSize(self.ptr, blob.ptr));
+    pub fn getLayer(self: Self, layerid: i32) !Layer {
+        return try Layer.initFromC(c.Net_GetLayer(self.ptr, layerid));
     }
 };
 
-// BlobFromImage creates 4-dimensional blob from image. Optionally resizes and crops
-// image from center, subtract mean values, scales values by scalefactor,
-// swap Blue and Red channels.
-//
-// For further details, please see:
-// https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#ga152367f253c81b53fe6862b299f5c5cd
-//
-pub fn blobFromImage(image: Mat, scalefactor: f64, size: Size, mean: Scalar, swap_rb: bool, crop: bool) !Mat {
-    return try Mat.initFromC(c.Net_BlobFromImage(image.ptr, scalefactor, size.toC(), mean.toC(), swap_rb, crop));
-}
+pub const Blob = struct {
+    mat: Mat,
 
-// BlobFromImages Creates 4-dimensional blob from series of images.
-// Optionally resizes and crops images from center, subtract mean values,
-// scales values by scalefactor, swap Blue and Red channels.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga2b89ed84432e4395f5a1412c2926293c
-//
-pub fn blobFromImages(images: []const Mat, blob: *Mat, scalefactor: f64, size: Size, mean: Scalar, swap_r_b: bool, crop: bool, ddepth: i32, allocator: std.mem.Allocator) !void {
-    var c_mats = try core.matsToCMats(images, allocator);
-    c.Net_BlobFromImages(c_mats, blob.*.toC(), scalefactor, size.toC(), mean.toC(), swap_r_b, crop, ddepth);
-}
+    const Self = @This();
+
+    // BlobFromImage creates 4-dimensional blob from image. Optionally resizes and crops
+    // image from center, subtract mean values, scales values by scalefactor,
+    // swap Blue and Red channels.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#ga152367f253c81b53fe6862b299f5c5cd
+    //
+    pub fn initFromImage(
+        image: Mat,
+        scalefactor: f64,
+        size: Size,
+        mean: Scalar,
+        swap_rb: bool,
+        crop: bool,
+    ) !Self {
+        var new_c_blob = c.Net_BlobFromImage(
+            image.ptr,
+            scalefactor,
+            size.toC(),
+            mean.toC(),
+            swap_rb,
+            crop,
+        );
+        var new_blob = try Mat.initFromC(new_c_blob);
+        return try initFromMat(new_blob);
+    }
+
+    // BlobFromImages Creates 4-dimensional blob from series of images.
+    // Optionally resizes and crops images from center, subtract mean values,
+    // scales values by scalefactor, swap Blue and Red channels.
+    //
+    // For further details, please see:
+    // https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga2b89ed84432e4395f5a1412c2926293c
+    //
+    pub fn initFromImages(
+        images: []const Mat,
+        scalefactor: f64,
+        size: Size,
+        mean: Scalar,
+        swap_r_b: bool,
+        crop: bool,
+        ddepth: Mat.MatType,
+    ) !Self {
+        var new_blob = try Mat.init();
+        var c_mats = try Mat.toCStructs(images);
+        c.Net_BlobFromImages(
+            c_mats,
+            new_blob.toC(),
+            scalefactor,
+            size.toC(),
+            mean.toC(),
+            swap_r_b,
+            crop,
+            @enumToInt(ddepth),
+        );
+        return try initFromMat(new_blob);
+    }
+
+    pub fn initFromMat(mat: Mat) !Self {
+        _ = try epnn(mat.ptr);
+        return Self{ .mat = mat };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.mat.deinit();
+    }
+
+    pub fn getSize(self: Self) !Scalar {
+        return Scalar.initFromC(c.Net_GetBlobSize(self.mat.toC()));
+    }
+
+    pub fn getChannel(self: Self, imgidx: i32, chnidx: i32) !Mat {
+        return try Mat.initFromC(c.Net_GetBlobChannel(self.mat.toC(), imgidx, chnidx));
+    }
+
+    /// ImagesFromBlob Parse a 4D blob and output the images it contains as
+    /// 2D arrays through a simpler data structure (std::vector<cv::Mat>).
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga4051b5fa2ed5f54b76c059a8625df9f5
+    ///
+    pub fn getImages(self: Self, allocator: std.mem.Allocator) !Mats {
+        var c_mats: c.Mats = undefined;
+        _ = c.Net_ImagesFromBlob(self.mat.toC(), &c_mats);
+        return try Mat.toArrayList(c_mats, allocator);
+    }
+};
 
 pub const Layer = struct {
     ptr: c.Layer,
@@ -248,35 +371,139 @@ pub const Layer = struct {
         return c.Layer_OutputNameToIndex(self.ptr, utils.castZigU8ToC(name));
     }
 
-    pub fn getName(self: Self) ![]const u8 {
-        return utils.castZigU8ToC(c.Layer_GetName(self.ptr));
+    pub fn getName(self: Self) []const u8 {
+        return std.mem.span(c.Layer_GetName(self.ptr));
     }
 
-    pub fn getType(self: Self) ![]const u8 {
-        return utils.castZigU8ToC(c.Layer_GetType(self.ptr));
+    pub fn getType(self: Self) []const u8 {
+        return std.mem.span(c.Layer_GetType(self.ptr));
     }
 };
+
+/// NMSBoxes performs non maximum suppression given boxes and corresponding scores.
+///
+/// For futher details, please see:
+/// https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
+pub fn nmsBoxes(
+    bboxes: []const Rect,
+    scores: []const f32,
+    score_threshold: f32,
+    nms_threshold: f32,
+    max_index: usize,
+    allocator: std.mem.Allocator,
+) !std.ArrayList(i32) {
+    var c_bboxes_array = try allocator.alloc(c.Rect, bboxes.len);
+    defer allocator.free(c_bboxes_array);
+    for (bboxes) |bbox, i| c_bboxes_array[i] = bbox.toC();
+    const c_bboxes_struct = c.Rects{
+        .rects = @ptrCast([*]c.Rect, c_bboxes_array.ptr),
+        .length = @intCast(i32, bboxes.len),
+    };
+
+    const c_scores_struct = c.FloatVector{
+        .val = @ptrCast([*]f32, scores.ptr),
+        .length = @intCast(i32, scores.len),
+    };
+
+    var indices_vector: c.IntVector = undefined;
+    indices_vector.length = @intCast(i32, max_index);
+
+    c.NMSBoxes(
+        c_bboxes_struct,
+        c_scores_struct,
+        score_threshold,
+        nms_threshold,
+        &indices_vector,
+    );
+    defer c.IntVector_Close(indices_vector);
+
+    const len = @intCast(usize, indices_vector.length);
+    var indices = try std.ArrayList(i32).initCapacity(allocator, len);
+    {
+        var i: usize = 0;
+        while (i < len) : (i += 1) {
+            try indices.append(indices_vector.val[i]);
+        }
+    }
+    return indices;
+}
+
+/// NMSBoxesWithParams performs non maximum suppression given boxes and corresponding scores.
+///
+/// For futher details, please see:
+/// https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
+pub fn nmsBoxesWithParams(
+    bboxes: []const Rect,
+    scores: []const f32,
+    score_threshold: f32,
+    nms_threshold: f32,
+    eta: f32,
+    top_k: i32,
+    max_index: usize,
+    allocator: std.mem.Allocator,
+) !std.ArrayList(i32) {
+    var c_bboxes_array = try allocator.alloc(c.Rect, bboxes.len);
+    defer allocator.free(c_bboxes_array);
+    for (bboxes) |bbox, i| c_bboxes_array[i] = bbox.toC();
+    const c_bboxes_struct = c.Rects{
+        .rects = @ptrCast([*]c.Rect, c_bboxes_array.ptr),
+        .length = @intCast(i32, bboxes.len),
+    };
+
+    const c_scores_struct = c.FloatVector{
+        .val = @ptrCast([*]f32, scores.ptr),
+        .length = @intCast(i32, scores.len),
+    };
+
+    var indices_vector: c.IntVector = undefined;
+    indices_vector.length = @intCast(i32, max_index);
+
+    c.NMSBoxesWithParams(
+        c_bboxes_struct,
+        c_scores_struct,
+        score_threshold,
+        nms_threshold,
+        &indices_vector,
+        eta,
+        top_k,
+    );
+    defer c.IntVector_Close(indices_vector);
+
+    const len = @intCast(usize, indices_vector.length);
+    var indices = try std.ArrayList(i32).initCapacity(allocator, len);
+    {
+        var i: usize = 0;
+        while (i < len) : (i += 1) {
+            try indices.append(indices_vector.val[i]);
+        }
+    }
+    return indices;
+}
+
+test "dnn" {
+    _ = @import("dnn/test.zig");
+}
 
 //*    implementation done
 //*    pub const Net = ?*anyopaque;
 //*    pub const Layer = ?*anyopaque;
 //*    pub extern fn Net_ReadNet(model: [*c]const u8, config: [*c]const u8) Net;
-//     pub extern fn Net_ReadNetBytes(framework: [*c]const u8, model: struct_ByteArray, config: struct_ByteArray) Net;
+//*    pub extern fn Net_ReadNetBytes(framework: [*c]const u8, model: struct_ByteArray, config: struct_ByteArray) Net;
 //*    pub extern fn Net_ReadNetFromCaffe(prototxt: [*c]const u8, caffeModel: [*c]const u8) Net;
-//     pub extern fn Net_ReadNetFromCaffeBytes(prototxt: struct_ByteArray, caffeModel: struct_ByteArray) Net;
+//*    pub extern fn Net_ReadNetFromCaffeBytes(prototxt: struct_ByteArray, caffeModel: struct_ByteArray) Net;
 //*    pub extern fn Net_ReadNetFromTensorflow(model: [*c]const u8) Net;
-//     pub extern fn Net_ReadNetFromTensorflowBytes(model: struct_ByteArray) Net;
+//*    pub extern fn Net_ReadNetFromTensorflowBytes(model: struct_ByteArray) Net;
 //*    pub extern fn Net_ReadNetFromTorch(model: [*c]const u8) Net;
 //*    pub extern fn Net_ReadNetFromONNX(model: [*c]const u8) Net;
-//     pub extern fn Net_ReadNetFromONNXBytes(model: struct_ByteArray) Net;
+//*    pub extern fn Net_ReadNetFromONNXBytes(model: struct_ByteArray) Net;
 //*    pub extern fn Net_BlobFromImage(image: Mat, scalefactor: f64, size: Size, mean: Scalar, swapRB: bool, crop: bool) Mat;
 //*    pub extern fn Net_BlobFromImages(images: struct_Mats, blob: Mat, scalefactor: f64, size: Size, mean: Scalar, swapRB: bool, crop: bool, ddepth: c_int) void;
-//     pub extern fn Net_ImagesFromBlob(blob_: Mat, images_: [*c]struct_Mats) void;
+//*    pub extern fn Net_ImagesFromBlob(blob_: Mat, images_: [*c]struct_Mats) void;
 //*    pub extern fn Net_Close(net: Net) void;
 //*    pub extern fn Net_Empty(net: Net) bool;
 //*    pub extern fn Net_SetInput(net: Net, blob: Mat, name: [*c]const u8) void;
 //*    pub extern fn Net_Forward(net: Net, outputName: [*c]const u8) Mat;
-//     pub extern fn Net_ForwardLayers(net: Net, outputBlobs: [*c]struct_Mats, outBlobNames: struct_CStrings) void;
+//*    pub extern fn Net_ForwardLayers(net: Net, outputBlobs: [*c]struct_Mats, outBlobNames: struct_CStrings) void;
 //*    pub extern fn Net_SetPreferableBackend(net: Net, backend: c_int) void;
 //*    pub extern fn Net_SetPreferableTarget(net: Net, target: c_int) void;
 //*    pub extern fn Net_GetPerfProfile(net: Net) i64;
@@ -290,5 +517,7 @@ pub const Layer = struct {
 //*    pub extern fn Layer_OutputNameToIndex(layer: Layer, name: [*c]const u8) c_int;
 //*    pub extern fn Layer_GetName(layer: Layer) [*c]const u8;
 //*    pub extern fn Layer_GetType(layer: Layer) [*c]const u8;
-//     pub extern fn NMSBoxes(bboxes: struct_Rects, scores: FloatVector, score_threshold: f32, nms_threshold: f32, indices: [*c]IntVector) void;
-//     pub extern fn NMSBoxesWithParams(bboxes: struct_Rects, scores: FloatVector, score_threshold: f32, nms_threshold: f32, indices: [*c]IntVector, eta: f32, top_k: c_int) void;
+//*    pub extern fn NMSBoxes(bboxes: struct_Rects, scores: FloatVector, score_threshold: f32, nms_threshold: f32, indices: [*c]IntVector) void;
+//*    pub extern fn NMSBoxesWithParams(bboxes: struct_Rects, scores: FloatVector, score_threshold: f32, nms_threshold: f32, indices: [*c]IntVector, eta: f32, top_k: c_int) void;
+
+// TODO: FP16BlobFromImage

@@ -3,7 +3,7 @@
 - [x] asyncarray.zig
 - [ ] calib3d.zig
 - [ ] core.zig
-- [ ] dnn.zig
+- [x] dnn.zig
 - [x] features2d.zig
 - [x] highgui.zig
 - [x] objdetect.zig
