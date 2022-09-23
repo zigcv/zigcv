@@ -64,9 +64,6 @@ pub fn build(b: *std.build.Builder) void {
         examples_step.dependOn(artifact_step);
     }
 
-    symlinkImagesDir() catch |err| {
-        if (err != error.PathAlreadyExists) unreachable;
-    };
     const exe_tests = b.addTest("src/main.zig");
     zigcv.link(exe_tests);
     zigcv.addAsPackage(exe_tests);
@@ -98,7 +95,3 @@ const Program = struct {
     desc: []const u8,
     fstage1: bool = false,
 };
-
-pub fn symlinkImagesDir() !void {
-    try std.fs.cwd().symLink(comptime thisDir() ++ "/libs/gocv/images", comptime thisDir() ++ "/src/images", .{});
-}

@@ -192,10 +192,7 @@ pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
     if (buf.len == 0) {
         return Mat.init();
     }
-    const data = c.ByteArray{
-        .data = @ptrCast([*]u8, buf),
-        .length = @intCast(i32, buf.len),
-    };
+    const data = core.toByteArray(buf);
     return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
 
@@ -262,7 +259,8 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
 }
 
 const testing = std.testing;
-const face_detect_img_path = "libs/gocv/images/face-detect.jpg";
+const img_dir = "./libs/gocv/images/";
+const face_detect_img_path = img_dir ++ "face-detect.jpg";
 test "imgcodecs imread" {
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
@@ -321,21 +319,48 @@ test "imgcodecs imdecode empty" {
 }
 
 test "imgcodecs imdecode jpg" {
-    const content = @embedFile("./images/face.jpg");
+    const img_filename = img_dir ++ "face.jpg";
+    var img_file = try std.fs.cwd().openFile(img_filename, .{});
+    const img_stat = try std.fs.cwd().statFile(img_filename);
+    defer img_file.close();
+    var content = try img_file.reader().readAllAlloc(
+        testing.allocator,
+        img_stat.size,
+    );
+    defer testing.allocator.free(content);
+
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
 test "imgcodecs imdecode png" {
-    const content = @embedFile("./images/box.png");
+    const img_filename = img_dir ++ "box.png";
+    var img_file = try std.fs.cwd().openFile(img_filename, .{});
+    const img_stat = try std.fs.cwd().statFile(img_filename);
+    defer img_file.close();
+    var content = try img_file.reader().readAllAlloc(
+        testing.allocator,
+        img_stat.size,
+    );
+    defer testing.allocator.free(content);
+
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 }
 
 test "imgcodecs imdecode webp" {
-    const content = @embedFile("./images/sample.webp");
+    const img_filename = img_dir ++ "sample.webp";
+    var img_file = try std.fs.cwd().openFile(img_filename, .{});
+    const img_stat = try std.fs.cwd().statFile(img_filename);
+    defer img_file.close();
+    var content = try img_file.reader().readAllAlloc(
+        testing.allocator,
+        img_stat.size,
+    );
+    defer testing.allocator.free(content);
+
     var img = try imDecode(content, .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
