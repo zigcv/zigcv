@@ -27,6 +27,20 @@ pub fn ensurePtrNotNull(ptr: ?*anyopaque) !*anyopaque {
     return ptr.?;
 }
 
+pub fn ensureFileExists(path: []const u8, allow_zero_byte: bool) !void {
+    const stat = std.fs.cwd().statFile(path) catch |err| switch (err) {
+        error.FileNotFound => {
+            std.debug.print("File not found: {s}\n", .{path});
+            return error.FileNotFound;
+        },
+        else => return err,
+    };
+    if (stat.size == 0 and !allow_zero_byte) {
+        std.debug.print("File is empty: {s}\n", .{path});
+        return error.FileEmpty;
+    }
+}
+
 pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocator) !void {
     if (dir[dir.len - 1] != '/') unreachable;
 
@@ -58,16 +72,13 @@ pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocat
     child.stderr = std.io.getStdErr();
     child.stdout = std.io.getStdOut();
 
-    const stat = std.fs.cwd().statFile(dir_filename) catch |err| {
-        std.debug.print("filename: {s},\terror: {any}\n", .{ dir_filename, err });
-        if (err != error.FileNotFound) unreachable;
-        _ = try child.spawnAndWait();
-        return;
+    ensureFileExists(dir_filename, false) catch |err| switch (err) {
+        error.FileNotFound, error.FileEmpty => {
+            _ = try child.spawnAndWait();
+            return;
+        },
+        else => return err,
     };
-    if(stat.size == 0) {
-        _ = try child.spawnAndWait();
-        return;
-    }
 }
 
 test "ensureNotNull" {

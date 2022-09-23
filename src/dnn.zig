@@ -3,6 +3,7 @@ const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
 const epnn = utils.ensurePtrNotNull;
+const ensureFileExists = utils.ensureFileExists;
 const Mat = core.Mat;
 const Mats = core.Mats;
 const Size = core.Size;
@@ -104,6 +105,8 @@ pub const Net = struct {
     }
 
     pub fn readNet(model: []const u8, config: []const u8) !Self {
+        _ = try ensureFileExists(model, false);
+        _ = try ensureFileExists(config, false);
         const nn_ptr = c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config));
         return try initFromC(nn_ptr);
     }
@@ -120,6 +123,8 @@ pub const Net = struct {
     }
 
     pub fn readNetFromCaffe(prototxt: []const u8, caffe_model: []const u8) !Self {
+        _ = try ensureFileExists(prototxt, false);
+        _ = try ensureFileExists(caffe_model, false);
         const nn_ptr = c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model));
         return try initFromC(nn_ptr);
     }
@@ -132,6 +137,7 @@ pub const Net = struct {
     }
 
     pub fn readNetFromTensorflow(model: []const u8) !Self {
+        _ = try ensureFileExists(model, false);
         const nn_ptr = c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model));
         return try initFromC(nn_ptr);
     }
@@ -143,11 +149,13 @@ pub const Net = struct {
     }
 
     pub fn readNetFromTorch(model: []const u8) !Self {
+        _ = try ensureFileExists(model, false);
         const nn_ptr = c.Net_ReadNetFromTorch(utils.castZigU8ToC(model));
         return try initFromC(nn_ptr);
     }
 
     pub fn readNetFromONNX(model: []const u8) !Self {
+        _ = try ensureFileExists(model, false);
         const nn_ptr = c.Net_ReadNetFromONNX(utils.castZigU8ToC(model));
         return try initFromC(nn_ptr);
     }

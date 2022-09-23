@@ -13,10 +13,14 @@
 
 const std = @import("std");
 const cv = @import("zigcv");
+const downloadFile = cv.utils.downloadFile;
 const Mat = cv.Mat;
 
-const model_path = thisDir() ++ "/res10_300x300_ssd_iter_140000.caffemodel";
-const config_path = thisDir() ++ "/deploy.ptototxt";
+const cache_dir = "./zig-cache/tmp/";
+const model_path = cache_dir ++ "res10_300x300_ssd_iter_140000.caffemodel";
+const mdoel_url = "https://github.com/opencv/opencv_3rdparty/raw/dnn_samples_face_detector_20170830/res10_300x300_ssd_iter_140000.caffemodel";
+const config_path = cache_dir ++ "deploy.prototxt";
+const config_url = "https://raw.githubusercontent.com/opencv/opencv/master/samples/dnn/face_detector/deploy.prototxt";
 
 pub fn main() anyerror!void {
     var allocator = std.heap.page_allocator;
@@ -45,6 +49,8 @@ pub fn main() anyerror!void {
     defer img.deinit();
 
     // open DNN object tracking model
+    try downloadFile(mdoel_url, cache_dir, allocator);
+    try downloadFile(config_url, cache_dir, allocator);
     var net = cv.Net.readNet(model_path, config_path) catch |err| {
         std.debug.print("Error: {}\n", .{err});
         std.os.exit(1);
