@@ -44,24 +44,30 @@ pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocat
         "{s}{s}",
         .{ dir, filename },
     );
-    _ = std.fs.cwd().statFile(dir_filename) catch |err| {
+    var child = std.ChildProcess.init(
+        &.{
+            "curl",
+            "--create-dirs",
+            "-LO",
+            "--output-dir",
+            dir,
+            url,
+        },
+        arena_allocator,
+    );
+    child.stderr = std.io.getStdErr();
+    child.stdout = std.io.getStdOut();
+
+    const stat = std.fs.cwd().statFile(dir_filename) catch |err| {
         std.debug.print("filename: {s},\terror: {any}\n", .{ dir_filename, err });
         if (err != error.FileNotFound) unreachable;
-        var child = std.ChildProcess.init(
-            &.{
-                "curl",
-                "--create-dirs",
-                "-O",
-                "--output-dir",
-                dir,
-                url,
-            },
-            arena_allocator,
-        );
-        child.stderr = std.io.getStdErr();
-        child.stdout = std.io.getStdOut();
-        _ = child.spawnAndWait() catch unreachable;
+        _ = try child.spawnAndWait();
+        return;
     };
+    if(stat.size == 0) {
+        _ = try child.spawnAndWait();
+        return;
+    }
 }
 
 test "ensureNotNull" {
