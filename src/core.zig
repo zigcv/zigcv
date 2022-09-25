@@ -25,48 +25,8 @@ pub const Point = struct {
     }
 };
 
-pub const Point2f = struct {
-    x: f32,
-    y: f32,
-
-    const Self = @This();
-
-    pub fn int(x: f32, y: f32) Self {
-        return .{ .x = x, .y = y };
-    }
-
-    pub fn initFromC(p: c.Point2f) Self {
-        return .{ .x = p.x, .y = p.y };
-    }
-
-    pub fn toC(self: Self) c.Point2f {
-        return .{ .x = self.x, .y = self.y };
-    }
-};
-
-pub const Point3f = struct {
-    x: f32,
-    y: f32,
-    z: f32,
-
-    const Self = @This();
-
-    pub fn int(x: f32, y: f32, z: f32) Self {
-        return .{ .x = x, .y = y, .z = z };
-    }
-
-    pub fn initFromC(p: c.Point3f) Self {
-        return .{ .x = p.x, .y = p.y, .z = p.z };
-    }
-
-    pub fn toC(self: Self) c.Point3f {
-        return .{ .x = self.x, .y = self.y, .z = self.z };
-    }
-};
-
 pub const PointVector = struct {
     ptr: c.PointVector,
-    allocator: ?std.mem.Allocator = null,
 
     const Self = @This();
 
@@ -77,7 +37,7 @@ pub const PointVector = struct {
 
     pub fn initFromC(ptr: c.PointVector) !Self {
         const nn_ptr = try epnn(ptr);
-        return .{ .ptr = nn_ptr };
+        return Self{ .ptr = nn_ptr };
     }
 
     pub fn initFromMat(mat: Mat) !Self {
@@ -87,28 +47,24 @@ pub const PointVector = struct {
     }
 
     pub fn initFromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        var arena_allocator = arena.allocator();
         const len = @intCast(usize, points.len);
-        var arr = try std.ArrayList(c.Point).initCapacity(allocator, len);
-        {
-            var i: usize = 0;
-            while (i < len) : (i += 1) {
-                arr.items[i] = points[i].toC();
-            }
-        }
-        const ptr = c.PointVector_NewFromPoints(
-            c.Points{
-                .length = points.len,
-                .points = arr.toOwnedSliceSentinel(0),
-            },
-        );
-        return .{
-            .ptr = try initFromC(ptr),
-            .allocator = allocator,
+
+        var c_point_array = try arena_allocator.alloc(c.Point, len);
+        for (points) |point, i| c_point_array[i] = point.toC();
+        var contour: c.Contour = .{
+            .length = @intCast(i32, points.len),
+            .points = @ptrCast([*]c.Point, c_point_array.ptr),
         };
+        const ptr = c.PointVector_NewFromPoints(contour);
+        return try initFromC(ptr);
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.PointVector_Close(self.ptr);
+        if (self.ptr == null) return;
+        c.PointVector_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -121,7 +77,7 @@ pub const PointVector = struct {
     }
 
     pub fn append(self: *Self, p: Point) void {
-        c.PointVector_Append(self.ptr, p);
+        c.PointVector_Append(self.ptr, p.toC());
     }
 
     pub fn toC(self: Self) c.PointVector {
@@ -159,30 +115,36 @@ pub const PointsVector = struct {
         return c.PointsVector_Size(self.ptr);
     }
 
-    pub fn append(self: *Self, p: Point) void {
-        c.PointsVector_Append(self.ptr, p);
+    pub fn append(self: *Self, p: PointVector) void {
+        c.PointsVector_Append(self.ptr, p.ptr);
     }
 
     pub fn toC(self: Self) c.PointsVector {
         return self.ptr;
     }
+};
 
-    // pub fn toPointArrayList(self: Self, allocator: std.mem.Allocator) !Point {
-    //     const len = @intCast(usize, self.size());
-    //     var arr = try std.ArrayList(PointVector).initCapacity(allocator, len);
-    //     {
-    //         var i: usize = 0;
-    //         while (i < len) : (i += 1) {
-    //             try arr.append(try self.at(i));
-    //         }
-    //     }
-    //     return arr;
-    // }
+pub const Point2f = struct {
+    x: f32,
+    y: f32,
+
+    const Self = @This();
+
+    pub fn init(x: f32, y: f32) Self {
+        return .{ .x = x, .y = y };
+    }
+
+    pub fn initFromC(p: c.Point2f) Self {
+        return .{ .x = p.x, .y = p.y };
+    }
+
+    pub fn toC(self: Self) c.Point2f {
+        return .{ .x = self.x, .y = self.y };
+    }
 };
 
 pub const Point2fVector = struct {
     ptr: c.Point2fVector,
-    allocator: ?std.mem.Allocator = null,
 
     const Self = @This();
 
@@ -199,33 +161,28 @@ pub const Point2fVector = struct {
         return .{ .ptr = nn_ptr };
     }
 
-    pub fn initFromPoints(points: []const Point, allocator: std.mem.Allocator) !Self {
+    pub fn initFromPoints(points: []const Point2f, allocator: std.mem.Allocator) !Self {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        var arena_allocator = arena.allocator();
         const len = @intCast(usize, points.len);
-        var arr = try std.ArrayList(c.Point).initCapacity(allocator, len);
-        {
-            var i: usize = 0;
-            while (i < len) : (i += 1) {
-                arr.items[i] = points[i].toC();
-            }
-        }
+
+        var c_point_array = try arena_allocator.alloc(c.Point2f, len);
+        for (points) |point, i| c_point_array[i] = point.toC();
         return .{
-            .ptr = c.PointVector_NewFromPoints(
-                c.Points{
-                    .length = points.len,
-                    .points = try arr.toOwnedSliceSentinel(0),
+            .ptr = c.Point2fVector_NewFromPoints(
+                c.Points2f{
+                    .length = @intCast(i32, points.len),
+                    .points = @ptrCast([*]c.Point2f, c_point_array.ptr),
                 },
             ),
-            .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.allocator) |allocator| {
-            allocator.free(self.ptr.points);
-        } else {
-            _ = c.PointVector_Close(self.ptr);
-            self.ptr = null;
-        }
+        if (self.ptr == null) return;
+        _ = c.Point2fVector_Close(self.ptr);
+        self.ptr = null;
     }
 
     pub fn at(self: Self, idx: i32) Point {
@@ -236,16 +193,173 @@ pub const Point2fVector = struct {
         return c.Point2fVector_Size(self.ptr);
     }
 
-    pub fn append(self: *Self, p: Point) void {
-        c.Point2fVector_Append(self.ptr, p);
-    }
-
     pub fn toC(self: Self) c.Point2fVector {
         return self.ptr;
     }
 
     pub fn toArrayList(self: Self, allocator: std.mem.Allocator) !std.ArrayList(Point2f) {
         return try utils.fromCStructsToArrayList(self.ptr, self.size(), Point2f, allocator);
+    }
+};
+
+pub const Points2fVector = struct {
+    ptr: c.Points2fVector,
+
+    const Self = @This();
+
+    pub fn init() !Self {
+        const ptr = c.Points2fVector_New();
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
+    }
+
+    pub fn initFromMat(mat: Mat) !Self {
+        const mat_ptr = try epnn(mat.ptr);
+        const ptr = c.Points2fVector_NewFromMat(mat_ptr);
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
+    }
+
+    pub fn deinit(self: *Self) void {
+        if (self.ptr == null) return;
+        _ = c.Points2fVector_Close(self.ptr);
+        self.ptr = null;
+    }
+
+    pub fn at(self: Self, idx: i32) Point {
+        return c.Points2fVector_At(self.ptr, idx);
+    }
+
+    pub fn size(self: Self) i32 {
+        return c.Points2fVector_Size(self.ptr);
+    }
+
+    pub fn append(self: *Self, p: Point2fVector) void {
+        c.Points2fVector_Append(self.ptr, p.ptr);
+    }
+
+    pub fn toC(self: Self) c.Point2fVector {
+        return self.ptr;
+    }
+};
+
+pub const Point3f = struct {
+    x: f32,
+    y: f32,
+    z: f32,
+
+    const Self = @This();
+
+    pub fn init(x: f32, y: f32, z: f32) Self {
+        return .{ .x = x, .y = y, .z = z };
+    }
+
+    pub fn initFromC(p: c.Point3f) Self {
+        return .{ .x = p.x, .y = p.y, .z = p.z };
+    }
+
+    pub fn toC(self: Self) c.Point3f {
+        return .{ .x = self.x, .y = self.y, .z = self.z };
+    }
+};
+
+pub const Point3fVector = struct {
+    ptr: c.Point3fVector,
+
+    const Self = @This();
+
+    pub fn init() !Self {
+        const ptr = c.Point3fVector_New();
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
+    }
+
+    pub fn initFromMat(mat: Mat) !Self {
+        const mat_ptr = try epnn(mat.ptr);
+        const ptr = c.Point3fVector_NewFromMat(mat_ptr);
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
+    }
+
+    pub fn initFromPoints(points: []const Point3f, allocator: std.mem.Allocator) !Self {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        var arena_allocator = arena.allocator();
+        const len = @intCast(usize, points.len);
+
+        var c_point_array = try arena_allocator.alloc(c.Point3f, len);
+        for (points) |point, i| c_point_array[i] = point.toC();
+        return .{
+            .ptr = c.Point3fVector_NewFromPoints(
+                c.Points3f{
+                    .length = @intCast(i32, points.len),
+                    .points = @ptrCast([*]c.Point3f, c_point_array.ptr),
+                },
+            ),
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        if (self.ptr == null) return;
+        _ = c.Point3fVector_Close(self.ptr);
+        self.ptr = null;
+    }
+
+    pub fn at(self: Self, idx: i32) Point {
+        return c.Point3fVector_At(self.ptr, idx);
+    }
+
+    pub fn size(self: Self) i32 {
+        return c.Point3fVector_Size(self.ptr);
+    }
+
+    pub fn append(self: *Self, p: Point3f) void {
+        c.Point3fVector_Append(self.ptr, p.toC());
+    }
+
+    pub fn toC(self: Self) c.Point3fVector {
+        return self.ptr;
+    }
+};
+
+pub const Points3fVector = struct {
+    ptr: c.Points3fVector,
+
+    const Self = @This();
+
+    pub fn init() !Self {
+        const ptr = c.Points3fVector_New();
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
+    }
+
+    pub fn initFromMat(mat: Mat) !Self {
+        const mat_ptr = try epnn(mat.ptr);
+        const ptr = c.Points3fVector_NewFromMat(mat_ptr);
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
+    }
+
+    pub fn deinit(self: *Self) void {
+        if (self.ptr == null) return;
+        _ = c.Points3fVector_Close(self.ptr);
+        self.ptr = null;
+    }
+
+    pub fn at(self: Self, idx: i32) Point {
+        return c.Points3fVector_At(self.ptr, idx);
+    }
+
+    pub fn size(self: Self) i32 {
+        return c.Points3fVector_Size(self.ptr);
+    }
+
+    pub fn append(self: *Self, p: Point3fVector) void {
+        c.Points3fVector_Append(self.ptr, p.ptr);
+    }
+
+    pub fn toC(self: Self) c.Point3fVector {
+        return self.ptr;
     }
 };
 
@@ -862,25 +976,25 @@ pub inline fn toByteArray(s: []const u8) c.ByteArray {
 //*    pub extern fn StdByteVectorFree(data: ?*anyopaque) void;
 //*    pub extern fn StdByteVectorLen(data: ?*anyopaque) usize;
 //*    pub extern fn StdByteVectorData(data: ?*anyopaque) [*c]u8;
-//     pub extern fn Points2fVector_New(...) Points2fVector;
+//*    pub extern fn Points2fVector_New(...) Points2fVector;
 //     pub extern fn Points2fVector_NewFromPoints(points: Contours2f) Points2fVector;
-//     pub extern fn Points2fVector_Size(ps: Points2fVector) c_int;
-//     pub extern fn Points2fVector_At(ps: Points2fVector, idx: c_int) Point2fVector;
-//     pub extern fn Points2fVector_Append(psv: Points2fVector, pv: Point2fVector) void;
-//     pub extern fn Points2fVector_Close(ps: Points2fVector) void;
-//     pub extern fn Point3fVector_New(...) Point3fVector;
-//     pub extern fn Point3fVector_NewFromPoints(points: Contour3f) Point3fVector;
-//     pub extern fn Point3fVector_NewFromMat(mat: Mat) Point3fVector;
-//     pub extern fn Point3fVector_Append(pfv: Point3fVector, point: Point3f) void;
-//     pub extern fn Point3fVector_At(pfv: Point3fVector, idx: c_int) Point3f;
-//     pub extern fn Point3fVector_Size(pfv: Point3fVector) c_int;
-//     pub extern fn Point3fVector_Close(pv: Point3fVector) void;
-//     pub extern fn Points3fVector_New(...) Points3fVector;
+//*    pub extern fn Points2fVector_Size(ps: Points2fVector) c_int;
+//*    pub extern fn Points2fVector_At(ps: Points2fVector, idx: c_int) Point2fVector;
+//*    pub extern fn Points2fVector_Append(psv: Points2fVector, pv: Point2fVector) void;
+//*    pub extern fn Points2fVector_Close(ps: Points2fVector) void;
+//*    pub extern fn Point3fVector_New(...) Point3fVector;
+//*    pub extern fn Point3fVector_NewFromPoints(points: Contour3f) Point3fVector;
+//*    pub extern fn Point3fVector_NewFromMat(mat: Mat) Point3fVector;
+//*    pub extern fn Point3fVector_Append(pfv: Point3fVector, point: Point3f) void;
+//*    pub extern fn Point3fVector_At(pfv: Point3fVector, idx: c_int) Point3f;
+//*    pub extern fn Point3fVector_Size(pfv: Point3fVector) c_int;
+//*    pub extern fn Point3fVector_Close(pv: Point3fVector) void;
+//*    pub extern fn Points3fVector_New(...) Points3fVector;
 //     pub extern fn Points3fVector_NewFromPoints(points: Contours3f) Points3fVector;
-//     pub extern fn Points3fVector_Size(ps: Points3fVector) c_int;
-//     pub extern fn Points3fVector_At(ps: Points3fVector, idx: c_int) Point3fVector;
-//     pub extern fn Points3fVector_Append(psv: Points3fVector, pv: Point3fVector) void;
-//     pub extern fn Points3fVector_Close(ps: Points3fVector) void;
+//*    pub extern fn Points3fVector_Size(ps: Points3fVector) c_int;
+//*    pub extern fn Points3fVector_At(ps: Points3fVector, idx: c_int) Point3fVector;
+//*    pub extern fn Points3fVector_Append(psv: Points3fVector, pv: Point3fVector) void;
+//*    pub extern fn Points3fVector_Close(ps: Points3fVector) void;
 
 // pub const struct_CStrings = extern struct {
 //     strs: [*c][*c]const u8,
