@@ -133,3 +133,21 @@ test "imgproc resize" {
     try testing.expectEqual(@as(i32, 377), dst.rows());
     try testing.expectEqual(@as(i32, 440), dst.cols());
 }
+
+test "imgproc remap" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+    try testing.expectEqual(true, dst.isEmpty());
+
+    var map1 = try Mat.initSize(256, 256, .cv32fc2);
+    defer map1.deinit();
+    map1.set(f32, 50, 50, 25.4);
+    var map2 = try Mat.init();
+    defer map2.deinit();
+
+    imgproc.remap(img, &dst, map1, map2, imgproc.InterpolationFlag.default, .constant, Color.init(0, 0, 0, 0));
+    try testing.expectEqual(false, dst.isEmpty());
+}

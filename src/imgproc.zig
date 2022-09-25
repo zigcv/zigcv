@@ -867,8 +867,8 @@ pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: i32, border_type: Bo
 //
 // For further details, please see:
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gab75ef31ce5cdfb5c44b6da5f3b908ea4
-pub fn remap(src: Mat, dst: Mat, map1: Mat, map2: *Mat, interpolation: InterpolationFlag, border_mode: BorderType, border_value: Color) void {
-    _ = c.Remap(src.ptr, dst.ptr, map1.ptr, map2.*.ptr, @enumToInt(interpolation), @enumToInt(border_mode), border_value.toScalar());
+pub fn remap(src: Mat, dst: *Mat, map1: Mat, map2: Mat, interpolation: InterpolationFlag, border_mode: BorderType, border_value: Color) void {
+    _ = c.Remap(src.ptr, dst.*.ptr, map1.ptr, map2.ptr, @enumToInt(interpolation), @enumToInt(border_mode), border_value.toScalar().toC());
 }
 
 // Filter2D applies an arbitrary linear filter to an image.
