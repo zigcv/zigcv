@@ -1,7 +1,7 @@
 # Implementation Done List
 
 - [x] asyncarray.zig
-- [ ] calib3d.zig
+- [x] calib3d.zig
 - [ ] core.zig
 - [x] dnn.zig
 - [x] features2d.zig
