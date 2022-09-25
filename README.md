@@ -1,13 +1,17 @@
 # ZIGCV
 
+[![ci](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml)
+
 <div align="center">
   <img src="./logo/zigcv.png" width="50%" />
 </div>
 
 ## Caution
+
 Still under development, so the zig APIs will be dynamically changed.
 
-Tested on 
+Tested on
+
 ```
 zig version:  0.10.0-dev.4060+61aaef0b0
 opencv: 4.6
@@ -23,15 +27,19 @@ Then:
 
 ```sh
 git clone https://github.com/ryoppippi/zigcv
-zig build 
+zig build
 ```
-## Demos 
+
+## Demos
+
 you can build some demos.  
 For example:
+
 ```sh
 zig build examples
 ./zig-out/bin/face_detection 0
 ```
+
 <div align="center">
   <img width="400" alt="face detection" src="https://user-images.githubusercontent.com/1560508/188515175-4d344660-5680-43e7-9b74-3bad92507430.gif">
 </div>
@@ -50,6 +58,3 @@ MIT
 ## Author
 
 Ryotaro "Justin" Kimura (a.k.a. ryoppippi)
-
-
-
