@@ -17,7 +17,7 @@ const cache_dir = "./zig-cache/tmp/";
 
 const caffe_model_url = "http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel";
 const caffe_model_file = cache_dir ++ "bvlc_googlenet.caffemodel";
-const caffe_prototext_url = "https://raw.githubusercontent.com/opencv/opencv/master/samples/dnn/bvlc_googlenet.prototxt";
+const caffe_prototext_url = "https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/bvlc_googlenet.prototxt";
 const caffe_prototext_file = cache_dir ++ "bvlc_googlenet.prototxt";
 const tensorflow_model_zip_url = "https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip";
 const tensorflow_model_zip_file = cache_dir ++ "inception5h.zip";
