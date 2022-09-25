@@ -261,6 +261,7 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
 
 const testing = std.testing;
 const img_dir = "./libs/gocv/images/";
+const cache_dir = "./zig-cache/tmp/";
 const face_detect_img_path = img_dir ++ "face-detect.jpg";
 test "imgcodecs imread" {
     var img = try imRead(face_detect_img_path, .color);
@@ -274,24 +275,20 @@ test "imgcodecs imread not found error" {
 }
 
 test "imgcodecs imwrite" {
-    const filename = "test_imwrite0.jpg";
+    const filename = cache_dir ++ "test_imwrite0.jpg";
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
 
     try imWrite(filename, img);
-
-    defer std.fs.cwd().deleteFile(filename) catch @panic("cannot delete " ++ filename);
 }
 
 test "imgcodecs imwriteWithParams" {
-    const filename = "test_imwrite1.jpg";
+    const filename = cache_dir ++ "test_imwrite1.jpg";
     var img = try imRead(face_detect_img_path, .color);
     defer img.deinit();
 
     const params = [_]IMWriteParam{.{ .f = .jpeg_quality, .v = 60 }};
     try imWriteWithParams(filename, img, &params);
-
-    defer std.fs.cwd().deleteFile(filename) catch @panic("cannot delete " ++ filename);
 }
 
 test "imgcodecs imencode" {

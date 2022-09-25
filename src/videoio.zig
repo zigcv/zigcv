@@ -409,6 +409,7 @@ pub const VideoWriter = struct {
 };
 
 const testing = std.testing;
+const cache_dir = "./zig-cache/tmp/";
 const video_path = "libs/gocv/images/small.mp4";
 const imgcodecs = @import("imgcodecs.zig");
 test "videoio VideoCapture captureFile" {
@@ -492,7 +493,7 @@ test "videoio VideoCapture toCodec failed" {
 }
 
 test "videoio VideoWriter" {
-    const write_filename = "test_write_video.avi";
+    const write_filename = cache_dir ++ "test_write_video.avi";
     var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
@@ -504,8 +505,6 @@ test "videoio VideoWriter" {
     try testing.expectEqual(true, vw.isOpened());
 
     try vw.write(&img);
-
-    defer std.fs.cwd().deleteFile(write_filename) catch @panic("cannot delete " ++ write_filename);
 }
 
 //*    implementation done
