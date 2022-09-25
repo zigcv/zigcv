@@ -653,7 +653,7 @@ pub const TermCriteria = struct {
 
 pub inline fn toByteArray(s: []const u8) c.ByteArray {
     return c.ByteArray{
-        .data = @ptrCast([*]u8, s),
+        .data = utils.castZigU8ToC(s),
         .length = @intCast(i32, s.len),
     };
 }
