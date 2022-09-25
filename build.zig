@@ -64,6 +64,9 @@ pub fn build(b: *std.build.Builder) void {
         examples_step.dependOn(artifact_step);
     }
 
+    var tmp_dir = std.testing.tmpDir(.{});
+    defer tmp_dir.cleanup();
+
     const exe_tests = b.addTest("src/main.zig");
     zigcv.link(exe_tests);
     zigcv.addAsPackage(exe_tests);
