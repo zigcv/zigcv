@@ -47,6 +47,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: docs
+      - name: delete tmp files
+        run: rm -rf ./zig-cache/tmp
 
   deploy:
     needs: run_test_and_build_docs
