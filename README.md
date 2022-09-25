@@ -26,7 +26,7 @@ At first, install openCV 4.6. (maybe you can read how to install from [here](htt
 Then:
 
 ```sh
-git clone https://github.com/ryoppippi/zigcv
+git clone --recursive https://github.com/ryoppippi/zigcv
 zig build
 ```
 
