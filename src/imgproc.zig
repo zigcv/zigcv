@@ -920,7 +920,7 @@ pub fn clipLine(imgSize: Size, pt1: Point, pt2: Point) bool {
     return c.ClipLine(imgSize.toC(), pt1.toC(), pt2.toC());
 }
 
-pub fn InvertAffineTransform(src: Mat, dst: *Mat) void {
+pub fn invertAffineTransform(src: Mat, dst: *Mat) void {
     _ = c.InvertAffineTransform(src.ptr, dst.*.ptr);
 }
 
@@ -929,7 +929,7 @@ pub fn InvertAffineTransform(src: Mat, dst: *Mat) void {
 // For further details, please see:
 // https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga552420a2ace9ef3fb053cd630fdb4952
 //
-pub fn PhaseCorrelate(src1: Mat, src2: Mat, window: Mat) struct { point: Point2f, response: f64 } {
+pub fn phaseCorrelate(src1: Mat, src2: Mat, window: Mat) struct { point: Point2f, response: f64 } {
     var response: f64 = undefined;
     const p = c.PhaseCorrelate(src1.ptr, src2.ptr, window.ptr, &response);
     return .{ .point = Point2f.fromC(p), .response = response };
@@ -1041,7 +1041,7 @@ test "imgproc" {
 //*    pub extern fn MinAreaRect(pts: PointVector) struct_RotatedRect;
 //*    pub extern fn FitEllipse(pts: PointVector) struct_RotatedRect;
 //     pub extern fn MinEnclosingCircle(pts: PointVector, center: [*c]Point2f, radius: [*c]f32) void;
-//     pub extern fn FindContours(src: Mat, hierarchy: Mat, mode: c_int, method: c_int) PointsVector;
+//*    pub extern fn FindContours(src: Mat, hierarchy: Mat, mode: c_int, method: c_int) PointsVector;
 //*    pub extern fn PointPolygonTest(pts: PointVector, pt: Point, measureDist: bool) f64;
 //*    pub extern fn ConnectedComponents(src: Mat, dst: Mat, connectivity: c_int, ltype: c_int, ccltype: c_int) c_int;
 //*    pub extern fn ConnectedComponentsWithStats(src: Mat, labels: Mat, stats: Mat, centroids: Mat, connectivity: c_int, ltype: c_int, ccltype: c_int) c_int;
