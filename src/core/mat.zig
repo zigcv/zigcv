@@ -232,6 +232,15 @@ pub fn initFromScalar(s: Scalar) !Self {
     return try Self.initFromC(ptr);
 }
 
+pub fn initFromBytes(rows_: i32, cols_: i32, bytes: []u8, mt: MatType) !Self {
+    var c_bytes = c.ByteVector{
+        .val = @ptrCast([*]u8, bytes),
+        .length = @intCast(i32, bytes.len),
+    };
+    const ptr = c.Mat_NewFromBytes(rows_, cols_, @enumToInt(mt), c_bytes);
+    return try Self.initFromC(ptr);
+}
+
 pub fn initSizeFromScalar(s: Scalar, n_rows: i32, n_cols: i32, mt: MatType) !Self {
     const ptr = c.Mat_NewWithSizeFromScalar(s.toC(), n_rows, n_cols, @enumToInt(mt));
     return try Self.initFromC(ptr);
@@ -243,6 +252,19 @@ pub fn initSizesFromScalar(size_array: []const i32, s: Scalar, mt: MatType) !Sel
         .length = @intCast(i32, size_array.len),
     };
     const ptr = c.Mat_NewWithSizesFromScalar(c_size_vector, @enumToInt(mt), s.toC());
+    return try Self.initFromC(ptr);
+}
+
+pub fn initSizesFromBytes(size_array: []const i32, bytes: []u8, mt: MatType) !Self {
+    const c_size_vector = c.IntVector{
+        .val = @ptrCast([*]i32, size_array),
+        .length = @intCast(i32, size_array.len),
+    };
+    var c_bytes = c.ByteVector{
+        .val = @ptrCast([*]u8, bytes),
+        .length = @intCast(i32, bytes.len),
+    };
+    const ptr = c.Mat_NewWithSizesFromBytes(c_size_vector, @enumToInt(mt), c_bytes);
     return try Self.initFromC(ptr);
 }
 

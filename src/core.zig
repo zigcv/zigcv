@@ -791,10 +791,10 @@ pub inline fn toByteArray(s: []u8) c.ByteArray {
 //*    pub extern fn Mat_NewWithSize(rows: c_int, cols: c_int, @"type": c_int) Mat;
 //*    pub extern fn Mat_NewWithSizes(sizes: struct_IntVector, @"type": c_int) Mat;
 //*    pub extern fn Mat_NewWithSizesFromScalar(sizes: IntVector, @"type": c_int, ar: Scalar) Mat;
-//     pub extern fn Mat_NewWithSizesFromBytes(sizes: IntVector, @"type": c_int, buf: struct_ByteArray) Mat;
+//*    pub extern fn Mat_NewWithSizesFromBytes(sizes: IntVector, @"type": c_int, buf: struct_ByteArray) Mat;
 //*    pub extern fn Mat_NewFromScalar(ar: Scalar, @"type": c_int) Mat;
 //*    pub extern fn Mat_NewWithSizeFromScalar(ar: Scalar, rows: c_int, cols: c_int, @"type": c_int) Mat;
-//     pub extern fn Mat_NewFromBytes(rows: c_int, cols: c_int, @"type": c_int, buf: struct_ByteArray) Mat;
+//*    pub extern fn Mat_NewFromBytes(rows: c_int, cols: c_int, @"type": c_int, buf: struct_ByteArray) Mat;
 //*    pub extern fn Mat_FromPtr(m: Mat, rows: c_int, cols: c_int, @"type": c_int, prows: c_int, pcols: c_int) Mat;
 //*    pub extern fn Mat_Close(m: Mat) void;
 //*    pub extern fn Mat_Empty(m: Mat) c_int;
