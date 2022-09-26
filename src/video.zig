@@ -608,19 +608,19 @@ test "video findTransformECC" {
     try testing.expect(rms < max_rms_ecc);
 }
 
-test "video single tracker" {
-    var img1 = try imgcodecs.imRead(file_path, .color);
-    defer img1.deinit();
-    try testing.expectEqual(false, img1.isEmpty());
-
-    var tracker = try TrackerMIL.init();
-    defer tracker.deinit();
-
-    const init = tracker.initialize(img1, Rect.init(250, 150, 250 + 200, 150 + 250));
-    try testing.expectEqual(true, init);
-    const res = tracker.update(img1);
-    try testing.expectEqual(true, res.success);
-}
+// test "video single tracker" {
+//     var img1 = try imgcodecs.imRead(file_path, .color);
+//     defer img1.deinit();
+//     try testing.expectEqual(false, img1.isEmpty());
+//
+//     var tracker = try TrackerMIL.init();
+//     defer tracker.deinit();
+//
+//     const init = tracker.initialize(img1, Rect.init(250, 150, 250 + 200, 150 + 250));
+//     try testing.expectEqual(true, init);
+//     const res = tracker.update(img1);
+//     try testing.expectEqual(true, res.success);
+// }
 
 //*    implementation done
 //*    pub const BackgroundSubtractorMOG2 = ?*anyopaque;
