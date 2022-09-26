@@ -13,7 +13,7 @@ Still under development, so the zig APIs will be dynamically changed.
 Tested on
 
 ```
-zig version:  0.10.0-dev.4060+61aaef0b0
+zig version:  0.10.0-dev.4176+6d7b0690a
 opencv: 4.6
 ```
 

@@ -768,8 +768,7 @@ pub fn drawMatches(
         .dmatches = @ptrCast([*]c.DMatch, c_matches1to2_array.ptr),
     };
 
-    var c_matches_mask = c.toByteArray(utils.castZigU8ToC(matches_mask), @intCast(i32, matches_mask.len));
-    defer c.ByteArray_Release(c_matches_mask);
+    var c_matches_mask = core.toByteArray(matches_mask);
     c.DrawMatches(
         img1.toC(),
         c_keypoints1,

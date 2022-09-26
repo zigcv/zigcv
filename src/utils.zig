@@ -1,10 +1,6 @@
 const std = @import("std");
 const c = @import("c_api.zig");
 
-pub fn castZigU8ToC(str: []const u8) [*]const u8 {
-    return @ptrCast([*]const u8, str);
-}
-
 pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comptime ToType: type, allocator: std.mem.Allocator) !std.ArrayList(ToType) {
     const len = @intCast(usize, from_array_length);
     var arr = try std.ArrayList(ToType).initCapacity(allocator, len);
@@ -82,9 +78,6 @@ pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocat
 }
 
 test "ensureNotNull" {
-    var ptr: ?[*]const u8 = null;
+    var ptr: ?[*]u8 = null;
     try std.testing.expectError(error.AllocationError, ensurePtrNotNull(ptr));
-
-    const ptr2 = opaque {};
-    try std.testing.expectEqual(*anyopaque, @TypeOf(try ensurePtrNotNull(&ptr2)));
 }

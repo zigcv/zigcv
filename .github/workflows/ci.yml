@@ -9,7 +9,7 @@ jobs:
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
-          version: 0.10.0-dev.4060+61aaef0b0
+          version: master
       - name: Update Homebrew
         run: |
           brew update --preinstall

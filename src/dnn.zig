@@ -107,17 +107,17 @@ pub const Net = struct {
     pub fn readNet(model: []const u8, config: []const u8) !Self {
         _ = try ensureFileExists(model, false);
         _ = try ensureFileExists(config, false);
-        const nn_ptr = c.Net_ReadNet(utils.castZigU8ToC(model), utils.castZigU8ToC(config));
+        const nn_ptr = c.Net_ReadNet(@ptrCast([*]const u8, model), @ptrCast([*]const u8, config));
         return try initFromC(nn_ptr);
     }
 
-    pub fn readNetFromBytes(framework: []const u8, model: []const u8, config: []const u8) !Self {
+    pub fn readNetFromBytes(framework: []const u8, model: []u8, config: []u8) !Self {
         if (framework.len == 0) return error.InvalidFramework;
         if (model.len == 0) return error.ModelIsNotProvided;
         if (config.len == 0) return error.ConfigIsNotProvided;
         const c_model = core.toByteArray(model);
         const c_config = core.toByteArray(config);
-        const c_framework = utils.castZigU8ToC(framework);
+        const c_framework = @ptrCast([*]const u8, framework);
         const nn_ptr = c.Net_ReadNetBytes(c_framework, c_model, c_config);
         return try initFromC(nn_ptr);
     }
@@ -125,11 +125,11 @@ pub const Net = struct {
     pub fn readNetFromCaffe(prototxt: []const u8, caffe_model: []const u8) !Self {
         _ = try ensureFileExists(prototxt, false);
         _ = try ensureFileExists(caffe_model, false);
-        const nn_ptr = c.Net_ReadNetFromCaffe(utils.castZigU8ToC(prototxt), utils.castZigU8ToC(caffe_model));
+        const nn_ptr = c.Net_ReadNetFromCaffe(@ptrCast([*]const u8, prototxt), @ptrCast([*]const u8, caffe_model));
         return try initFromC(nn_ptr);
     }
 
-    pub fn readNetFromCaffeBytes(prototxt: []const u8, caffe_model: []const u8) !Self {
+    pub fn readNetFromCaffeBytes(prototxt: []u8, caffe_model: []u8) !Self {
         const c_prototxt = core.toByteArray(prototxt);
         const c_caffe_model = core.toByteArray(caffe_model);
         const nn_ptr = c.Net_ReadNetFromCaffeBytes(c_prototxt, c_caffe_model);
@@ -138,11 +138,11 @@ pub const Net = struct {
 
     pub fn readNetFromTensorflow(model: []const u8) !Self {
         _ = try ensureFileExists(model, false);
-        const nn_ptr = c.Net_ReadNetFromTensorflow(utils.castZigU8ToC(model));
+        const nn_ptr = c.Net_ReadNetFromTensorflow(@ptrCast([*]const u8, model));
         return try initFromC(nn_ptr);
     }
 
-    pub fn readNetFromTensorflowBytes(model: []const u8) !Self {
+    pub fn readNetFromTensorflowBytes(model: []u8) !Self {
         const c_model = core.toByteArray(model);
         const nn_ptr = c.Net_ReadNetFromTensorflowBytes(c_model);
         return try initFromC(nn_ptr);
@@ -156,11 +156,11 @@ pub const Net = struct {
 
     pub fn readNetFromONNX(model: []const u8) !Self {
         _ = try ensureFileExists(model, false);
-        const nn_ptr = c.Net_ReadNetFromONNX(utils.castZigU8ToC(model));
+        const nn_ptr = c.Net_ReadNetFromONNX(@ptrCast([*]const u8, model));
         return try initFromC(nn_ptr);
     }
 
-    pub fn readNetFromONNXBytes(model: []const u8) !Self {
+    pub fn readNetFromONNXBytes(model: []u8) !Self {
         const c_model = core.toByteArray(model);
         const nn_ptr = c.Net_ReadNetFromONNXBytes(c_model);
         return try initFromC(nn_ptr);
@@ -172,19 +172,19 @@ pub const Net = struct {
     }
 
     pub fn setInput(self: *Self, blob: Blob, name: []const u8) void {
-        _ = c.Net_SetInput(self.ptr, blob.mat.toC(), utils.castZigU8ToC(name));
+        _ = c.Net_SetInput(self.ptr, blob.mat.toC(), @ptrCast([*]const u8, name));
     }
 
     pub fn forward(self: *Self, output_name: []const u8) !Mat {
-        const mat_ptr = c.Net_Forward(self.ptr, utils.castZigU8ToC(output_name));
+        const mat_ptr = c.Net_Forward(self.ptr, @ptrCast([*]const u8, output_name));
         return try Mat.initFromC(mat_ptr);
     }
 
     pub fn forwardLayers(self: Self, output_blob_names: [][]const u8, allocator: std.mem.Allocator) !Mats {
         var c_mats: c.Mats = undefined;
-        var c_string_array = try allocator.alloc([*c]const u8, output_blob_names.len);
+        var c_string_array = try allocator.alloc([*]const u8, output_blob_names.len);
         defer allocator.free(c_string_array);
-        for (output_blob_names) |name, i| c_string_array[i] = utils.castZigU8ToC(name);
+        for (output_blob_names) |name, i| c_string_array[i] = @ptrCast([*]const u8, name);
 
         const c_strings = c.CStrings{
             .strs = @ptrCast([*c][*c]const u8, c_string_array.ptr),
@@ -372,11 +372,11 @@ pub const Layer = struct {
     }
 
     pub fn inputNameToIndex(self: *Self, name: []const u8) i32 {
-        return c.Layer_InputNameToIndex(self.ptr, utils.castZigU8ToC(name));
+        return c.Layer_InputNameToIndex(self.ptr, @ptrCast([*]const u8, name));
     }
 
     pub fn outputNameToIndex(self: *Self, name: []const u8) i32 {
-        return c.Layer_OutputNameToIndex(self.ptr, utils.castZigU8ToC(name));
+        return c.Layer_OutputNameToIndex(self.ptr, @ptrCast([*]const u8, name));
     }
 
     pub fn getName(self: Self) []const u8 {
@@ -393,8 +393,8 @@ pub const Layer = struct {
 /// For futher details, please see:
 /// https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
 pub fn nmsBoxes(
-    bboxes: []const Rect,
-    scores: []const f32,
+    bboxes: []Rect,
+    scores: []f32,
     score_threshold: f32,
     nms_threshold: f32,
     max_index: usize,
@@ -408,7 +408,7 @@ pub fn nmsBoxes(
         .length = @intCast(i32, bboxes.len),
     };
 
-    const c_scores_struct = c.FloatVector{
+    var c_scores_struct = c.FloatVector{
         .val = @ptrCast([*]f32, scores.ptr),
         .length = @intCast(i32, scores.len),
     };
@@ -441,8 +441,8 @@ pub fn nmsBoxes(
 /// For futher details, please see:
 /// https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
 pub fn nmsBoxesWithParams(
-    bboxes: []const Rect,
-    scores: []const f32,
+    bboxes: []Rect,
+    scores: []f32,
     score_threshold: f32,
     nms_threshold: f32,
     eta: f32,

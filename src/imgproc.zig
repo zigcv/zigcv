@@ -601,9 +601,9 @@ pub fn canny(src: Mat, edges: *Mat, t1: f64, t2: f64) void {
 }
 
 pub fn cornerSubPix(img: Mat, corners: *Mat, winSize: Size, zeroZone: Size, criteria: TermCriteria) void {
-    _ = c.CornerSubPix(img.ptr, corners.*.ptr, winSize.toC(), zeroZone.toC(), @enumToInt(criteria));
+    _ = c.CornerSubPix(img.ptr, corners.*.ptr, winSize.toC(), zeroZone.toC(), criteria.toC());
 }
-pub fn goodFeaturesToTrack(img: Mat, corners: Mat, maxCorners: i32, quality: f64, minDist: f64) void {
+pub fn goodFeaturesToTrack(img: Mat, corners: *Mat, maxCorners: i32, quality: f64, minDist: f64) void {
     _ = c.GoodFeaturesToTrack(img.ptr, corners.*.ptr, maxCorners, quality, minDist);
 }
 
@@ -697,7 +697,8 @@ pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: i32, 
 /// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
 ///
 pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
-    return Size.initFromC(c.GetTextSize(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness));
+    var c_size = c.GetTextSize(@ptrCast([*]const u8, text), @enumToInt(font_face), font_scale, thickness);
+    return Size.initFromC(c_size);
 }
 
 /// GetTextSizeWithBaseline calculates the width and height of a text string including the basline of the text.
@@ -709,7 +710,8 @@ pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, th
 ///
 pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) struct { size: Size, baseline: i32 } {
     var baseline: i32 = 0;
-    const size = Size.initFromC(c.GetTextSizeWithBaseline(utils.castZigU8ToC(text), @enumToInt(font_face), font_scale, thickness, &baseline));
+    var c_size = c.GetTextSizeWithBaseline(@ptrCast([*]const u8, text), @enumToInt(font_face), font_scale, thickness, &baseline);
+    var size = Size.initFromC(c_size);
     return .{
         .size = size,
         .baseline = baseline,
@@ -725,7 +727,7 @@ pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_sc
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32) void {
-    _ = c.PutText(img.*.ptr, utils.castZigU8ToC(text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness);
+    _ = c.PutText(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness);
 }
 
 // PutTextWithParams draws a text string.
@@ -737,7 +739,7 @@ pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, 
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32, line_type: LineType, bottom_left_origin: bool) void {
-    _ = c.PutTextWithParams(img.*.ptr, utils.castZigU8ToC(text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), bottom_left_origin);
+    _ = c.PutTextWithParams(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), bottom_left_origin);
 }
 
 /// Resize resizes an image.

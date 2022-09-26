@@ -211,7 +211,7 @@ pub fn initSize(n_rows: i32, n_cols: i32, mt: MatType) !Self {
 }
 
 /// init multidimentional Mat with sizes and type
-pub fn initSizes(size_array: []const i32, mt: MatType) !Self {
+pub fn initSizes(size_array: []i32, mt: MatType) !Self {
     const c_size_vector = c.IntVector{
         .val = @ptrCast([*]i32, size_array),
         .length = @intCast(i32, size_array.len),
@@ -337,12 +337,12 @@ pub fn getType(self: Self) MatType {
     return @intToEnum(MatType, type_);
 }
 
-pub fn step(self: Self) u32 {
-    return @intCast(u32, c.Mat_Step(self.ptr));
+pub fn step(self: Self) i32 {
+    return c.Mat_Step(self.ptr);
 }
 
-pub fn elemSize(self: Self) u32 {
-    return @intCast(u32, c.Mat_ElemSize(self.ptr));
+pub fn elemSize(self: Self) i32 {
+    return c.Mat_ElemSize(self.ptr);
 }
 
 // Total returns the total number of array elements.

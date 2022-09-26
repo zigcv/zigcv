@@ -34,7 +34,7 @@ pub const CascadeClassifier = struct {
     /// For further details, please see:
     /// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#a1a5884c8cc749422f9eb77c2471958bc
     pub fn load(self: *Self, name: []const u8) !void {
-        const result = c.CascadeClassifier_Load(self.ptr, utils.castZigU8ToC(name));
+        const result = c.CascadeClassifier_Load(self.ptr, @ptrCast([*]const u8, name));
         if (result == 0) {
             return error.CascadeClassifierLoadFailed;
         }
@@ -184,7 +184,7 @@ pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allo
     defer allocator.free(c_rects_array);
     for (rects) |rect, i| c_rects_array[i] = rect.toC();
     const c_rects = c.Rects{
-        .rects = @ptrCast([*]const c.Rect, c_rects_array.ptr),
+        .rects = @ptrCast([*]c.Rect, c_rects_array.ptr),
         .length = @intCast(i32, c_rects_array.len),
     };
 
@@ -256,30 +256,31 @@ pub const QRCodeDetector = struct {
         return c.QRCodeDetector_DetectMulti(self.ptr, input.ptr, points.*.ptr);
     }
 
+    pub const ReturnDetectAndDecodeMulti = struct {
+        is_detected: bool,
+        decoded: std.ArrayList([]const u8),
+        qr_codes: std.ArrayList(Mat),
+        points: Mat,
+        arena: std.heap.ArenaAllocator,
+
+        pub fn deinit(self: *@This()) void {
+            self.arena.deinit();
+        }
+    };
     /// Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
     ///
     /// For further details, please see:
     /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
     ///
     /// TODO: some environments have issues with this test
-    pub const ReturnDetectAndDecodeMulti = struct {
-        is_detected: bool,
-        decoded: std.ArrayList([]const u8),
-        qr_codes: std.ArrayList(Mat),
-        points: Mat,
-        allocator: std.mem.Allocator,
-
-        pub fn deinit(self: *@This()) void {
-            self.decoded.deinit();
-            self.qr_codes.deinit();
-            self.points.deinit();
-        }
-    };
     pub fn detectAndDecodeMulti(
         self: Self,
         input: Mat,
         allocator: std.mem.Allocator,
     ) !ReturnDetectAndDecodeMulti {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_allocator = arena.allocator();
+
         var c_decoded: c.CStrings = undefined;
         var c_qr_codes: c.Mats = undefined;
 
@@ -292,8 +293,8 @@ pub const QRCodeDetector = struct {
             points.toC(),
             &c_qr_codes,
         );
-        var decoded = try std.ArrayList([]const u8).initCapacity(allocator, if (result) @intCast(usize, c_decoded.length) else 0);
-        var qr_codes = try std.ArrayList(Mat).initCapacity(allocator, if (result) @intCast(usize, c_qr_codes.length) else 0);
+        var decoded = try std.ArrayList([]const u8).initCapacity(arena_allocator, if (result) @intCast(usize, c_decoded.length) else 0);
+        var qr_codes = try std.ArrayList(Mat).initCapacity(arena_allocator, if (result) @intCast(usize, c_qr_codes.length) else 0);
         if (result) {
             {
                 var i: usize = 0;
@@ -315,7 +316,7 @@ pub const QRCodeDetector = struct {
             .decoded = decoded,
             .qr_codes = qr_codes,
             .points = points,
-            .allocator = allocator,
+            .arena = arena,
         };
     }
 };

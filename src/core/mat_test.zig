@@ -3,6 +3,7 @@ const testing = std.testing;
 const allocator = std.testing.allocator;
 const core = @import("../core.zig");
 const Mat = core.Mat;
+const Scalar = core.Scalar;
 
 test "core mat" {
     var mat = try Mat.init();
@@ -27,9 +28,9 @@ test "core mat size" {
 }
 
 test "core mat sizes" {
-    const sizes = [3]i32{ 10, 20, 30 };
+    comptime var sizes = [3]i32{ 10, 20, 30 };
     const mat_type = Mat.MatType.cv8sc1;
-    var mat = try Mat.initSizes(sizes[0..], mat_type);
+    var mat = try Mat.initSizes(&sizes, mat_type);
     defer mat.deinit();
 
     const mat_size = mat.size();
@@ -118,6 +119,19 @@ test "core mat initFromMat" {
 
     try testing.expectEqual(@as(i32, 11), pmat.rows());
     try testing.expectEqual(@as(i32, 12), pmat.cols());
+}
+
+test "core mat initSizeFromScalar" {
+    var s = Scalar.init(255, 105, 180, 0);
+    var mat = try Mat.initSizeFromScalar(s, 2, 3, .cv8uc3);
+    defer mat.deinit();
+    try testing.expectEqual(false, mat.isEmpty());
+    try testing.expectEqual(@as(i32, 2), mat.rows());
+    try testing.expectEqual(@as(i32, 3), mat.cols());
+    try testing.expectEqual(@as(i32, 3), mat.channels());
+    try testing.expectEqual(Mat.MatType.cv8uc3, mat.getType());
+    try testing.expectEqual(@as(i32, 2 * 3), mat.total());
+    try testing.expectEqual(@as(i32, 3 * 3), mat.step());
 }
 
 test "core mat copyTo" {

@@ -2,7 +2,6 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
-const castToC = utils.castZigU8ToC;
 const Mat = core.Mat;
 const Rect = core.Rect;
 const Rects = core.Rects;
@@ -101,12 +100,12 @@ pub const Window = struct {
     };
 
     fn getCWindowName(self: Self) [*]const u8 {
-        return castToC(self.name);
+        return @ptrCast([*]const u8, self.name);
     }
 
     pub fn init(window_name: []const u8) !Self {
         if (window_name.len == 0) return error.EmptyWindowName;
-        c.Window_New(castToC(window_name), 0);
+        c.Window_New(@ptrCast([*]const u8, window_name), 0);
         return Self{
             .name = window_name,
             .open = true,
@@ -156,7 +155,7 @@ pub const Window = struct {
     /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga56f8849295fd10d0c319724ddb773d96
     ///
     pub fn setTitle(self: *Self, title: []const u8) void {
-        _ = c.Window_SetTitle(self.getCWindowName(), castToC(title));
+        _ = c.Window_SetTitle(self.getCWindowName(), @ptrCast([*]const u8, title));
         self.name = title;
     }
 
@@ -240,20 +239,20 @@ pub const Window = struct {
     /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
     ///
     pub fn createTrackbar(self: *Self, trackbar_name: []const u8, max: i32) void {
-        self.trackbar = Trackbar.init(&self.name, trackbar_name, max);
+        self.trackbar = Trackbar.init(self.name, trackbar_name, max);
     }
 
     pub const Trackbar = struct {
         trackbar_name: []const u8,
-        window_name: *[]const u8,
+        window_name: []const u8,
 
         /// CreateTrackbar creates a trackbar and attaches it to the specified window.
         ///
         /// For further details, please see:
         /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b
         ///
-        pub fn init(window_name: *[]const u8, trackbar_name: []const u8, max: i32) Trackbar {
-            _ = c.Trackbar_Create(castToC(window_name.*), castToC(trackbar_name), max);
+        pub fn init(window_name: []const u8, trackbar_name: []const u8, max: i32) Trackbar {
+            _ = c.Trackbar_Create(@ptrCast([*]const u8, window_name), @ptrCast([*]const u8, trackbar_name), max);
             return .{ .trackbar_name = trackbar_name, .window_name = window_name };
         }
 
@@ -263,7 +262,7 @@ pub const Window = struct {
         /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga122632e9e91b9ec06943472c55d9cda8
         ///
         pub fn getPos(self: Trackbar) i32 {
-            return c.Trackbar_GetPos(castToC(self.window_name.*), castToC(self.trackbar_name));
+            return c.Trackbar_GetPos(@ptrCast([*]const u8, self.window_name), @ptrCast([*]const u8, self.trackbar_name));
         }
 
         /// SetPos sets the trackbar position.
@@ -272,7 +271,7 @@ pub const Window = struct {
         /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga67d73c4c9430f13481fd58410d01bd8d
         ///
         pub fn setPos(self: *Trackbar, pos: i32) void {
-            _ = c.Trackbar_SetPos(castToC(self.window_name.*), castToC(self.trackbar_name), pos);
+            _ = c.Trackbar_SetPos(@ptrCast([*]const u8, self.window_name), @ptrCast([*]const u8, self.trackbar_name), pos);
         }
 
         /// SetMin sets the trackbar minimum position.
@@ -281,7 +280,7 @@ pub const Window = struct {
         /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#gabe26ffe8d2b60cc678895595a581b7aa
         ///
         pub fn setMin(self: *Trackbar, pos: i32) void {
-            _ = c.Trackbar_SetMin(castToC(self.window_name.*), castToC(self.trackbar_name), pos);
+            _ = c.Trackbar_SetMin(@ptrCast([*]const u8, self.window_name), @ptrCast([*]const u8, self.trackbar_name), pos);
         }
 
         /// SetMax sets the trackbar maximum position.
@@ -290,7 +289,7 @@ pub const Window = struct {
         /// https://docs.opencv.org/master/d7/dfc/group__highgui.html#ga7e5437ccba37f1154b65210902fc4480
         ///
         pub fn setMax(self: *Trackbar, pos: i32) void {
-            _ = c.Trackbar_SetMax(castToC(self.window_name.*), castToC(self.trackbar_name), pos);
+            _ = c.Trackbar_SetMax(@ptrCast([*]const u8, self.window_name), @ptrCast([*]const u8, self.trackbar_name), pos);
         }
     };
 };

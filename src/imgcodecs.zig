@@ -2,7 +2,6 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
-const castToC = utils.castZigU8ToC;
 const ensureFileExists = utils.ensureFileExists;
 const Mat = core.Mat;
 const STDVector = core.STDVector;
@@ -139,7 +138,7 @@ pub const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
 ///
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
     try ensureFileExists(filename, true);
-    var cMat: c.Mat = c.Image_IMRead(castToC(filename), @enumToInt(flags));
+    var cMat: c.Mat = c.Image_IMRead(@ptrCast([*]const u8, filename), @enumToInt(flags));
     return try Mat.initFromC(cMat);
 }
 
@@ -149,7 +148,7 @@ pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
 /// http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#gabbc7ef1aa2edfaa87772f1202d67e0ce
 ///
 pub fn imWrite(filename: []const u8, img: Mat) !void {
-    const result = c.Image_IMWrite(castToC(filename), img.ptr);
+    const result = c.Image_IMWrite(@ptrCast([*]const u8, filename), img.ptr);
     if (!result) {
         return error.IMWriteFailed;
     }
@@ -175,7 +174,7 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
             .length = len,
         };
     };
-    const result = c.Image_IMWrite_WithParams(castToC(filename), img.ptr, c_params);
+    const result = c.Image_IMWrite_WithParams(@ptrCast([*]const u8, filename), img.ptr, c_params);
     if (!result) {
         return error.IMWriteFailed;
     }
@@ -189,11 +188,11 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
 /// For further details, please see:
 /// https://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga26a67788faa58ade337f8d28ba0eb19e
 ///
-pub fn imDecode(buf: []const u8, flags: IMReadFlag) !Mat {
+pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
     if (buf.len == 0) {
         return Mat.init();
     }
-    const data = core.toByteArray(buf);
+    var data = core.toByteArray(buf);
     return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
 }
 
@@ -209,7 +208,7 @@ pub fn imEncode(file_ext: FileExt, img: Mat, allocator: std.mem.Allocator) !std.
     var cvp = &c_vector;
     STDVector.init(cvp);
     defer STDVector.deinit(cvp);
-    c.Image_IMEncode(castToC(file_ext.toString()), img.ptr, cvp);
+    c.Image_IMEncode(@ptrCast([*]const u8, file_ext.toString()), img.ptr, cvp);
     const data = STDVector.data(cvp);
     const len = STDVector.len(cvp);
     var buf = try std.ArrayList(u8).initCapacity(allocator, len);
@@ -246,7 +245,7 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
     var cvp = &c_vector;
     STDVector.init(cvp);
     defer STDVector.deinit(cvp);
-    c.Image_IMEncode_WithParams(castToC(file_ext.toString()), img.ptr, c_params, cvp);
+    c.Image_IMEncode_WithParams(@ptrCast([*]const u8, file_ext.toString()), img.ptr, c_params, cvp);
     const data = STDVector.data(cvp);
     const len = STDVector.len(cvp);
     var buf = try std.ArrayList(u8).initCapacity(allocator, len);
