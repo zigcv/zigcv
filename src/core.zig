@@ -729,25 +729,27 @@ pub const TermCriteria = struct {
 
     const Self = @This();
 
-    // TermCriteriaType for TermCriteria.
-    //
-    // For further details, please see:
-    // https://docs.opencv.org/master/d9/d5d/classcv_1_1TermCriteria.html#a56fecdc291ccaba8aad27d67ccf72c57
-    //
-    pub const Type = enum(u2) {
-        // Count is the maximum number of iterations or elements to compute.
-        count = 1,
-
+    /// TermCriteriaType for TermCriteria.
+    ///
+    /// For further details, please see:
+    /// https://docs.opencv.org/master/d9/d5d/classcv_1_1TermCriteria.html#a56fecdc291ccaba8aad27d67ccf72c57
+    ///
+    pub const Type = packed struct(u2) {
+        /// Count is the maximum number of iterations or elements to compute.
         // MaxIter is the maximum number of iterations or elements to compute.
-        max_iter = 1,
+        count: bool = false,
 
-        // EPS is the desired accuracy or change in parameters at which the
-        // iterative algorithm stops.
-        eps = 2,
+        /// EPS is the desired accuracy or change in parameters at which the
+        /// iterative algorithm stops.
+        eps: bool = false,
+
+        pub fn toNum(self: @This()) u2 {
+            return @bitCast(u2, self);
+        }
     };
 
     pub fn init(type_: Type, max_count: i32, epsilon: f64) !Self {
-        const ptr = c.TermCriteria_New(@enumToInt(type_), max_count, epsilon);
+        const ptr = c.TermCriteria_New(type_.toNum(), max_count, epsilon);
         return try initFromC(ptr);
     }
 
