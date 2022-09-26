@@ -607,15 +607,15 @@ pub const Size = struct {
 
     pub fn init(width: i32, height: i32) Self {
         return .{
-            .width = @intCast(u31, width),
-            .height = @intCast(u31, height),
+            .width = width,
+            .height = height,
         };
     }
 
     pub fn initFromC(r: c.Size) Self {
         return .{
-            .width = @intCast(u31, r.width),
-            .height = @intCast(u31, r.height),
+            .width = r.width,
+            .height = r.height,
         };
     }
 
