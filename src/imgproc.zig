@@ -600,9 +600,22 @@ pub fn canny(src: Mat, edges: *Mat, t1: f64, t2: f64) void {
     _ = c.Canny(src.ptr, edges.*.ptr, t1, t2);
 }
 
+/// CornerSubPix Refines the corner locations. The function iterates to find
+/// the sub-pixel accurate location of corners or radial saddle points.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga354e0d7c86d0d9da75de9b9701a9a87e
+///
 pub fn cornerSubPix(img: Mat, corners: *Mat, winSize: Size, zeroZone: Size, criteria: TermCriteria) void {
     _ = c.CornerSubPix(img.ptr, corners.*.ptr, winSize.toC(), zeroZone.toC(), criteria.toC());
 }
+
+/// GoodFeaturesToTrack determines strong corners on an image. The function
+/// finds the most prominent corners in the image or in the specified image region.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga1d6bb77486c8f92d79c8793ad995d541
+///
 pub fn goodFeaturesToTrack(img: Mat, corners: *Mat, maxCorners: i32, quality: f64, minDist: f64) void {
     _ = c.GoodFeaturesToTrack(img.ptr, corners.*.ptr, maxCorners, quality, minDist);
 }

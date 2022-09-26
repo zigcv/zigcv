@@ -151,3 +151,30 @@ test "imgproc remap" {
     imgproc.remap(img, &dst, map1, map2, imgproc.InterpolationFlag.default, .constant, Color.init(0, 0, 0, 0));
     try testing.expectEqual(false, dst.isEmpty());
 }
+
+test "imgproc goodFeaturesToTrack & CornerSubPix" {
+    var img = try imgcodecs.imRead(face_filepath, .gray_scale);
+    defer img.deinit();
+
+    var corners = try Mat.init();
+    defer corners.deinit();
+
+    imgproc.goodFeaturesToTrack(img, &corners, 500, 0.01, 10);
+    try testing.expectEqual(false, corners.isEmpty());
+    try testing.expectEqual(@as(i32, 205), corners.rows());
+    try testing.expectEqual(@as(i32, 1), corners.cols());
+
+    var tc = try core.TermCriteria.init(.{ .count = true, .eps = true }, 20, 0.03);
+    defer tc.deinit();
+
+    imgproc.cornerSubPix(
+        img,
+        &corners,
+        core.Size.init(10, 10),
+        core.Size.init(-1, -1),
+        tc,
+    );
+    try testing.expectEqual(false, corners.isEmpty());
+    try testing.expectEqual(@as(i32, 205), corners.rows());
+    try testing.expectEqual(@as(i32, 1), corners.cols());
+}
