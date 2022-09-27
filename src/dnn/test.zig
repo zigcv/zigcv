@@ -482,11 +482,11 @@ test "dnn nmsboxes" {
     img.convertTo(&img, .cv32fc1);
 
     comptime var bboxes = [_]Rect{
-        Rect.init(53, 47, 589, 451),
-        Rect.init(118, 54, 618, 450),
-        Rect.init(53, 66, 605, 480),
-        Rect.init(111, 65, 630, 480),
-        Rect.init(156, 51, 640, 480),
+        Rect.init(53, 47, 589 - 53, 451 - 47),
+        Rect.init(118, 54, 618 - 118, 450 - 54),
+        Rect.init(53, 66, 605 - 53, 480 - 66),
+        Rect.init(111, 65, 630 - 111, 480 - 65),
+        Rect.init(156, 51, 640 - 156, 480 - 51),
     };
     comptime var scores = [_]f32{ 0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726 };
     const score_threshold: f32 = 0.5;
@@ -514,11 +514,11 @@ test "dnn nmsboxesWithParams" {
     img.convertTo(&img, .cv32fc1);
 
     comptime var bboxes = [_]Rect{
-        Rect.init(53, 47, 589, 451),
-        Rect.init(118, 54, 618, 450),
-        Rect.init(53, 66, 605, 480),
-        Rect.init(111, 65, 630, 480),
-        Rect.init(156, 51, 640, 480),
+        Rect.init(53, 47, 589 - 53, 451 - 47),
+        Rect.init(118, 54, 618 - 118, 450 - 54),
+        Rect.init(53, 66, 605 - 53, 480 - 66),
+        Rect.init(111, 65, 630 - 111, 480 - 65),
+        Rect.init(156, 51, 640 - 156, 480 - 51),
     };
     comptime var scores = [_]f32{ 0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726 };
     const score_threshold: f32 = 0.5;

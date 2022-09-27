@@ -331,7 +331,7 @@ test "objdetect CascadeClassifier" {
     var classifier = try CascadeClassifier.init();
     defer classifier.deinit();
 
-    try classifier.load("libs/gocv/data/haarcascade_frontalface_default.xml");
+    try classifier.load("./libs/gocv/data/haarcascade_frontalface_default.xml");
 
     var rects = try classifier.detectMultiScale(img, testing.allocator);
     defer rects.deinit();
@@ -420,26 +420,26 @@ test "objdetect HOGDescriptorWithParams" {
 
 test "objdetect groupRectangles" {
     var rects = [_]Rect{
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 30, 30),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
-        Rect.init(10, 10, 35, 35),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 20, 20),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
+        Rect.init(10, 10, 25, 25),
     };
 
     var results = try groupRectangles(rects[0..], 1, 0.1, testing.allocator);
