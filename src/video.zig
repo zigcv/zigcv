@@ -264,8 +264,61 @@ pub fn findTransformECC(
 ///
 pub const Tracker = struct {
     ptr: ?*anyopaque,
+    vtable: VTable,
 
-    init: fn () Self,
+    const Self = @This();
+
+    const UpdateReturn = struct { box: Rect, success: bool };
+
+    const VTable = struct {
+        deinitFn: *const fn (self: *Self) void,
+
+        initializeFn: *const fn (self: *Self, image: Mat, bounding_box: Rect) bool,
+
+        updateFn: *const fn (self: *Self, image: Mat) UpdateReturn,
+    };
+
+    pub fn init(object: anytype) !Self {
+        const T = @TypeOf(object);
+        const T_info = @typeInfo(T);
+
+        if (T_info != .Pointer) @compileError("ptr must be a pointer");
+        if (T_info.Pointer.size != .One) @compileError("ptr must be a single item pointer");
+        if (!@hasDecl(T_info.Pointer.child, "init")) @compileError("object must have an init function");
+        if (!@hasDecl(T_info.Pointer.child, "deinit")) @compileError("object must have a deinit function");
+
+        const gen = struct {
+            pub fn deinit(self: *Self) void {
+                T_info.Pointer.child.deinit(self.ptr);
+                self.ptr = null;
+            }
+
+            pub fn initialize(self: *Self, image: Mat, bounding_box: Rect) bool {
+                return c.Tracker_Init(self.ptr, image.toC(), bounding_box.toC());
+            }
+
+            pub fn update(self: *Self, image: Mat) UpdateReturn {
+                var c_box: c.Rect = undefined;
+                const success = c.Tracker_Update(self.ptr, image.toC(), @ptrCast([*]c.Rect, &c_box));
+                var rect = Rect.initFromC(c_box);
+                return UpdateReturn{
+                    .box = rect,
+                    .success = success,
+                };
+            }
+        };
+
+        const t_ptr = try T_info.Pointer.child.init();
+
+        return .{
+            .ptr = t_ptr,
+            .vtable = .{
+                .deinitFn = gen.deinit,
+                .initializeFn = gen.initialize,
+                .updateFn = gen.update,
+            },
+        };
+    }
 
     /// Initialize initializes the tracker with a known bounding box that surrounded the target.
     /// Note: this can only be called once. If you lose the object, you have to Close() the instance,
@@ -273,34 +326,26 @@ pub const Tracker = struct {
     ///
     /// see: https://docs.opencv.org/master/d0/d0a/classcv_1_1Tracker.html#a4d285747589b1bdd16d2e4f00c3255dc
     ///
-    initialize: fn (self: *Self, image: Mat, bounding_box: Rect) bool,
-
-    /// Update updates the tracker, returns a new bounding box and a boolean determining whether the tracker lost the target.
-    ///
-    /// see: https://docs.opencv.org/master/d0/d0a/classcv_1_1Tracker.html#a549159bd0553e6a8de356f3866df1f18
-    ///
-    update: fn (self: *Self, image: Mat) struct { box: Rects, success: bool },
-
-    deinit: fn (self: *Self) void,
-
-    const Self = @This();
-
-    fn trackerInit(self: *Self, image: Mat, bounding_box: Rect) bool {
-        return c.Tracker_Init(self.ptr, image.toC(), bounding_box.toC());
+    pub fn initialize(self: *Self, image: Mat, bounding_box: Rect) bool {
+        return self.vtable.initializeFn(self, image, bounding_box);
     }
 
     /// Update updates the tracker, returns a new bounding box and a boolean determining whether the tracker lost the target.
     ///
     /// see: https://docs.opencv.org/master/d0/d0a/classcv_1_1Tracker.html#a549159bd0553e6a8de356f3866df1f18
     ///
-    fn trackerUpdate(self: *Self, image: Mat) struct { box: Rects, success: bool } {
-        var c_box: c.Rects = undefined;
-        const success = c.Tracker_Update(self.ptr, image.toC(), &c_box);
-        var rects = try Rect.toArrayList(c_box);
-        return .{
-            .box = rects,
-            .success = success,
-        };
+    pub fn update(self: *Self, image: Mat) UpdateReturn {
+        return self.vtable.updateFn(self, image);
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.vtable.deinitFn(self);
+    }
+
+    fn trackerInitialize(self: *Self, image: Mat, bounding_box: Rect) bool {
+        _ = bounding_box;
+        _ = image;
+        _ = self;
     }
 };
 
@@ -311,34 +356,22 @@ pub const Tracker = struct {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d0/d26/classcv_1_1TrackerMIL.html
 ///
-pub const TrackerMIL = Tracker{
-    .ptr = null,
-    .init = trackerMILInit,
-    .initialize = trackerMILInitiate,
-    .update = trackerMILUpdate,
-    .deinit = trackerMILDeinit,
+pub const TrackerMIL = struct {
+    const Self = @This();
+
+    fn init() !c.TrackerMIL {
+        const p = c.TrackerMIL_Create();
+        return try epnn(p);
+    }
+
+    fn deinit(self: c.TrackerMIL) void {
+        c.TrackerMIL_Close(self);
+    }
+
+    pub fn tracker(self: *Self) !Tracker {
+        return try Tracker.init(self);
+    }
 };
-
-fn trackerMILInit() !void {
-    const p = c.TrackerMIL_Create();
-    _ = try epnn(p);
-    return Tracker{
-        .ptr = p,
-    };
-}
-
-fn trackerMILDeinit(self: *Tracker) void {
-    c.TrackerMIL_Close(self.ptr);
-    self.ptr = null;
-}
-
-fn trackerMILInitiate(self: *Tracker, image: Mat, bounding_box: Rect) bool {
-    return Tracker.trackerInit(self.ptr, image.toC(), bounding_box.toC());
-}
-
-fn trackerMILUpdate(self: *Tracker, image: Mat) struct { box: Rects, success: bool } {
-    return Tracker.trackerUpdate(self.ptr, image.toC());
-}
 
 const testing = std.testing;
 const imgcodecs = @import("imgcodecs.zig");
@@ -608,19 +641,21 @@ test "video findTransformECC" {
     try testing.expect(rms < max_rms_ecc);
 }
 
-// test "video single tracker" {
-//     var img1 = try imgcodecs.imRead(file_path, .color);
-//     defer img1.deinit();
-//     try testing.expectEqual(false, img1.isEmpty());
-//
-//     var tracker = try TrackerMIL.init();
-//     defer tracker.deinit();
-//
-//     const init = tracker.initialize(img1, Rect.init(250, 150, 250 + 200, 150 + 250));
-//     try testing.expectEqual(true, init);
-//     const res = tracker.update(img1);
-//     try testing.expectEqual(true, res.success);
-// }
+test "video tracker MIL" {
+    var img = try imgcodecs.imRead(file_path, .color);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    var tracker_mil = TrackerMIL{};
+    var tracker = try tracker_mil.tracker();
+    defer tracker.deinit();
+
+    const rect = Rect.init(250, 150, 200, 250);
+    const init = tracker.initialize(img, rect);
+    try testing.expectEqual(true, init);
+    const res = tracker.update(img);
+    try testing.expectEqual(true, res.success);
+}
 
 //*    implementation done
 //*    pub const BackgroundSubtractorMOG2 = ?*anyopaque;
