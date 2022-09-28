@@ -69,7 +69,8 @@ pub const PointVector = struct {
     }
 
     pub fn at(self: Self, idx: i32) Point {
-        return c.PointVector_At(self.ptr, idx);
+        var p = c.PointVector_At(self.ptr, idx);
+        return Point.initFromC(p);
     }
 
     pub fn size(self: Self) i32 {
@@ -82,6 +83,18 @@ pub const PointVector = struct {
 
     pub fn toC(self: Self) c.PointVector {
         return self.ptr;
+    }
+
+    pub fn toPoints(self: Self, allocator: std.mem.Allocator) !std.ArrayList(Point) {
+        const size_ = self.size();
+        var array = try std.ArrayList(Point).initCapacity(allocator, @intCast(usize, size_));
+        {
+            var i: i32 = 0;
+            while (i < size_) : (i += 1) {
+                try array.append(self.at(i));
+            }
+        }
+        return array;
     }
 };
 
