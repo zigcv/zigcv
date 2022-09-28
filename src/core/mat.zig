@@ -955,17 +955,17 @@ pub fn minMaxIdx(self: Self) MinMaxIdxReturn {
     };
 }
 
-/// MinMaxLoc finds the global minimum and maximum in an array.
-///
-/// For further details, please see:
-/// https://docs.opencv.org/trunk/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
-///
 const MinMaxLocReturn = struct {
     min_val: f64,
     max_val: f64,
     min_loc: Point,
     max_loc: Point,
 };
+/// MinMaxLoc finds the global minimum and maximum in an array.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/trunk/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
+///
 pub fn minMaxLoc(self: Self) MinMaxLocReturn {
     var minval: f64 = undefined;
     var maxval: f64 = undefined;
