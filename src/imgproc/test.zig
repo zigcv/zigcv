@@ -11,9 +11,6 @@ const Point = core.Point;
 const Rect = core.Rect;
 const PointVector = core.PointVector;
 
-const BorderType = imgproc.BorderType;
-const InterpolationFlag = imgproc.InterpolationFlag;
-
 const img_dir = "./libs/gocv/images/";
 const face_detect_filepath = img_dir ++ "face-detect.jpg";
 
@@ -220,7 +217,7 @@ test "imgproc sobel" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.sobel(img, &dst, .cv16sc1, 0, 1, 3, 1, 0, BorderType.default);
+    imgproc.sobel(img, &dst, .cv16sc1, 0, 1, 3, 1, 0, .{});
 
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(img.rows(), dst.rows());
@@ -238,7 +235,7 @@ test "imgproc spatialGradient" {
     var dy = try Mat.init();
     defer dy.deinit();
 
-    imgproc.spatialGradient(img, &dx, &dy, .cv16sc1, BorderType.default);
+    imgproc.spatialGradient(img, &dx, &dy, .cv16sc1, .{});
 
     try testing.expectEqual(false, dx.isEmpty());
     try testing.expectEqual(img.rows(), dx.rows());
@@ -307,7 +304,7 @@ test "imgproc dilateWithParams" {
     var kernel = try imgproc.getStructuringElement(.rect, Size.init(1, 1));
     defer kernel.deinit();
 
-    imgproc.dilateWithParams(img, &dst, kernel, Point.init(0, 0), .wrap, BorderType.default, Color{});
+    imgproc.dilateWithParams(img, &dst, kernel, Point.init(0, 0), .{ .type = .wrap }, .{}, Color{});
 
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(img.rows(), dst.rows());
@@ -378,7 +375,7 @@ test "imgproc pyrdown" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.pyrDown(img, &dst, Size.init(dst.cols(), dst.rows()), BorderType.default);
+    imgproc.pyrDown(img, &dst, Size.init(dst.cols(), dst.rows()), .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expect(@fabs(@intToFloat(f64, (img.cols() - 2 * dst.cols()))) < 2.0);
     try testing.expect(@fabs(@intToFloat(f64, (img.rows() - 2 * dst.rows()))) < 2.0);
@@ -392,7 +389,7 @@ test "imgproc pyrup" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.pyrUp(img, &dst, Size.init(dst.cols(), dst.rows()), BorderType.default);
+    imgproc.pyrUp(img, &dst, Size.init(dst.cols(), dst.rows()), .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expect(@fabs(@intToFloat(f64, (2 * img.cols() - dst.cols()))) < 2.0);
     try testing.expect(@fabs(@intToFloat(f64, (2 * img.rows() - dst.rows()))) < 2.0);
@@ -698,7 +695,7 @@ test "imgproc morphologyExWithParams" {
     var kernel = try imgproc.getStructuringElement(.rect, Size.init(1, 1));
     defer kernel.deinit();
 
-    imgproc.morphologyExWithParams(img, &dest, .open, kernel, 2, .constant);
+    imgproc.morphologyExWithParams(img, &dest, .open, kernel, 2, .{ .type = .constant });
     try testing.expectEqual(false, dest.isEmpty());
     try testing.expectEqual(img.rows(), dest.rows());
     try testing.expectEqual(img.cols(), dest.cols());
@@ -712,7 +709,7 @@ test "imgproc gaussianBlur" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.gaussianBlur(img, &dst, Size.init(23, 23), 30, 50, BorderType.default);
+    imgproc.gaussianBlur(img, &dst, Size.init(23, 23), 30, 50, .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(img.rows(), dst.rows());
     try testing.expectEqual(img.cols(), dst.cols());
@@ -738,7 +735,7 @@ test "imgproc laplacian" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.laplacian(img, &dst, .cv16sc1, 1, 1, 0, BorderType.default);
+    imgproc.laplacian(img, &dst, .cv16sc1, 1, 1, 0, .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(img.rows(), dst.rows());
     try testing.expectEqual(img.cols(), dst.cols());
@@ -752,7 +749,7 @@ test "imgproc scharr" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.scharr(img, &dst, .cv16sc1, 1, 0, 0, 0, BorderType.default);
+    imgproc.scharr(img, &dst, .cv16sc1, 1, 0, 0, 0, .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(img.rows(), dst.rows());
     try testing.expectEqual(img.cols(), dst.cols());
@@ -1075,7 +1072,7 @@ test "imgproc putText" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    imgproc.putText(&img, "Testing", Point.init(10, 10), .plain, 1.2, Color.init(0, 0, 255, 0), 2);
+    imgproc.putText(&img, "Testing", Point.init(10, 10), .{ .type = .plain }, 1.2, Color.init(0, 0, 255, 0), 2);
 
     try testing.expectEqual(false, img.isEmpty());
 }
@@ -1085,7 +1082,7 @@ test "imgproc putTextWithParams" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    imgproc.putTextWithParams(&img, "Testing", Point.init(10, 10), .plain, 1.2, Color.init(0, 0, 255, 0), 2, .line_aa, false);
+    imgproc.putTextWithParams(&img, "Testing", Point.init(10, 10), .{ .type = .plain }, 1.2, Color.init(0, 0, 255, 0), 2, .line_aa, false);
 
     try testing.expectEqual(false, img.isEmpty());
 }
@@ -1097,12 +1094,12 @@ test "imgproc resize" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    imgproc.resize(img, &dst, Size.init(0, 0), 0.5, 0.5, InterpolationFlag.default);
+    imgproc.resize(img, &dst, Size.init(0, 0), 0.5, 0.5, .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(@as(i32, 172), dst.rows());
     try testing.expectEqual(@as(i32, 200), dst.cols());
 
-    imgproc.resize(img, &dst, Size.init(440, 377), 0, 0, InterpolationFlag.default);
+    imgproc.resize(img, &dst, Size.init(440, 377), 0, 0, .{});
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(@as(i32, 377), dst.rows());
     try testing.expectEqual(@as(i32, 440), dst.cols());
@@ -1122,17 +1119,17 @@ test "imgproc remap" {
     var map2 = try Mat.init();
     defer map2.deinit();
 
-    imgproc.remap(img, &dst, map1, map2, InterpolationFlag.default, .constant, Color{});
+    imgproc.remap(img, &dst, map1, map2, .{}, .{ .type = .constant }, Color{});
     try testing.expectEqual(false, dst.isEmpty());
 }
 
 test "imgproc textSize" {
-    const size = imgproc.getTextSize("test", .simplex, 1.2, 1);
+    const size = imgproc.getTextSize("test", .{ .type = .simplex }, 1.2, 1);
 
     try testing.expectEqual(@as(i32, 72), size.width);
     try testing.expectEqual(@as(i32, 26), size.height);
 
-    const res = imgproc.getTextSizeWithBaseline("text", .simplex, 1.2, 1);
+    const res = imgproc.getTextSizeWithBaseline("text", .{ .type = .simplex }, 1.2, 1);
 
     try testing.expectEqual(@as(i32, 72), res.size.width);
     try testing.expectEqual(@as(i32, 26), res.size.height);

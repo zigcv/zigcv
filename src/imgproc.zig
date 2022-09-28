@@ -48,29 +48,34 @@ pub const ConnectedComponentsType = enum(u3) {
     stat_max = 5,
 };
 
-pub const BorderType = enum(u5) {
-    /// BorderConstant border type
-    constant = 0,
-
-    /// BorderReplicate border type
-    replicate = 1,
-
-    /// BorderReflect border type
-    reflect = 2,
-
-    /// BorderWrap border type
-    wrap = 3,
-
-    /// BorderReflect101 border type
-    reflect101 = 4,
-
-    /// BorderTransparent border type
-    transparent = 5,
-
+pub const BorderType = struct {
+    type: Type_ = .reflect101,
     /// BorderIsolated border type
-    isolated = 16,
+    isolate: bool = false,
 
-    pub const default = BorderType.reflect101;
+    const Type_ = enum(u3) {
+        /// BorderConstant border type
+        constant = 0,
+
+        /// BorderReplicate border type
+        replicate = 1,
+
+        /// BorderReflect border type
+        reflect = 2,
+
+        /// BorderWrap border type
+        wrap = 3,
+
+        /// BorderReflect101 border type
+        reflect101 = 4,
+
+        /// BorderTransparent border type
+        transparent = 5,
+    };
+
+    pub fn toNum(self: BorderType) u5 {
+        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.isolate)) * 16;
+    }
 };
 
 pub const MorphType = enum(u3) {
@@ -141,58 +146,68 @@ pub const LineType = enum(i6) {
     line_aa = 16,
 };
 
-// TODO struct
-pub const HersheyFont = enum(u5) {
-    /// FontHersheySimplex is normal size sans-serif font.
-    simplex = 0,
-    /// FontHersheyPlain issmall size sans-serif font.
-    plain = 1,
-    /// FontHersheyDuplex normal size sans-serif font
-    /// (more complex than FontHersheySIMPLEX).
-    duplex = 2,
-    /// FontHersheyComplex i a normal size serif font.
-    complex = 3,
-    /// FontHersheyTriplex is a normal size serif font
-    /// (more complex than FontHersheyCOMPLEX).
-    triplex = 4,
-    /// FontHersheyComplexSmall is a smaller version of FontHersheyCOMPLEX.
-    complex_small = 5,
-    /// FontHersheyScriptSimplex is a hand-writing style font.
-    script_simplex = 6,
-    /// FontHersheyScriptComplex is a more complex variant of FontHersheyScriptSimplex.
-    script_complex = 7,
+pub const HersheyFont = struct {
+    type: Type_,
     /// FontItalic is the flag for italic font.
-    italic = 16,
+    italic: bool = false,
+
+    const Type_ = enum(u3) {
+        /// FontHersheySimplex is normal size sans-serif font.
+        simplex = 0,
+        /// FontHersheyPlain issmall size sans-serif font.
+        plain = 1,
+        /// FontHersheyDuplex normal size sans-serif font
+        /// (more complex than FontHersheySIMPLEX).
+        duplex = 2,
+        /// FontHersheyComplex i a normal size serif font.
+        complex = 3,
+        /// FontHersheyTriplex is a normal size serif font
+        /// (more complex than FontHersheyCOMPLEX).
+        triplex = 4,
+        /// FontHersheyComplexSmall is a smaller version of FontHersheyCOMPLEX.
+        complex_small = 5,
+        /// FontHersheyScriptSimplex is a hand-writing style font.
+        script_simplex = 6,
+        /// FontHersheyScriptComplex is a more complex variant of FontHersheyScriptSimplex.
+        script_complex = 7,
+    };
+
+    pub fn toNum(self: HersheyFont) u5 {
+        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.italic)) * 8;
+    }
 };
 
-// TODO struct
-pub const InterpolationFlag = enum(u5) {
-    /// InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
-    nearest_neighbor = 0,
-
-    /// InterpolationLinear is bilinear interpolation.
-    linear = 1,
-
-    /// InterpolationCubic is bicube interpolation.
-    cubic = 2,
-
-    /// InterpolationArea uses pixel area relation. It is preferred for image
-    /// decimation as it gives moire-free results.
-    area = 3,
-
-    /// InterpolationLanczos4 is Lanczos interpolation over 8x8 neighborhood.
-    lanczos4 = 4,
-
-    /// InterpolationMax indicates use maximum interpolation.
-    max = 7,
-
+pub const InterpolationFlag = struct {
+    type: Type_ = .linear,
     /// WarpFillOutliers fills all of the destination image pixels. If some of them correspond to outliers in the source image, they are set to zero.
-    warp_fill_outliers = 8,
-
+    warp_fill_outliers: bool = false,
     /// WarpInverseMap, inverse transformation.
-    warp_inverse_map = 16,
+    warp_inverse_map: bool = false,
 
-    pub const default = InterpolationFlag.linear;
+    const Type_ = enum(u3) {
+        /// InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
+        nearest_neighbor = 0,
+
+        /// InterpolationLinear is bilinear interpolation.
+        linear = 1,
+
+        /// InterpolationCubic is bicube interpolation.
+        cubic = 2,
+
+        /// InterpolationArea uses pixel area relation. It is preferred for image
+        /// decimation as it gives moire-free results.
+        area = 3,
+
+        /// InterpolationLanczos4 is Lanczos interpolation over 8x8 neighborhood.
+        lanczos4 = 4,
+
+        /// InterpolationMax indicates use maximum interpolation.
+        max = 7,
+    };
+
+    pub fn toNum(self: InterpolationFlag) u5 {
+        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.warp_fill_outliers)) * 8 + @intCast(u5, @boolToInt(self.warp_inverse_map)) * 16;
+    }
 };
 
 pub const ColormapType = enum(u4) {
@@ -461,11 +476,6 @@ pub fn convexityDefects(points: PointVector, hull: Mat, result: *Mat) void {
 /// Bilateral filtering is described here:
 /// http://www.dai.ed.ac.uk/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html
 ///
-/// BilateralFilter can reduce unwanted noise very well while keeping edges
-/// fairly sharp. However, it is very slow compared to most filters.
-///
-/// For further details, please see:
-/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga9d7064d478c95d60003cf839430737ed
 pub fn bilateralFilter(src: Mat, dst: *Mat, d: i32, sc: f64, ss: f64) void {
     _ = c.BilateralFilter(src.ptr, dst.*.ptr, d, sc, ss);
 }
@@ -511,7 +521,7 @@ pub fn dilate(src: Mat, dst: *Mat, kernel: Mat) void {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f469d0e11f242f3b6c
 pub fn dilateWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: BorderType, border_type: BorderType, border_value: Color) void {
-    _ = c.DilateWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), @enumToInt(iterations), @enumToInt(border_type), border_value.toScalar().toC());
+    _ = c.DilateWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), iterations.toNum(), border_type.toNum(), border_value.toScalar().toC());
 }
 
 /// DistanceTransform Calculates the distance to the closest zero pixel for each pixel of the source image.
@@ -566,7 +576,7 @@ pub fn moments(src: Mat, binary_image: bool) c.struct_Moment {
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaf9bba239dfca11654cb7f50f889fc2ff
 ///
 pub fn pyrDown(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
-    _ = c.PyrDown(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
+    _ = c.PyrDown(src.ptr, dst.*.ptr, dstsize.toC(), border_type.toNum());
 }
 
 /// PyrUp upsamples an image and then blurs it.
@@ -575,7 +585,7 @@ pub fn pyrDown(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gada75b59bdaaca411ed6fee10085eb784
 ///
 pub fn pyrUp(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
-    _ = c.PyrUp(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
+    _ = c.PyrUp(src.ptr, dst.*.ptr, dstsize.toC(), border_type.toNum());
 }
 
 /// BoundingRect calculates the up-right bounding rectangle of a point set.
@@ -725,7 +735,7 @@ pub fn connectedComponentsWithStatsWithParams(src: Mat, labels: *Mat, stats: *Ma
 /// http://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaabe8c836e97159a9193fb0b11ac52cf1
 ///
 pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, border_type: BorderType) void {
-    _ = c.GaussianBlur(src.ptr, dst.*.ptr, ps.toC(), sigma_x, sigma_y, @enumToInt(border_type));
+    _ = c.GaussianBlur(src.ptr, dst.*.ptr, ps.toC(), sigma_x, sigma_y, border_type.toNum());
 }
 
 /// GetGaussianKernel returns Gaussian filter coefficients.
@@ -750,7 +760,7 @@ pub fn getGaussianKernelWithParams(ksize: i32, sigma: f64, ktype: MatType) !Mat 
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gad78703e4c8fe703d479c1860d76429e6
 ///
 pub fn laplacian(src: Mat, dst: *Mat, d_depth: MatType, k_size: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    _ = c.Laplacian(src.ptr, dst.*.ptr, @enumToInt(d_depth), k_size, scale, delta, @enumToInt(border_type));
+    _ = c.Laplacian(src.ptr, dst.*.ptr, @enumToInt(d_depth), k_size, scale, delta, border_type.toNum());
 }
 
 /// Scharr calculates the first x- or y- image derivative using Scharr operator.
@@ -759,7 +769,7 @@ pub fn laplacian(src: Mat, dst: *Mat, d_depth: MatType, k_size: i32, scale: f64,
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaa13106761eedf14798f37aa2d60404c9
 ///
 pub fn scharr(src: Mat, dst: *Mat, d_depth: MatType, dx: i32, dy: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    _ = c.Scharr(src.ptr, dst.*.ptr, @enumToInt(d_depth), dx, dy, scale, delta, @enumToInt(border_type));
+    _ = c.Scharr(src.ptr, dst.*.ptr, @enumToInt(d_depth), dx, dy, scale, delta, border_type.toNum());
 }
 
 /// GetStructuringElement returns a structuring element of the specified size
@@ -796,7 +806,7 @@ pub fn morphologyEx(src: Mat, dst: *Mat, op: MorphType, kernel: Mat) void {
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f
 pub fn morphologyExWithParams(src: Mat, dst: *Mat, op: MorphType, kernel: Mat, iterations: i32, border_type: BorderType) void {
     const c_pt = Point.init(-1, -1).toC();
-    _ = c.MorphologyExWithParams(src.ptr, dst.*.ptr, @enumToInt(op), kernel.ptr, c_pt, iterations, @enumToInt(border_type));
+    _ = c.MorphologyExWithParams(src.ptr, dst.*.ptr, @enumToInt(op), kernel.ptr, c_pt, iterations, border_type.toNum());
 }
 
 /// MedianBlur blurs an image using the median filter.
@@ -997,7 +1007,7 @@ pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: i32, 
 /// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
 ///
 pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
-    var c_size = c.GetTextSize(@ptrCast([*]const u8, text), @enumToInt(font_face), font_scale, thickness);
+    var c_size = c.GetTextSize(@ptrCast([*]const u8, text), font_face.toNum(), font_scale, thickness);
     return Size.initFromC(c_size);
 }
 
@@ -1010,7 +1020,7 @@ pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, th
 ///
 pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) struct { size: Size, baseline: i32 } {
     var baseline: i32 = 0;
-    var c_size = c.GetTextSizeWithBaseline(@ptrCast([*]const u8, text), @enumToInt(font_face), font_scale, thickness, &baseline);
+    var c_size = c.GetTextSizeWithBaseline(@ptrCast([*]const u8, text), font_face.toNum(), font_scale, thickness, &baseline);
     var size = Size.initFromC(c_size);
     return .{
         .size = size,
@@ -1027,7 +1037,7 @@ pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_sc
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32) void {
-    _ = c.PutText(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness);
+    _ = c.PutText(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness);
 }
 
 // PutTextWithParams draws a text string.
@@ -1039,7 +1049,7 @@ pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, 
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32, line_type: LineType, bottom_left_origin: bool) void {
-    _ = c.PutTextWithParams(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), @enumToInt(font_face), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), bottom_left_origin);
+    _ = c.PutTextWithParams(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), bottom_left_origin);
 }
 
 /// Resize resizes an image.
@@ -1052,7 +1062,7 @@ pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: Her
 /// For further details, please see:
 /// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga47a974309e9102f5f08231edc7e7529d
 pub fn resize(src: Mat, dst: *Mat, sz: Size, fx: f64, fy: f64, interp: InterpolationFlag) void {
-    _ = c.Resize(src.ptr, dst.*.ptr, sz.toC(), fx, fy, @enumToInt(interp));
+    _ = c.Resize(src.ptr, dst.*.ptr, sz.toC(), fx, fy, interp.toNum());
 }
 
 pub fn getRectSubPix(src: Mat, patch_size: Size, center: Point, dst: *Mat) void {
@@ -1068,7 +1078,7 @@ pub fn warpAffine(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size) void {
 }
 
 pub fn warpAffineWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flags: InterpolationFlag, border_mode: BorderType, border_value: Color) void {
-    _ = c.WarpAffineWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), @enumToInt(flags), @enumToInt(border_mode), border_value.toScalar().toC());
+    _ = c.WarpAffineWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), @enumToInt(flags), border_mode.toNum(), border_value.toScalar().toC());
 }
 
 pub fn warpPerspective(src: Mat, dst: *Mat, m: Mat, dsize: Size) void {
@@ -1076,7 +1086,7 @@ pub fn warpPerspective(src: Mat, dst: *Mat, m: Mat, dsize: Size) void {
 }
 
 pub fn warpPerspectiveWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flags: i32, border_mode: BorderType, border_value: Color) void {
-    _ = c.WarpPerspectiveWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), flags, @enumToInt(border_mode), border_value.toScalar().toC());
+    _ = c.WarpPerspectiveWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), flags, border_mode.toNum(), border_value.toScalar().toC());
 }
 
 pub fn watershed(image: Mat, markers: *Mat) void {
@@ -1153,7 +1163,7 @@ pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_repr
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gacea54f142e81b6758cb6f375ce782c8d
 ///
 pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: i32, dy: i32, ksize: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    _ = c.Sobel(src.ptr, dst.*.ptr, @enumToInt(ddepth), dx, dy, ksize, scale, delta, @enumToInt(border_type));
+    _ = c.Sobel(src.ptr, dst.*.ptr, @enumToInt(ddepth), dx, dy, ksize, scale, delta, border_type.toNum());
 }
 
 /// SpatialGradient calculates the first order image derivative in both x and y using a Sobel operator.
@@ -1162,7 +1172,7 @@ pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: i32, dy: i32, ksize: i32,
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga405d03b20c782b65a4daf54d233239a2
 ///
 pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: MatType, border_type: BorderType) void {
-    _ = c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, @enumToInt(ksize), @enumToInt(border_type));
+    _ = c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, @enumToInt(ksize), border_type.toNum());
 }
 
 // Remap applies a generic geometrical transformation to an image.
@@ -1170,7 +1180,7 @@ pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: MatType, border_type
 // For further details, please see:
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gab75ef31ce5cdfb5c44b6da5f3b908ea4
 pub fn remap(src: Mat, dst: *Mat, map1: Mat, map2: Mat, interpolation: InterpolationFlag, border_mode: BorderType, border_value: Color) void {
-    _ = c.Remap(src.ptr, dst.*.ptr, map1.ptr, map2.ptr, @enumToInt(interpolation), @enumToInt(border_mode), border_value.toScalar().toC());
+    _ = c.Remap(src.ptr, dst.*.ptr, map1.ptr, map2.ptr, interpolation.toNum(), border_mode.toNum(), border_value.toScalar().toC());
 }
 
 // Filter2D applies an arbitrary linear filter to an image.
@@ -1178,7 +1188,7 @@ pub fn remap(src: Mat, dst: *Mat, map1: Mat, map2: Mat, interpolation: Interpola
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga27c049795ce870216ddfb366086b5a04
 pub fn filter2D(src: Mat, dst: *Mat, ddepth: i32, kernel: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
-    _ = c.Filter2D(src.ptr, dst.*.ptr, ddepth, kernel.ptr, anchor.toC(), delta, @enumToInt(border_type));
+    _ = c.Filter2D(src.ptr, dst.*.ptr, ddepth, kernel.ptr, anchor.toC(), delta, border_type.toNum());
 }
 
 // SepFilter2D applies a separable linear filter to the image.
@@ -1186,7 +1196,7 @@ pub fn filter2D(src: Mat, dst: *Mat, ddepth: i32, kernel: Mat, anchor: Point, de
 // For further details, please see:
 // https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga910e29ff7d7b105057d1625a4bf6318d
 pub fn sepFilter2D(src: Mat, dst: *Mat, ddepth: i32, kernel_x: Mat, kernel_y: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
-    _ = c.SepFilter2D(src.ptr, dst.*.ptr, ddepth, kernel_x.ptr, kernel_y.ptr, anchor.toC(), delta, @enumToInt(border_type));
+    _ = c.SepFilter2D(src.ptr, dst.*.ptr, ddepth, kernel_x.ptr, kernel_y.ptr, anchor.toC(), delta, border_type.toNum());
 }
 
 // LogPolar remaps an image to semilog-polar coordinates space.
