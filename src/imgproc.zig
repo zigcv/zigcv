@@ -235,36 +235,42 @@ pub const DistanceTransformLabelType = enum(u1) {
     pixel = 1,
 };
 
-pub const DistanceTransformMask = enum(u1) {
+pub const DistanceTransformMask = enum(i32) {
     mask_3 = 3,
     mask_5 = 5,
     mask_precise = 0,
 };
 
-pub const ThresholdType = enum(u5) {
-    /// ThresholdBinary threshold type
-    binary = 0,
-
-    /// ThresholdBinaryInv threshold type
-    binary_inv = 1,
-
-    /// ThresholdTrunc threshold type
-    trunc = 2,
-
-    /// ThresholdToZero threshold type
-    to_zero = 3,
-
-    /// ThresholdToZeroInv threshold type
-    to_zero_inv = 4,
-
-    /// ThresholdMask threshold type
-    mask = 7,
-
+pub const ThresholdType = struct {
+    type: Type_,
     /// ThresholdOtsu threshold type
-    otsu = 8,
-
+    otsu: bool = false,
     /// ThresholdTriangle threshold type
-    triangle = 16,
+    triangle: bool = false,
+
+    const Type_ = enum(u3) {
+        /// ThresholdBinary threshold type
+        binary = 0,
+
+        /// ThresholdBinaryInv threshold type
+        binary_inv = 1,
+
+        /// ThresholdTrunc threshold type
+        trunc = 2,
+
+        /// ThresholdToZero threshold type
+        to_zero = 3,
+
+        /// ThresholdToZeroInv threshold type
+        to_zero_inv = 4,
+
+        /// ThresholdMask threshold type
+        mask = 7,
+    };
+
+    pub fn toNum(self: ThresholdType) u5 {
+        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.otsu)) * 8 + @intCast(u5, @boolToInt(self.triangle)) * 16;
+    }
 };
 
 /// AdaptiveThresholdType type of adaptive threshold operation.
@@ -321,6 +327,32 @@ pub const ContourApproximationMode = enum(u3) {
     /// ChainApproxTC89KCOS applies one of the flavors of the Teh-Chin chain
     /// approximation algorithms.
     tc89kcos = 4,
+};
+
+/// MorphShape is the shape of the structuring element used for Morphing operations.
+pub const MorphShape = enum(u2) {
+    // MorphRect is the rectangular morph shape.
+    rect = 0,
+    /// MorphCross is the cross morph shape.
+    cross = 1,
+    /// MorphEllipse is the ellipse morph shape.
+    ellipse = 2,
+};
+
+/// TemplateMatchMode is the type of the template matching operation.
+pub const TemplateMatchMode = enum(u3) {
+    /// TmSqdiff maps to TM_SQDIFF
+    sq_diff = 0,
+    /// TmSqdiffNormed maps to TM_SQDIFF_NORMED
+    sq_diff_normed = 1,
+    /// TmCcorr maps to TM_CCORR
+    ccorr = 2,
+    /// TmCcorrNormed maps to TM_CCORR_NORMED
+    ccorr_normed = 3,
+    /// TmCcoeff maps to TM_CCOEFF
+    ccoeff = 4,
+    /// TmCcoeffNormed maps to TM_CCOEFF_NORMED
+    ccoeff_normed = 5,
 };
 
 /// CLAHE is a wrapper around the cv::CLAHE algorithm.
@@ -404,10 +436,20 @@ pub fn compareHist(hist1: Mat, hist2: Mat, method: i32) f64 {
     return c.CompareHist(hist1.ptr, hist2.ptr, method);
 }
 
+/// ConvexHull finds the convex hull of a point set.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga014b28e56cb8854c0de4a211cb2be656
+///
 pub fn convexHull(points: PointVector, hull: *Mat, clockwise: bool, return_points: bool) void {
     _ = c.ConvexHull(points.toC(), hull.*.ptr, clockwise, return_points);
 }
 
+/// ConvexityDefects finds the convexity defects of a contour.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gada4437098113fd8683c932e0567f47ba
+///
 pub fn convexityDefects(points: PointVector, hull: Mat, result: *Mat) void {
     _ = c.ConvexityDefects(points.toC(), hull.ptr, result.*.ptr);
 }
@@ -416,28 +458,57 @@ pub fn bilateralFilter(src: Mat, dst: *Mat, d: i32, sc: f64, ss: f64) void {
     _ = c.BilateralFilter(src.ptr, dst.*.ptr, d, sc, ss);
 }
 
+/// Blur blurs an image Mat using a normalized box filter.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga8c45db9afe636703801b0b2e440fce37
+///
 pub fn blur(src: Mat, dst: *Mat, ps: Size) void {
     _ = c.Blur(src.ptr, dst.*.ptr, ps.toC());
 }
 
+/// BoxFilter blurs an image using the box filter.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gad533230ebf2d42509547d514f7d3fbc3
+///
 pub fn boxFilter(src: Mat, dst: *Mat, ddepth: i32, ps: Size) void {
     _ = c.BoxFilter(src.ptr, dst.*.ptr, ddepth, ps.toC());
 }
 
+/// SqBoxFilter calculates the normalized sum of squares of the pixel values overlapping the filter.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga045028184a9ef65d7d2579e5c4bff6c0
+///
 pub fn sqBoxFilter(src: Mat, dst: *Mat, ddepth: i32, ps: Size) void {
-    _ = c.SqBoxFilter(src.ptr, dst.*.ptr, ddepth, ps);
+    _ = c.SqBoxFilter(src.ptr, dst.*.ptr, ddepth, ps.toC());
 }
 
+/// Dilate dilates an image by using a specific structuring element.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f469d0e11f242f3b6c
+///
 pub fn dilate(src: Mat, dst: *Mat, kernel: Mat) void {
     _ = c.Dilate(src.ptr, dst.*.ptr, kernel.ptr);
 }
 
+/// DilateWithParams dilates an image by using a specific structuring element.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f469d0e11f242f3b6c
 pub fn dilateWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: BorderType, border_type: BorderType, border_value: Color) void {
-    _ = c.DilateWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), @enumToInt(iterations), @enumToInt(border_type), border_value.toScalar.toC());
+    _ = c.DilateWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), @enumToInt(iterations), @enumToInt(border_type), border_value.toScalar().toC());
 }
 
-pub fn distanceTransform(src: Mat, dst: *Mat, labels: Mat, distance_type: DistanceType, mask_size: DistanceTransformMask, label_type: DistanceTransformLabelType) void {
-    _ = c.DistanceTransform(src.ptr, dst.*.ptr, labels.ptr, @enumToInt(distance_type), @enumToInt(mask_size), @enumToInt(label_type));
+/// DistanceTransform Calculates the distance to the closest zero pixel for each pixel of the source image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga8a0b7fdfcb7a13dde018988ba3a43042
+///
+pub fn distanceTransform(src: Mat, dst: *Mat, labels: *Mat, distance_type: DistanceType, mask_size: DistanceTransformMask, label_type: DistanceTransformLabelType) void {
+    _ = c.DistanceTransform(src.ptr, dst.*.ptr, labels.*.ptr, @enumToInt(distance_type), @enumToInt(mask_size), @enumToInt(label_type));
 }
 pub fn erode(src: Mat, dst: *Mat, kernel: Mat) void {
     _ = c.Erode(src.ptr, dst.*.ptr, kernel.ptr);
@@ -447,14 +518,39 @@ pub fn erodeWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iteratio
     _ = c.ErodeWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), iterations, border_type);
 }
 
-pub fn matchTemplate(image: Mat, templ: Mat, result: *Mat, method: i32, mask: Mat) void {
-    _ = c.MatchTemplate(image.ptr, templ.ptr, result.*.ptr, method, mask.ptr);
+/// MatchTemplate compares a template against overlapped image regions.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/df/dfb/group__imgproc__object.html#ga586ebfb0a7fb604b35a23d85391329be
+///
+pub fn matchTemplate(image: Mat, templ: Mat, result: *Mat, method: TemplateMatchMode, mask: Mat) void {
+    _ = c.MatchTemplate(image.ptr, templ.ptr, result.*.ptr, @enumToInt(method), mask.ptr);
 }
 
+/// Moments calculates all of the moments up to the third order of a polygon
+/// or rasterized shape.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga556a180f43cab22649c23ada36a8a139
+///
+pub fn moments(src: Mat, binary_image: bool) c.struct_Moment {
+    return c.Moments(src.ptr, binary_image);
+}
+
+/// PyrDown blurs an image and downsamples it.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaf9bba239dfca11654cb7f50f889fc2ff
+///
 pub fn pyrDown(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
     _ = c.PyrDown(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
 }
 
+/// PyrUp upsamples an image and then blurs it.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gada75b59bdaaca411ed6fee10085eb784
+///
 pub fn pyrUp(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
     _ = c.PyrUp(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
 }
@@ -477,6 +573,18 @@ pub fn fitEllipse(pts: PointVector) RotatedRect {
     return RotatedRect.fromC(c.FitEllipse(pts.toC()));
 }
 
+/// MinEnclosingCircle finds a circle of the minimum area enclosing the input 2D point set.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/3.4/d3/dc0/group__imgproc__shape.html#ga8ce13c24081bbc7151e9326f412190f1
+pub fn minEnclosingCircle(pts: PointVector) struct { point: Point2f, radius: f32 } {
+    var c_center: c.Point2f = undefined;
+    var radius: f32 = undefined;
+    _ = c.MinEnclosingCircle(pts.toC(), @ptrCast([*]c.Point2f, &c_center), @ptrCast([*]f32, &radius));
+    var center: Point2f = Point2f.initFromC(c_center);
+    return .{ .point = center, .radius = radius };
+}
+
 /// FindContours finds contours in a binary image.
 ///
 /// For further details, please see:
@@ -495,7 +603,7 @@ pub fn findContours(src: Mat, mode: RetrievalMode, method: ContourApproximationM
 /// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a
 ///
 pub fn findContoursWithParams(src: Mat, hierarchy: *Mat, mode: RetrievalMode, method: ContourApproximationMode) !PointsVector {
-    return try PointsVector.initFromC(c.FindContours(src.ptr, hierarchy.*.ptr, @enumToInt(mode), @enumToInt(method)));
+    return try PointsVector.initFromC(c.FindContours(src.toC(), hierarchy.*.toC(), @enumToInt(mode), @enumToInt(method)));
 }
 
 pub fn pointPolygonTest(pts: PointVector, pt: Point, measure_dist: bool) f64 {
@@ -577,8 +685,14 @@ pub fn scharr(src: Mat, dst: *Mat, d_depth: i32, dx: i32, dy: i32, scale: f64, d
     _ = c.Scharr(src.ptr, dst.*.ptr, d_depth, dx, dy, scale, delta, @enumToInt(border_type));
 }
 
-pub fn getStructuringElement(shape: i32, ksize: Size) !Mat {
-    return try Mat.initFromC(c.GetStructuringElement(shape, ksize.toC()));
+/// GetStructuringElement returns a structuring element of the specified size
+/// and shape for morphological operations.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc
+///
+pub fn getStructuringElement(shape: MorphShape, ksize: Size) !Mat {
+    return try Mat.initFromC(c.GetStructuringElement(@enumToInt(shape), ksize.toC()));
 }
 pub fn morphologyDefaultBorderValue() Scalar {
     return Scalar.fromC(c.MorphologyDefaultBorderValue());
@@ -648,12 +762,17 @@ pub fn integral(src: Mat, sum: *Mat, sqsum: Mat, tilted: Mat) void {
     _ = c.Integral(src.ptr, sum.*.ptr, sqsum.ptr, tilted.ptr);
 }
 
-pub fn threshold(src: Mat, dst: *Mat, thresh: f64, maxvalue: f64, typ: i32) f64 {
-    return c.Threshold(src.ptr, dst.*.ptr, thresh, maxvalue, typ);
+/// Threshold applies a fixed-level threshold to each array element.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/3.3.0/d7/d1b/group__imgproc__misc.html#gae8a4a146d1ca78c626a53577199e9c57
+///
+pub fn threshold(src: Mat, dst: *Mat, thresh: f64, maxvalue: f64, typ: ThresholdType) f64 {
+    return c.Threshold(src.ptr, dst.*.ptr, thresh, maxvalue, typ.toNum());
 }
 
 pub fn adaptiveThreshold(src: Mat, dst: *Mat, max_value: f64, adaptive_type: AdaptiveThresholdType, type_: ThresholdType, block_size: i32, C: f64) void {
-    _ = c.AdaptiveThreshold(src.ptr, dst.*.ptr, max_value, @enumToInt(adaptive_type), @enumToInt(type_), block_size, C);
+    _ = c.AdaptiveThreshold(src.ptr, dst.*.ptr, max_value, @enumToInt(adaptive_type), type_.toNum(), block_size, C);
 }
 // ArrowedLine draws a arrow segment pointing from the first point
 // to the second one.
@@ -860,22 +979,22 @@ pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_repr
 // pub fn drawContours(src: Mat, contours: PointsVector, contour_idx: c_int, color: Color, thickness: c_int) void;
 // pub fn drawContoursWithParams(src: Mat, contours: PointsVector, contourIdx: c_int, color: Scalar, thickness: c_int, lineType: c_int, hierarchy: Mat, maxLevel: c_int, offset: Point) void;
 
-// Sobel calculates the first, second, third, or mixed image derivatives using an extended Sobel operator
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gacea54f142e81b6758cb6f375ce782c8d
-//
+/// Sobel calculates the first, second, third, or mixed image derivatives using an extended Sobel operator
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gacea54f142e81b6758cb6f375ce782c8d
+///
 pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: i32, dy: i32, ksize: i32, scale: f64, delta: f64, border_type: BorderType) void {
     _ = c.Sobel(src.ptr, dst.*.ptr, @enumToInt(ddepth), dx, dy, ksize, scale, delta, @enumToInt(border_type));
 }
 
-// SpatialGradient calculates the first order image derivative in both x and y using a Sobel operator.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga405d03b20c782b65a4daf54d233239a2
-//
-pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: i32, border_type: BorderType) void {
-    _ = c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, ksize, @enumToInt(border_type));
+/// SpatialGradient calculates the first order image derivative in both x and y using a Sobel operator.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga405d03b20c782b65a4daf54d233239a2
+///
+pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: MatType, border_type: BorderType) void {
+    _ = c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, @enumToInt(ksize), @enumToInt(border_type));
 }
 
 // Remap applies a generic geometrical transformation to an image.
@@ -1055,7 +1174,7 @@ test "imgproc" {
 //*    pub extern fn ContourArea(pts: PointVector) f64;
 //*    pub extern fn MinAreaRect(pts: PointVector) struct_RotatedRect;
 //*    pub extern fn FitEllipse(pts: PointVector) struct_RotatedRect;
-//     pub extern fn MinEnclosingCircle(pts: PointVector, center: [*c]Point2f, radius: [*c]f32) void;
+//*    pub extern fn MinEnclosingCircle(pts: PointVector, center: [*c]Point2f, radius: [*c]f32) void;
 //*    pub extern fn FindContours(src: Mat, hierarchy: Mat, mode: c_int, method: c_int) PointsVector;
 //*    pub extern fn PointPolygonTest(pts: PointVector, pt: Point, measureDist: bool) f64;
 //*    pub extern fn ConnectedComponents(src: Mat, dst: Mat, connectivity: c_int, ltype: c_int, ccltype: c_int) c_int;
