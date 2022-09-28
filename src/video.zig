@@ -48,7 +48,7 @@ const BackgroundSubtractorMOG2 = struct {
     /// https://docs.opencv.org/master/de/de1/group__video__motion.html#ga2beb2dee7a073809ccec60f145b6b29c
     /// https://docs.opencv.org/master/d7/d7b/classcv_1_1BackgroundSubtractorMOG2.html
     ///
-    pub fn initWithPatams(history: i32, var_threshold: f64, detect_shadows: bool) !Self {
+    pub fn initWithParams(history: i32, var_threshold: f64, detect_shadows: bool) !Self {
         const ptr = c.BackgroundSubtractorMOG2_CreateWithParams(history, var_threshold, detect_shadows);
         return try initFromC(ptr);
     }
@@ -400,7 +400,7 @@ test "video BackgroundSubtractorMOG2 with params" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    var mog2 = try BackgroundSubtractorMOG2.initWithPatams(250, 8, false);
+    var mog2 = try BackgroundSubtractorMOG2.initWithParams(250, 8, false);
     defer mog2.deinit();
 
     mog2.apply(img, &dst);
