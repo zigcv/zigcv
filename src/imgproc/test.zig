@@ -387,8 +387,8 @@ test "imgproc pyrup" {
 
     imgproc.pyrUp(img, &dst, Size.init(dst.cols(), dst.rows()), imgproc.BorderType.default);
     try testing.expectEqual(false, dst.isEmpty());
-    try testing.expect(@fabs(@intToFloat(f64, (2*img.cols() -  dst.cols()))) < 2.0);
-    try testing.expect(@fabs(@intToFloat(f64, (2*img.rows() -  dst.rows()))) < 2.0);
+    try testing.expect(@fabs(@intToFloat(f64, (2 * img.cols() - dst.cols()))) < 2.0);
+    try testing.expect(@fabs(@intToFloat(f64, (2 * img.rows() - dst.rows()))) < 2.0);
 }
 
 test "imgproc putText" {
