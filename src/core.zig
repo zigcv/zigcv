@@ -566,9 +566,9 @@ pub const Rect = struct {
 
 pub const Rects = std.ArrayList(Rect);
 
-pub const RotatedRect = extern struct {
+pub const RotatedRect = struct {
     pts: c.Points,
-    boundingRect: Rect,
+    bounding_rect: Rect,
     center: Point,
     size: Size,
     angle: f64,
@@ -577,14 +577,14 @@ pub const RotatedRect = extern struct {
 
     pub fn init(
         pts: c.Points,
-        boundingRect: Rect,
+        bounding_rect: Rect,
         center: Point,
         size: Size,
         angle: f64,
     ) Self {
         return .{
             .pts = pts,
-            .boundingRect = boundingRect,
+            .bounding_rect = bounding_rect,
             .center = center,
             .size = size,
             .angle = angle,
@@ -594,9 +594,9 @@ pub const RotatedRect = extern struct {
     pub fn initFromC(r: c.RotatedRect) Self {
         return .{
             .pts = r.pts,
-            .boundingRect = r.boundingRect,
-            .center = Point.fromC(r.center),
-            .size = Size.fromC(r.size),
+            .bounding_rect = Rect.initFromC(r.boundingRect),
+            .center = Point.initFromC(r.center),
+            .size = Size.initFromC(r.size),
             .angle = r.angle,
         };
     }
@@ -604,7 +604,7 @@ pub const RotatedRect = extern struct {
     pub fn toC(self: Self) c.RotatedRect {
         return .{
             .pts = self.pts,
-            .boundingRect = self.boundingRect.toC(),
+            .boundingRect = self.bounding_rect.toC(),
             .center = self.center.toC(),
             .size = self.size.toC(),
             .angle = self.angle,
