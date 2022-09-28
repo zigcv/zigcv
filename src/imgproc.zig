@@ -141,6 +141,7 @@ pub const LineType = enum(i6) {
     line_aa = 16,
 };
 
+// TODO struct
 pub const HersheyFont = enum(u5) {
     /// FontHersheySimplex is normal size sans-serif font.
     simplex = 0,
@@ -164,6 +165,7 @@ pub const HersheyFont = enum(u5) {
     italic = 16,
 };
 
+// TODO struct
 pub const InterpolationFlag = enum(u5) {
     /// InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
     nearest_neighbor = 0,
@@ -454,6 +456,16 @@ pub fn convexityDefects(points: PointVector, hull: Mat, result: *Mat) void {
     _ = c.ConvexityDefects(points.toC(), hull.ptr, result.*.ptr);
 }
 
+/// BilateralFilter applies a bilateral filter to an image.
+///
+/// Bilateral filtering is described here:
+/// http://www.dai.ed.ac.uk/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html
+///
+/// BilateralFilter can reduce unwanted noise very well while keeping edges
+/// fairly sharp. However, it is very slow compared to most filters.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga9d7064d478c95d60003cf839430737ed
 pub fn bilateralFilter(src: Mat, dst: *Mat, d: i32, sc: f64, ss: f64) void {
     _ = c.BilateralFilter(src.ptr, dst.*.ptr, d, sc, ss);
 }
@@ -510,10 +522,21 @@ pub fn dilateWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterati
 pub fn distanceTransform(src: Mat, dst: *Mat, labels: *Mat, distance_type: DistanceType, mask_size: DistanceTransformMask, label_type: DistanceTransformLabelType) void {
     _ = c.DistanceTransform(src.ptr, dst.*.ptr, labels.*.ptr, @enumToInt(distance_type), @enumToInt(mask_size), @enumToInt(label_type));
 }
+
+/// Erode erodes an image by using a specific structuring element.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaeb1e0c1033e3f6b891a25d0511362aeb
+///
 pub fn erode(src: Mat, dst: *Mat, kernel: Mat) void {
     _ = c.Erode(src.ptr, dst.*.ptr, kernel.ptr);
 }
 
+/// ErodeWithParams erodes an image by using a specific structuring element.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaeb1e0c1033e3f6b891a25d0511362aeb
+///
 pub fn erodeWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterations: i32, border_type: i32) void {
     _ = c.ErodeWithParams(src.ptr, dst.*.ptr, kernel.ptr, anchor.toC(), iterations, border_type);
 }
@@ -555,22 +578,49 @@ pub fn pyrUp(src: Mat, dst: *Mat, dstsize: Size, border_type: BorderType) void {
     _ = c.PyrUp(src.ptr, dst.*.ptr, dstsize.toC(), @enumToInt(border_type));
 }
 
+/// BoundingRect calculates the up-right bounding rectangle of a point set.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/3.3.0/d3/dc0/group__imgproc__shape.html#gacb413ddce8e48ff3ca61ed7cf626a366
+///
 pub fn boundingRect(pts: PointVector) Rect {
-    return Rect.fromC(c.BoundingRect(pts.toC()));
+    return Rect.initFromC(c.BoundingRect(pts.toC()));
 }
+
+/// BoxPoints finds the four vertices of a rotated rect. Useful to draw the rotated rectangle.
+///
+/// For further Details, please see:
+/// https://docs.opencv.org/3.3.0/d3/dc0/group__imgproc__shape.html#gaf78d467e024b4d7936cf9397185d2f5c
+///
 pub fn boxPoints(rect: RotatedRect, box_pts: *Mat) void {
     _ = c.BoxPoints(rect.toC(), box_pts.*.ptr);
 }
 
+/// ContourArea calculates a contour area.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/3.3.0/d3/dc0/group__imgproc__shape.html#ga2c759ed9f497d4a618048a2f56dc97f1
+///
 pub fn contourArea(pts: PointVector) f64 {
     return c.ContourArea(pts.toC());
 }
+
+/// MinAreaRect finds a rotated rectangle of the minimum area enclosing the input 2D point set.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga3d476a3417130ae5154aea421ca7ead9
+///
 pub fn minAreaRect(pts: PointVector) RotatedRect {
-    return RotatedRect.fromC(c.MinAreaRect(pts.toC()));
+    return RotatedRect.initFromC(c.MinAreaRect(pts.toC()));
 }
 
+/// FitEllipse Fits an ellipse around a set of 2D points.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaf259efaad93098103d6c27b9e4900ffa
+///
 pub fn fitEllipse(pts: PointVector) RotatedRect {
-    return RotatedRect.fromC(c.FitEllipse(pts.toC()));
+    return RotatedRect.initFromC(c.FitEllipse(pts.toC()));
 }
 
 /// MinEnclosingCircle finds a circle of the minimum area enclosing the input 2D point set.
@@ -606,6 +656,11 @@ pub fn findContoursWithParams(src: Mat, hierarchy: *Mat, mode: RetrievalMode, me
     return try PointsVector.initFromC(c.FindContours(src.toC(), hierarchy.*.toC(), @enumToInt(mode), @enumToInt(method)));
 }
 
+/// PointPolygonTest performs a point-in-contour test.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga1a539e8db2135af2566103705d7a5722
+///
 pub fn pointPolygonTest(pts: PointVector, pt: Point, measure_dist: bool) f64 {
     return c.PointPolygonTest(pts.toC(), pt.toC(), measure_dist);
 }
@@ -625,64 +680,86 @@ pub fn connectedComponents(src: Mat, labels: *Mat) i32 {
     );
 }
 
-// ConnectedComponents computes the connected components labeled image of boolean image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
-//
+/// ConnectedComponents computes the connected components labeled image of boolean image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
+///
 pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) i32 {
     return c.ConnectedComponents(src.ptr, labels.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
-// ConnectedComponentsWithStats computes the connected components labeled image of boolean
-// image and also produces a statistics output for each label.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
-//
-pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsType) i32 {
+/// ConnectedComponentsWithStats computes the connected components labeled image of boolean
+/// image and also produces a statistics output for each label.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
+///
+pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat) i32 {
+    return c.ConnectedComponentsWithStats(
+        src.ptr,
+        labels.*.ptr,
+        stats.*.ptr,
+        centroids.*.ptr,
+        8,
+        @enumToInt(MatType.cv32sc1),
+        @enumToInt(ConnectedComponentsAlgorithmType.default),
+    );
+}
+
+/// ConnectedComponentsWithStats computes the connected components labeled image of boolean
+/// image and also produces a statistics output for each label.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
+///
+pub fn connectedComponentsWithStatsWithParams(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) i32 {
     return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
 }
 
-// GaussianBlur blurs an image Mat using a Gaussian filter.
-// The function convolves the src Mat image into the dst Mat using
-// the specified Gaussian kernel params.
-//
-// For further details, please see:
-// http://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaabe8c836e97159a9193fb0b11ac52cf1
-//
+/// GaussianBlur blurs an image Mat using a Gaussian filter.
+/// The function convolves the src Mat image into the dst Mat using
+/// the specified Gaussian kernel params.
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaabe8c836e97159a9193fb0b11ac52cf1
+///
 pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, border_type: BorderType) void {
     _ = c.GaussianBlur(src.ptr, dst.*.ptr, ps.toC(), sigma_x, sigma_y, @enumToInt(border_type));
 }
 
-// GetGaussianKernel returns Gaussian filter coefficients.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
+/// GetGaussianKernel returns Gaussian filter coefficients.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernel(ksize: i32, sigma: f64) !Mat {
     return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.cv64fc1)));
 }
 
+/// GetGaussianKernelWithParams returns Gaussian filter coefficients.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernelWithParams(ksize: i32, sigma: f64, ktype: MatType) !Mat {
     return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(ktype)));
 }
 
-// Laplacian calculates the Laplacian of an image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gad78703e4c8fe703d479c1860d76429e6
-//
-pub fn laplacian(src: Mat, dst: *Mat, d_depth: i32, k_size: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    _ = c.Laplacian(src.ptr, dst.*.ptr, d_depth, k_size, scale, delta, @enumToInt(border_type));
+/// Laplacian calculates the Laplacian of an image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gad78703e4c8fe703d479c1860d76429e6
+///
+pub fn laplacian(src: Mat, dst: *Mat, d_depth: MatType, k_size: i32, scale: f64, delta: f64, border_type: BorderType) void {
+    _ = c.Laplacian(src.ptr, dst.*.ptr, @enumToInt(d_depth), k_size, scale, delta, @enumToInt(border_type));
 }
 
-// Scharr calculates the first x- or y- image derivative using Scharr operator.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaa13106761eedf14798f37aa2d60404c9
-//
-pub fn scharr(src: Mat, dst: *Mat, d_depth: i32, dx: i32, dy: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    _ = c.Scharr(src.ptr, dst.*.ptr, d_depth, dx, dy, scale, delta, @enumToInt(border_type));
+/// Scharr calculates the first x- or y- image derivative using Scharr operator.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaa13106761eedf14798f37aa2d60404c9
+///
+pub fn scharr(src: Mat, dst: *Mat, d_depth: MatType, dx: i32, dy: i32, scale: f64, delta: f64, border_type: BorderType) void {
+    _ = c.Scharr(src.ptr, dst.*.ptr, @enumToInt(d_depth), dx, dy, scale, delta, @enumToInt(border_type));
 }
 
 /// GetStructuringElement returns a structuring element of the specified size
@@ -694,22 +771,52 @@ pub fn scharr(src: Mat, dst: *Mat, d_depth: i32, dx: i32, dy: i32, scale: f64, d
 pub fn getStructuringElement(shape: MorphShape, ksize: Size) !Mat {
     return try Mat.initFromC(c.GetStructuringElement(@enumToInt(shape), ksize.toC()));
 }
+
+/// MorphologyDefaultBorder returns "magic" border value for erosion and dilation.
+/// It is automatically transformed to Scalar::all(-DBL_MAX) for dilation.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga94756fad83d9d24d29c9bf478558c40a
+///
 pub fn morphologyDefaultBorderValue() Scalar {
-    return Scalar.fromC(c.MorphologyDefaultBorderValue());
+    return Scalar.initFromC(c.MorphologyDefaultBorderValue());
 }
 
-pub fn morphologyEx(src: Mat, dst: *Mat, op: i32, kernel: Mat) void {
-    _ = c.MorphologyEx(src.ptr, dst.*.ptr, op, kernel.ptr);
+/// MorphologyEx performs advanced morphological transformations.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f
+pub fn morphologyEx(src: Mat, dst: *Mat, op: MorphType, kernel: Mat) void {
+    _ = c.MorphologyEx(src.ptr, dst.*.ptr, @enumToInt(op), kernel.ptr);
 }
 
-pub fn morphologyExWithParams(src: Mat, dst: *Mat, op: i32, kernel: Mat, pt: Point, iterations: i32, border_type: BorderType) void {
-    _ = c.MorphologyExWithParams(src.ptr, dst.*.ptr, op, kernel.ptr, pt.toC(), iterations, @enumToInt(border_type));
+/// MorphologyExWithParams performs advanced morphological transformations.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f
+pub fn morphologyExWithParams(src: Mat, dst: *Mat, op: MorphType, kernel: Mat, iterations: i32, border_type: BorderType) void {
+    const c_pt = Point.init(-1, -1).toC();
+    _ = c.MorphologyExWithParams(src.ptr, dst.*.ptr, @enumToInt(op), kernel.ptr, c_pt, iterations, @enumToInt(border_type));
 }
 
+/// MedianBlur blurs an image using the median filter.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga564869aa33e58769b4469101aac458f9
 pub fn medianBlur(src: Mat, dst: *Mat, ksize: i32) void {
     _ = c.MedianBlur(src.ptr, dst.*.ptr, ksize);
 }
 
+/// Canny finds edges in an image using the Canny algorithm.
+/// The function finds edges in the input image image and marks
+/// them in the output map edges using the Canny algorithm.
+/// The smallest value between threshold1 and threshold2 is used
+/// for edge linking. The largest value is used to
+/// find initial segments of strong edges.
+/// See http://en.wikipedia.org/wiki/Canny_edge_detector
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga04723e007ed888ddf11d9ba04e2232de
 pub fn canny(src: Mat, edges: *Mat, t1: f64, t2: f64) void {
     _ = c.Canny(src.ptr, edges.*.ptr, t1, t2);
 }
@@ -734,32 +841,93 @@ pub fn goodFeaturesToTrack(img: Mat, corners: *Mat, maxCorners: i32, quality: f6
     _ = c.GoodFeaturesToTrack(img.ptr, corners.*.ptr, maxCorners, quality, minDist);
 }
 
-pub fn grabCut(img: Mat, mask: Mat, rect: Rect, bgd_model: *Mat, fgd_model: *Mat, iter_count: i32, mode: GrabCutMode) void {
+/// Grabcut runs the GrabCut algorithm.
+/// The function implements the GrabCut image segmentation algorithm.
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga909c1dda50efcbeaa3ce126be862b37f
+pub fn grabCut(img: Mat, mask: *Mat, rect: Rect, bgd_model: *Mat, fgd_model: *Mat, iter_count: i32, mode: GrabCutMode) void {
     _ = c.GrabCut(img.ptr, mask.*.ptr, rect.toC(), bgd_model.*.ptr, fgd_model.*.ptr, iter_count, @enumToInt(mode));
 }
 
+/// HoughCircles finds circles in a grayscale image using the Hough transform.
+/// The only "method" currently supported is HoughGradient. If you want to pass
+/// more parameters, please see `HoughCirclesWithParams`.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
 pub fn houghCircles(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dist: f64) void {
     _ = c.HoughCircles(src.ptr, circles.*.ptr, @enumToInt(method), dp, min_dist);
 }
 
+/// HoughCirclesWithParams finds circles in a grayscale image using the Hough
+/// transform. The only "method" currently supported is HoughGradient.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
 pub fn houghCirclesWithParams(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dist: f64, param1: f64, param2: f64, min_radius: i32, max_radius: i32) void {
     _ = c.HoughCirclesWithParams(src.ptr, circles.*.ptr, @enumToInt(method), dp, min_dist, param1, param2, min_radius, max_radius);
 }
 
+/// HoughLines implements the standard or standard multi-scale Hough transform
+/// algorithm for line detection. For a good explanation of Hough transform, see:
+/// http://homepages.inf.ed.ac.uk/rbf/HIPR2/hough.htm
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga46b4e588934f6c8dfd509cc6e0e4545a
 pub fn houghLines(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: i32) void {
     _ = c.HoughLines(src.ptr, lines.*.ptr, rho, theta, threshold_int);
 }
 
+/// HoughLinesP implements the probabilistic Hough transform
+/// algorithm for line detection. For a good explanation of Hough transform, see:
+/// http://homepages.inf.ed.ac.uk/rbf/HIPR2/hough.htm
+///
+/// For further details, please see:
+/// http://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga8618180a5948286384e3b7ca02f6feeb
 pub fn houghLinesP(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: i32) void {
     _ = c.HoughLinesP(src.ptr, lines.*.ptr, rho, theta, threshold_int);
 }
-
-// Integral calculates one or more integral images for the source image.
-// For further details, please see:
-// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga97b87bec26908237e8ba0f6e96d23e28
+pub fn houghLinesPWithParams(src: Mat, lines: *Mat, rho: f64, theta: f64, threshold_int: i32, minLineLength: f64, maxLineGap: f64) void {
+    _ = c.HoughLinesPWithParams(src.ptr, lines.*.ptr, rho, theta, threshold_int, minLineLength, maxLineGap);
+}
+// HoughLinesPointSet implements the Hough transform algorithm for line
+// detection on a set of points. For a good explanation of Hough transform, see:
+// http://homepages.inf.ed.ac.uk/rbf/HIPR2/hough.htm
 //
-pub fn integral(src: Mat, sum: *Mat, sqsum: Mat, tilted: Mat) void {
-    _ = c.Integral(src.ptr, sum.*.ptr, sqsum.ptr, tilted.ptr);
+// For further details, please see:
+// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga2858ef61b4e47d1919facac2152a160e
+pub fn houghLinesPointSet(
+    points: Mat,
+    lines: *Mat,
+    lines_max: c_int,
+    threshold_int: i32,
+    min_rho: f64,
+    max_rho: f64,
+    rho_step: f64,
+    min_theta: f64,
+    max_theta: f64,
+    theta_step: f64,
+) void {
+    _ = c.HoughLinesPointSet(
+        points.ptr,
+        lines.*.ptr,
+        lines_max,
+        threshold_int,
+        min_rho,
+        max_rho,
+        rho_step,
+        min_theta,
+        max_theta,
+        theta_step,
+    );
+}
+
+/// Integral calculates one or more integral images for the source image.
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga97b87bec26908237e8ba0f6e96d23e28
+///
+pub fn integral(src: Mat, sum: *Mat, sqsum: *Mat, tilted: *Mat) void {
+    _ = c.Integral(src.ptr, sum.*.ptr, sqsum.*.ptr, tilted.*.ptr);
 }
 
 /// Threshold applies a fixed-level threshold to each array element.

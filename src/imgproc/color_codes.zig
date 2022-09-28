@@ -12,6 +12,7 @@ pub const ColorConversionCode = enum(u8) {
 
     /// ColorBGRToRGBA converts from BGR to RGB with alpha channel.
     bgr_to_rgba = 2,
+
     /// ColorRGBAToBGR converts from RGB with alpha to BGR color space.
     rgba_to_bgr = 3,
 
