@@ -492,8 +492,14 @@ test "objdetect Multi QRCodeDetector" {
     try testing.expectEqual(@as(usize, 2), res2.decoded.items.len);
 
     // TODO: some environments have issues with this test
-    testing.expectEqualStrings("foo", res2.decoded.items[0]) catch |e| std.debug.print("error:\t{any}\n", .{e});
-    testing.expectEqualStrings("bar", res2.decoded.items[1]) catch |e| std.debug.print("error:\t{any}\n", .{e});
+    testing.expectEqualStrings("foo", res2.decoded.items[0]) catch |e| {
+        std.debug.print("error:\t{any}\n", .{e});
+        return error.SkipZigTest;
+    };
+    testing.expectEqualStrings("bar", res2.decoded.items[1]) catch |e| {
+        std.debug.print("error:\t{any}\n", .{e});
+        return error.SkipZigTest;
+    };
 }
 
 //*    implementation done
