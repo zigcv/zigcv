@@ -8,8 +8,11 @@ const Size = core.Size;
 const Color = core.Color;
 const Scalar = core.Scalar;
 const Point = core.Point;
+const Point2f = core.Point2f;
 const Rect = core.Rect;
 const PointVector = core.PointVector;
+const PointsVector = core.PointsVector;
+const Point2fVector = core.Point2fVector;
 
 const img_dir = "./libs/gocv/images/";
 const face_detect_filepath = img_dir ++ "face-detect.jpg";
@@ -1366,13 +1369,14 @@ test "imgprc getRotationMatrix2D" {
         } },
     };
     for (tests) |tt| {
-        const got = imgproc.getRotationMatrix2D(tt.args.center, tt.args.angle, tt.args.scale);
+        var got = try imgproc.getRotationMatrix2D(tt.args.center, tt.args.angle, tt.args.scale);
+        defer got.deinit();
         {
             var i: usize = 0;
             while (i < got.rows()) : (i += 1) {
                 var j: usize = 0;
                 while (j < got.cols()) : (j += 1) {
-                    try testing.expectEqual(tt.want[i][j], got.at(f64, i, j));
+                    try testing.expectEqual(tt.want[i][j], got.get(f64, i, j));
                 }
             }
         }
@@ -1413,6 +1417,14 @@ test "imgproc wrapaffineWithParams" {
 
     var result = dst.norm(.l2);
     try testing.expectEqual(@as(f64, 0), result);
+}
+
+test "imgproc clipLine" {
+    var pt1 = Point.init(5, 5);
+    var pt2 = Point.init(5, 5);
+    var rect = Size.init(20, 20);
+    var ok = imgproc.clipLine(rect, pt1, pt2);
+    try testing.expectEqual(true, ok);
 }
 
 test "imgproc watershed" {
@@ -1485,6 +1497,502 @@ test "imgproc applyCustomColorMap" {
     try testing.expectEqual(@as(f64, 0), result);
 }
 
+test "imgproc getPerspectiveTransform" {
+    var src = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 5),
+        Point.init(10, 10),
+        Point.init(5, 10),
+    };
+    var pvsrc = try PointVector.initFromPoints(src[0..], testing.allocator);
+    defer pvsrc.deinit();
+
+    var dst = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 0),
+        Point.init(10, 10),
+        Point.init(0, 10),
+    };
+    var pvdst = try PointVector.initFromPoints(dst[0..], testing.allocator);
+    defer pvdst.deinit();
+
+    var m = try imgproc.getPerspectiveTransform(pvsrc, pvdst);
+    defer m.deinit();
+
+    try testing.expectEqual(@as(i32, 3), m.cols());
+    try testing.expectEqual(@as(i32, 3), m.rows());
+}
+
+test "imgproc getPerspectiveTransform2f" {
+    var src = [_]Point2f{
+        Point2f.init(0, 0),
+        Point2f.init(10.5, 5.5),
+        Point2f.init(10.5, 10.5),
+        Point2f.init(5.5, 10.5),
+    };
+    var pvsrc = try Point2fVector.initFromPoints(src[0..], testing.allocator);
+    defer pvsrc.deinit();
+
+    var dst = [_]Point2f{
+        Point2f.init(0, 0),
+        Point2f.init(590.20, 24.12),
+        Point2f.init(100.12, 150.21),
+        Point2f.init(0, 10),
+    };
+    var pvdst = try Point2fVector.initFromPoints(dst[0..], testing.allocator);
+    defer pvdst.deinit();
+
+    var m = try imgproc.getPerspectiveTransform2f(pvsrc, pvdst);
+    defer m.deinit();
+
+    try testing.expectEqual(@as(i32, 3), m.cols());
+    try testing.expectEqual(@as(i32, 3), m.rows());
+}
+
+test "imgproc getAffineTransform2f" {
+    var src = [_]Point2f{
+        Point2f.init(0, 0),
+        Point2f.init(10.5, 5.5),
+        Point2f.init(10.5, 10.5),
+    };
+    var pvsrc = try Point2fVector.initFromPoints(src[0..], testing.allocator);
+    defer pvsrc.deinit();
+
+    var dst = [_]Point2f{
+        Point2f.init(0, 0),
+        Point2f.init(590.20, 24.12),
+        Point2f.init(100.12, 150.21),
+    };
+    var pvdst = try Point2fVector.initFromPoints(dst[0..], testing.allocator);
+    defer pvdst.deinit();
+
+    var m = try imgproc.getAffineTransform2f(pvsrc, pvdst);
+    defer m.deinit();
+
+    try testing.expectEqual(@as(i32, 3), m.cols());
+    try testing.expectEqual(@as(i32, 2), m.rows());
+}
+
+test "imgproc getAffineTransform2f" {
+    var src = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 5),
+        Point.init(10, 10),
+    };
+    var pvsrc = try PointVector.initFromPoints(src[0..], testing.allocator);
+    defer pvsrc.deinit();
+
+    var dst = [_]Point{
+        Point.init(0, 0),
+        Point.init(590, 24),
+        Point.init(100, 150),
+    };
+    var pvdst = try PointVector.initFromPoints(dst[0..], testing.allocator);
+    defer pvdst.deinit();
+
+    var m = try imgproc.getAffineTransform(pvsrc, pvdst);
+    defer m.deinit();
+
+    try testing.expectEqual(@as(i32, 3), m.cols());
+    try testing.expectEqual(@as(i32, 2), m.rows());
+}
+
+test "imgproc findHomography" {
+    var src = try Mat.initSize(4, 1, .cv64fc2);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(4, 1, .cv64fc2);
+    defer dst.deinit();
+
+    var srcPoints = [_]Point2f{
+        Point2f.init(193, 932),
+        Point2f.init(191, 378),
+        Point2f.init(1497, 183),
+        Point2f.init(1889, 681),
+    };
+
+    var dstPoints = [_]Point2f{
+        Point2f.init(51.51206544281359, -0.10425475260813055),
+        Point2f.init(51.51211051314331, -0.10437947532732306),
+        Point2f.init(51.512222354139325, -0.10437679311830816),
+        Point2f.init(51.51214828037607, -0.1042212249954444),
+    };
+
+    for (srcPoints) |point, i| {
+        src.set(f64, i, 0, @as(f64, point.x));
+        src.set(f64, i, 1, @as(f64, point.y));
+    }
+
+    for (dstPoints) |point, i| {
+        dst.set(f64, i, 0, @as(f64, point.x));
+        dst.set(f64, i, 1, @as(f64, point.y));
+    }
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+
+    var m = try imgproc.findHomography(src, &dst, .all_points, 3, &mask, 2000, 0.995);
+    defer m.deinit();
+
+    var pvsrc = try Point2fVector.initFromPoints(srcPoints[0..], testing.allocator);
+    defer pvsrc.deinit();
+
+    var pvdst = try Point2fVector.initFromPoints(dstPoints[0..], testing.allocator);
+    defer pvdst.deinit();
+
+    var m2 = try imgproc.getPerspectiveTransform2f(pvsrc, pvdst);
+    defer m2.deinit();
+
+    {
+        var row: usize = 0;
+        while (row < 3) : (row += 1) {
+            var col: usize = 0;
+            while (col < 3) : (col += 1) {
+                if (@fabs(m.get(f64, row, col) - m2.get(f64, row, col)) > 0.002) {
+                    try testing.expectEqual(@as(f64, 0), @fabs((m.get(f64, row, col) - m2.get(f64, row, col))));
+                }
+            }
+        }
+    }
+}
+
+test "imgproc warpPerspective" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer img.deinit();
+
+    var w = img.cols();
+    var h = img.rows();
+
+    var s = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 5),
+        Point.init(10, 10),
+        Point.init(5, 10),
+    };
+
+    var pvs = try PointVector.initFromPoints(s[0..], testing.allocator);
+    defer pvs.deinit();
+
+    var d = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 0),
+        Point.init(10, 10),
+        Point.init(0, 10),
+    };
+
+    var pvd = try PointVector.initFromPoints(d[0..], testing.allocator);
+    defer pvd.deinit();
+
+    var m = try imgproc.getPerspectiveTransform(pvs, pvd);
+    defer m.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    imgproc.warpPerspective(img, &dst, m, Size.init(w, h));
+
+    try testing.expectEqual(w, dst.cols());
+    try testing.expectEqual(h, dst.rows());
+}
+
+test "imgproc wrapPerspectiveWithParams" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    var w = img.cols();
+    var h = img.rows();
+
+    var s = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 5),
+        Point.init(10, 10),
+        Point.init(5, 10),
+    };
+
+    var pvs = try PointVector.initFromPoints(s[0..], testing.allocator);
+    defer pvs.deinit();
+
+    var d = [_]Point{
+        Point.init(0, 0),
+        Point.init(10, 0),
+        Point.init(10, 10),
+        Point.init(0, 10),
+    };
+
+    var pvd = try PointVector.initFromPoints(d[0..], testing.allocator);
+    defer pvd.deinit();
+
+    var m = try imgproc.getPerspectiveTransform(pvs, pvd);
+    defer m.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    imgproc.warpPerspectiveWithParams(img, &dst, m, Size.init(w, h), .{ .type = .linear }, .{ .type = .constant }, Color{});
+
+    try testing.expectEqual(w, dst.cols());
+    try testing.expectEqual(h, dst.rows());
+}
+
+test "imgproc drawContours" {
+    var img = try Mat.initSize(100, 200, .cv8uc1);
+    defer img.deinit();
+
+    // Draw rectangle
+    var white = Color{ .r = 255, .g = 255, .b = 255, .a = 255 };
+    imgproc.rectangle(&img, Rect.init(125, 25, 175, 75), white, 1);
+
+    var contours = try imgproc.findContours(img, .external, .simple);
+    defer contours.deinit();
+
+    try testing.expectEqual(@as(u8, 0), img.get(u8, 23, 123));
+    try testing.expectEqual(@as(u8, 206), img.get(u8, 25, 125));
+
+    imgproc.drawContours(&img, contours, -1, white, 2);
+
+    // contour should be drawn with thickness = 2
+    try testing.expectEqual(@as(u8, 255), img.get(u8, 24, 124));
+    try testing.expectEqual(@as(u8, 255), img.get(u8, 25, 125));
+}
+
+test "imgproc drawContoursWithParams" {
+    var img = try Mat.initSize(200, 200, .cv8uc1);
+    defer img.deinit();
+
+    // Draw circle
+    var white = Color{ .r = 255, .g = 255, .b = 255, .a = 255 };
+    var black = Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
+    imgproc.circle(&img, Point.init(100, 100), 80, white, -1);
+    imgproc.circle(&img, Point.init(100, 100), 55, black, -1);
+    imgproc.circle(&img, Point.init(100, 100), 30, white, -1);
+
+    var hierarchy = try Mat.init();
+    defer hierarchy.deinit();
+    var contours = try imgproc.findContoursWithParams(img, &hierarchy, .tree, .simple);
+    defer contours.deinit();
+
+    // Draw contours by different line-type and assert value
+    const cases = [_]struct {
+        line_type: imgproc.LineType,
+        expect_uchar: u8,
+    }{
+        .{
+            .line_type = .line4,
+            .expect_uchar = 255,
+        },
+        .{
+            .line_type = .line8,
+            .expect_uchar = 0,
+        },
+        .{
+            .line_type = .line_aa,
+            .expect_uchar = 68,
+        },
+    };
+    for (cases) |c| {
+        var bg = try Mat.initSize(img.rows(), img.cols(), .cv8uc1);
+        defer bg.deinit();
+
+        imgproc.drawContoursWithParams(&bg, contours, -1, white, 1, c.line_type, hierarchy, 0, Point.init(0, 0));
+
+        if (bg.get(u8, 22, 88) != c.expect_uchar) {
+            try testing.expectEqual(c.expect_uchar, bg.get(u8, 22, 88));
+        }
+    }
+}
+
+test "imgproc ellipse" {
+    const tests = [_]struct {
+        name: []const u8,
+        thickness: i32,
+        point: Point,
+    }{
+        .{
+            .name = "Without filling",
+            .thickness = 2,
+            .point = Point.init(24, 50),
+        },
+        .{
+            .name = "With filling",
+            .thickness = -1,
+            .point = Point.init(55, 47),
+        },
+    };
+
+    for (tests) |tc| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+
+        var white = Color{ .r = 255, .g = 255, .b = 255, .a = 255 };
+        imgproc.ellipse(&img, Point.init(50, 50), Point.init(25, 25), 0, 0, 360, white, tc.thickness);
+
+        try testing.expectEqual(@as(u8, 255), img.get(u8, @intCast(usize, tc.point.x), @intCast(usize, tc.point.y)));
+    }
+}
+
+test "imgproc ellipseWithParams" {
+    const tests = [_]struct {
+        name: []const u8,
+        thickness: i32,
+        linetype: imgproc.LineType,
+        shift: i32 = 0,
+        point: Point,
+        want: ?i32 = 255,
+    }{
+        .{
+            .name = "Without filling and shift, line = Line8",
+            .thickness = 2,
+            .linetype = .line8,
+            .point = Point.init(24, 50),
+        },
+        .{
+            .name = "With filling, without shift, line = Line8",
+            .thickness = -1,
+            .linetype = .line8,
+            .point = Point.init(55, 47),
+        },
+        .{
+            .name = "Without filling, with shift 2, line = Line8",
+            .thickness = 2,
+            .linetype = .line8,
+            .shift = 2,
+            .point = Point.init(6, 12),
+        },
+        .{
+            .name = "Without filling, with shift 2, line = Line8",
+            .thickness = 2,
+            .linetype = .line8,
+            .shift = 2,
+            .point = Point.init(19, 13),
+        },
+
+        .{
+            .name = "Without filling and shift, line = LineAA",
+            .thickness = 2,
+            .linetype = .line_aa,
+            .point = Point.init(77, 54),
+            .want = null,
+        },
+    };
+
+    for (tests) |tc| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+
+        var white = Color{ .r = 255, .g = 255, .b = 255, .a = 0 };
+        imgproc.ellipseWithParams(
+            &img,
+            Point.init(50, 50),
+            Point.init(25, 25),
+            0,
+            0,
+            360,
+            white,
+            tc.thickness,
+            tc.linetype,
+            tc.shift,
+        );
+        const r = img.get(u8, @intCast(usize, tc.point.x), @intCast(usize, tc.point.y));
+        if (tc.want) |want| {
+            testing.expectEqual(want, r) catch |e| {
+                std.debug.print("test: {s}\n", .{tc.name});
+                std.debug.print("{any}\n", .{e});
+                return error.TestExpectedEqual;
+            };
+        } else {
+            try testing.expect(r > 10);
+            try testing.expect(r < 220);
+        }
+    }
+}
+
+test "imgproc fillPoly" {
+    var img = try Mat.initSize(100, 100, .cv8uc1);
+    defer img.deinit();
+
+    var white = Color{ .r = 255, .g = 255, .b = 255, .a = 0 };
+    var pts = [_][4]Point{
+        .{
+            .{ .x = 10, .y = 10 },
+            .{ .x = 10, .y = 20 },
+            .{ .x = 20, .y = 20 },
+            .{ .x = 20, .y = 10 },
+        },
+    };
+    var pv = try PointsVector.initFromPoints(&pts, testing.allocator);
+    defer pv.deinit();
+
+    imgproc.fillPoly(&img, pv, white);
+
+    try testing.expectEqual(@as(u8, 255), img.get(u8, 10, 10));
+}
+
+test "imgproc fillPolyWithParams" {
+    const tests = [_]struct {
+        name: []const u8,
+        offset: Point,
+        point: Point,
+        result: u8,
+    }{
+        .{
+            .name = "No offset",
+            .offset = Point.init(0, 0),
+            .point = Point.init(10, 10),
+            .result = 255,
+        },
+        .{
+            .name = "Offset of 2",
+            .offset = Point.init(2, 2),
+            .point = Point.init(12, 12),
+            .result = 255,
+        },
+    };
+
+    var white = Color{ .r = 255, .g = 255, .b = 255, .a = 0 };
+    var pts = [_][4]Point{
+        .{
+            .{ .x = 10, .y = 10 },
+            .{ .x = 10, .y = 20 },
+            .{ .x = 20, .y = 20 },
+            .{ .x = 20, .y = 10 },
+        },
+    };
+    var pv = try PointsVector.initFromPoints(&pts, testing.allocator);
+    defer pv.deinit();
+
+    for (tests) |tc| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+
+        imgproc.fillPolyWithParams(&img, pv, white, .line4, 0, tc.offset);
+
+        try testing.expectEqual(tc.result, img.get(u8, @intCast(usize, tc.point.x), @intCast(usize, tc.point.y)));
+    }
+}
+
+test "imgproc polylines" {
+    var img = try Mat.initSize(100, 100, .cv8uc1);
+    defer img.deinit();
+
+    var white = Color{ .r = 255, .g = 255, .b = 255, .a = 0 };
+    var pts = [_][4]Point{
+        .{
+            .{ .x = 10, .y = 10 },
+            .{ .x = 10, .y = 20 },
+            .{ .x = 20, .y = 20 },
+            .{ .x = 20, .y = 10 },
+        },
+    };
+    var pv = try PointsVector.initFromPoints(&pts, testing.allocator);
+    defer pv.deinit();
+
+    imgproc.polylines(&img, pv, true, white, 1);
+
+    try testing.expectEqual(@as(u8, 255), img.get(u8, 10, 10));
+}
+
+
 test "imgproc remap" {
     var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
     defer img.deinit();
@@ -1500,5 +2008,232 @@ test "imgproc remap" {
     defer map2.deinit();
 
     imgproc.remap(img, &dst, map1, map2, .{}, .{ .type = .constant }, Color{});
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc filter2D" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try img.clone();
+    defer dst.deinit();
+
+    var kernel = try imgproc.getStructuringElement(.rect, Size.init(1, 1));
+    defer kernel.deinit();
+
+    imgproc.filter2D(img, &dst, -1, kernel, Point.init(-1, -1), 0, .{});
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc sepFilter2D" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try img.clone();
+    defer dst.deinit();
+
+    var kernelX = try imgproc.getStructuringElement(.rect, Size.init(1, 1));
+    defer kernelX.deinit();
+    var kernelY = try imgproc.getStructuringElement(.rect, Size.init(1, 1));
+    defer kernelY.deinit();
+
+    imgproc.sepFilter2D(img, &dst, -1, kernelX, kernelY, Point.init(-1, -1), 0, .{});
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc logPolar" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try img.clone();
+    defer dst.deinit();
+
+    imgproc.logPolar(img, &dst, Point.init(22, 22), 1, .{});
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc linearPolar" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try img.clone();
+    defer dst.deinit();
+
+    imgproc.linearPolar(img, &dst, Point.init(22, 22), 1, .{});
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc fitLine" {
+    var points = [_]Point{
+        .{ .x = 125, .y = 24 },
+        .{ .x = 124, .y = 75 },
+        .{ .x = 175, .y = 76 },
+        .{ .x = 176, .y = 25 },
+    };
+    var pv = try PointVector.initFromPoints(&points, testing.allocator);
+    defer pv.deinit();
+
+    var line = try Mat.init();
+    defer line.deinit();
+
+    imgproc.fitLine(pv, &line, .l2, 0, 0.01, 0.01);
+    try testing.expectEqual(false, line.isEmpty());
+}
+
+test "imgproc invertAffineTransform" {
+    var src = try Mat.initSize(2, 3, .cv32fc1);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(2, 3, .cv32fc1);
+    defer dst.deinit();
+
+    imgproc.invertAffineTransform(src, &dst);
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc phaseCorrelate" {
+    var template = try imgcodecs.imRead(img_dir ++ "simple.jpg", .gray_scale);
+    defer template.deinit();
+
+    var matched = try imgcodecs.imRead(img_dir ++ "simple-translated.jpg", .gray_scale);
+    defer matched.deinit();
+
+    var notMatchedOrig = try imgcodecs.imRead(img_dir ++ "space_shuttle.jpg", .gray_scale);
+    defer notMatchedOrig.deinit();
+
+    var notMatched = try Mat.init();
+    defer notMatched.deinit();
+
+    imgproc.resize(notMatchedOrig, &notMatched, Size.init(matched.size()[0], matched.size()[1]), 0, 0, .{ .type = .linear });
+
+    var template32FC1 = try Mat.init();
+    defer template32FC1.deinit();
+    var matched32FC1 = try Mat.init();
+    defer matched32FC1.deinit();
+    var notMatched32FC1 = try Mat.init();
+    defer notMatched32FC1.deinit();
+
+    template.convertTo(&template32FC1, .cv32fc1);
+    matched.convertTo(&matched32FC1, .cv32fc1);
+    notMatched.convertTo(&notMatched32FC1, .cv32fc1);
+
+    var window = try Mat.init();
+    defer window.deinit();
+
+    var shiftTranslated = imgproc.phaseCorrelate(template32FC1, matched32FC1, window);
+    var responseTranslated = imgproc.phaseCorrelate(template32FC1, matched32FC1, window);
+
+    try testing.expect(shiftTranslated.point.x < 15);
+    try testing.expect(shiftTranslated.point.y < 15);
+
+    try testing.expect(responseTranslated.response > 0.85);
+
+    var responseDifferent = imgproc.phaseCorrelate(template32FC1, notMatched32FC1, window);
+    try testing.expect(responseDifferent.response < 0.05);
+}
+
+test "imgproc accumulate" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(src.rows(), src.cols(), .cv64fc3);
+    defer dst.deinit();
+
+    imgproc.accumulate(src, &dst);
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc AccumulateWithMask" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(src.rows(), src.cols(), .cv64fc3);
+    defer dst.deinit();
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+    imgproc.accumulateWithMask(src, &dst, mask);
+
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc accumulateSquare" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(src.rows(), src.cols(), .cv64fc3);
+    defer dst.deinit();
+
+    imgproc.accumulateSquare(src, &dst);
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc AccumulateSquareWithMask" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(src.rows(), src.cols(), .cv64fc3);
+    defer dst.deinit();
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+    imgproc.accumulateSquareWithMask(src, &dst, mask);
+
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc AccumulateProduct" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var src2 = try src.clone();
+    defer src2.deinit();
+
+    var dst = try Mat.initSize(src.size()[0], src.size()[1], .cv64fc3);
+    defer dst.deinit();
+
+    imgproc.accumulateProduct(src, src2, &dst);
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc AccumulateProductWithMask" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var src2 = try src.clone();
+    defer src2.deinit();
+
+    var dst = try Mat.initSize(src.size()[0], src.size()[1], .cv64fc3);
+    defer dst.deinit();
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+    imgproc.accumulateProductWithMask(src, src2, &dst, mask);
+
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc AccumulatedWeighted" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(src.size()[0], src.size()[1], .cv64fc3);
+    defer dst.deinit();
+
+    imgproc.accumulatedWeighted(src, &dst, 0.5);
+    try testing.expectEqual(false, dst.isEmpty());
+}
+
+test "imgproc AccumulatedWeightedWithMask" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .unchanged);
+    defer src.deinit();
+
+    var dst = try Mat.initSize(src.size()[0], src.size()[1], .cv64fc3);
+    defer dst.deinit();
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+    imgproc.accumulatedWeightedWithMask(src, &dst, 0.5, mask);
+
     try testing.expectEqual(false, dst.isEmpty());
 }

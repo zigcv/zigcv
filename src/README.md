@@ -8,7 +8,7 @@
 - [x] highgui.zig
 - [x] objdetect.zig
 - [x] imgcodecs.zig
-- [ ] imgproc.zig
+- [x] imgproc.zig
 - [x] photo.zig
 - [x] svd.zig
 - [x] version.zig

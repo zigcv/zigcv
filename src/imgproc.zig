@@ -1043,19 +1043,27 @@ pub fn circleWithParams(img: *Mat, center: Point, radius: i32, color: Color, thi
     c.CircleWithParams(img.*.ptr, center.toC(), radius, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
-// Ellipse draws a simple or thick elliptic arc or fills an ellipse sector.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga28b2267d35786f5f890ca167236cbc69
-//
+/// Ellipse draws a simple or thick elliptic arc or fills an ellipse sector.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga28b2267d35786f5f890ca167236cbc69
+///
 pub fn ellipse(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: i32) void {
     c.Ellipse(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness);
 }
 
+/// Ellipse draws a simple or thick elliptic arc or fills an ellipse sector.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga28b2267d35786f5f890ca167236cbc69
 pub fn ellipseWithParams(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
     c.EllipseWithParams(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
+/// Line draws a line segment connecting two points.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga7078a9fae8c7e7d13d24dac2520ae4a2
 pub fn line(img: *Mat, pt1: Point, pt2: Point, color: Color, thickness: i32) void {
     c.Line(img.ptr, pt1.toC(), pt2.toC(), color.toScalar().toC(), thickness);
 }
@@ -1080,9 +1088,29 @@ pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: i32, 
     c.RectangleWithParams(img.*.ptr, rect.toC(), color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
 }
 
-// pub fn fillPoly(img: *Mat, points: PointsVector, color: Color) void;
-// pub fn fillPolyWithParams(img: *Mat, points: PointsVector, color: Color, line_type: LineType, shift: c_int, offset: Point) void;
-// pub fn polylines(img: Mat, points: PointsVector, isClosed: bool, color: Scalar, thickness: c_int) void;
+/// FillPoly fills the area bounded by one or more polygons.
+///
+/// For more information, see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#gaf30888828337aa4c6b56782b5dfbd4b7
+pub fn fillPoly(img: *Mat, points: PointsVector, color: Color) void {
+    c.FillPoly(img.*.ptr, points.toC(), color.toScalar().toC());
+}
+
+/// FillPolyWithParams fills the area bounded by one or more polygons.
+///
+/// For more information, see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#gaf30888828337aa4c6b56782b5dfbd4b7
+pub fn fillPolyWithParams(img: *Mat, points: PointsVector, color: Color, line_type: LineType, shift: i32, offset: Point) void {
+    c.FillPolyWithParams(img.*.ptr, points.toC(), color.toScalar().toC(), @enumToInt(line_type), shift, offset.toC());
+}
+
+/// Polylines draws several polygonal curves.
+///
+/// For more information, see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga1ea127ffbbb7e0bfc4fd6fd2eb64263c
+pub fn polylines(img: *Mat, points: PointsVector, is_closed: bool, color: Color, thickness: i32) void {
+    c.Polylines(img.*.ptr, points.toC(), is_closed, color.toScalar().toC(), thickness);
+}
 
 /// GetTextSize calculates the width and height of a text string.
 /// It returns an image.Point with the size required to draw text using
@@ -1182,12 +1210,21 @@ pub fn warpAffineWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flag
     c.WarpAffineWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), flags.toNum(), border_mode.toNum(), border_value.toScalar().toC());
 }
 
+/// WarpPerspective applies a perspective transformation to an image.
+/// For more parameters please check WarpPerspectiveWithParams.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gaf73673a7e8e18ec6963e3774e6a94b87
 pub fn warpPerspective(src: Mat, dst: *Mat, m: Mat, dsize: Size) void {
     c.WarpPerspective(src.ptr, dst.*.ptr, m.ptr, dsize.toC());
 }
 
-pub fn warpPerspectiveWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flags: i32, border_mode: BorderType, border_value: Color) void {
-    c.WarpPerspectiveWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), flags, border_mode.toNum(), border_value.toScalar().toC());
+/// WarpPerspectiveWithParams applies a perspective transformation to an image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gaf73673a7e8e18ec6963e3774e6a94b87
+pub fn warpPerspectiveWithParams(src: Mat, dst: *Mat, rot_mat: Mat, dsize: Size, flags: InterpolationFlag, border_mode: BorderType, border_value: Color) void {
+    c.WarpPerspectiveWithParams(src.ptr, dst.*.ptr, rot_mat.ptr, dsize.toC(), flags.toNum(), border_mode.toNum(), border_value.toScalar().toC());
 }
 
 /// Watershed performs a marker-based image segmentation using the watershed algorithm.
@@ -1214,53 +1251,86 @@ pub fn applyCustomColorMap(src: Mat, dst: *Mat, colormap: Mat) void {
     c.ApplyCustomColorMap(src.ptr, dst.*.ptr, colormap.ptr);
 }
 
-// GetPerspectiveTransform returns 3x3 perspective transformation for the
-// corresponding 4 point pairs as image.Point.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043
+/// GetPerspectiveTransform returns 3x3 perspective transformation for the
+/// corresponding 4 point pairs as image.Point.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043
 pub fn getPerspectiveTransform(src: PointVector, dst: PointVector) !Mat {
     return try Mat.initFromC(c.GetPerspectiveTransform(src.toC(), dst.toC()));
 }
 
-// GetPerspectiveTransform2f returns 3x3 perspective transformation for the
-// corresponding 4 point pairs as gocv.Point2f.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043
+/// GetPerspectiveTransform2f returns 3x3 perspective transformation for the
+/// corresponding 4 point pairs as gocv.Point2f.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043
 pub fn getPerspectiveTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
     return try Mat.initFromC(c.GetPerspectiveTransform2f(src.toC(), dst.toC()));
 }
 
-// GetAffineTransform returns a 2x3 affine transformation matrix for the
-// corresponding 3 point pairs as image.Point.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8f6d378f9f8eebb5cb55cd3ae295a999
+/// GetAffineTransform returns a 2x3 affine transformation matrix for the
+/// corresponding 3 point pairs as image.Point.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8f6d378f9f8eebb5cb55cd3ae295a999
 pub fn getAffineTransform(src: PointVector, dst: PointVector) !Mat {
     return try Mat.initFromC(c.GetAffineTransform(src.toC(), dst.toC()));
 }
 
-// GetAffineTransform2f returns a 2x3 affine transformation matrix for the
-// corresponding 3 point pairs as gocv.Point2f.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8f6d378f9f8eebb5cb55cd3ae295a999
+/// GetAffineTransform2f returns a 2x3 affine transformation matrix for the
+/// corresponding 3 point pairs as gocv.Point2f.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga8f6d378f9f8eebb5cb55cd3ae295a999
 pub fn getAffineTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
     return try Mat.initFromC(c.GetAffineTransform2f(src.toC(), dst.toC()));
 }
 
-// FindHomography finds an optimal homography matrix using 4 or more point pairs (as opposed to GetPerspectiveTransform, which uses exactly 4)
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d9/d0c/group__calib3d.html#ga4abc2ece9fab9398f2e560d53c8c9780
-//
+/// FindHomography finds an optimal homography matrix using 4 or more point pairs (as opposed to GetPerspectiveTransform, which uses exactly 4)
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d9/d0c/group__calib3d.html#ga4abc2ece9fab9398f2e560d53c8c9780
+///
 pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_reproj_threshold: f64, mask: *Mat, max_iters: i32, confidence: f64) !Mat {
     return try Mat.initFromC(c.FindHomography(src.ptr, dst.*.ptr, @enumToInt(method), ransac_reproj_threshold, mask.*.ptr, max_iters, confidence));
 }
 
-// pub fn drawContours(src: Mat, contours: PointsVector, contour_idx: c_int, color: Color, thickness: c_int) void;
-// pub fn drawContoursWithParams(src: Mat, contours: PointsVector, contourIdx: c_int, color: Scalar, thickness: c_int, lineType: c_int, hierarchy: Mat, maxLevel: c_int, offset: Point) void;
+/// DrawContours draws contours outlines or filled contours.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga746c0625f1781f1ffc9056259103edbc
+pub fn drawContours(src: *Mat, contours: PointsVector, contour_idx: i32, color: Color, thickness: i32) void {
+    c.DrawContours(src.*.ptr, contours.toC(), contour_idx, color.toScalar().toC(), thickness);
+}
+
+/// DrawContoursWithParams draws contours outlines or filled contours.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga746c0625f1781f1ffc9056259103edbc
+pub fn drawContoursWithParams(
+    src: *Mat,
+    contours: PointsVector,
+    contour_idx: i32,
+    color: Color,
+    thickness: i32,
+    line_type: LineType,
+    hierarchy: Mat,
+    max_level: i32,
+    offset: Point,
+) void {
+    c.DrawContoursWithParams(
+        src.*.ptr,
+        contours.toC(),
+        contour_idx,
+        color.toScalar().toC(),
+        thickness,
+        @enumToInt(line_type),
+        hierarchy.ptr,
+        max_level,
+        offset.toC(),
+    );
+}
 
 /// Sobel calculates the first, second, third, or mixed image derivatives using an extended Sobel operator
 ///
@@ -1280,59 +1350,59 @@ pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: MatType, border_type
     c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, @enumToInt(ksize), border_type.toNum());
 }
 
-// Remap applies a generic geometrical transformation to an image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gab75ef31ce5cdfb5c44b6da5f3b908ea4
+/// Remap applies a generic geometrical transformation to an image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gab75ef31ce5cdfb5c44b6da5f3b908ea4
 pub fn remap(src: Mat, dst: *Mat, map1: Mat, map2: Mat, interpolation: InterpolationFlag, border_mode: BorderType, border_value: Color) void {
     c.Remap(src.ptr, dst.*.ptr, map1.ptr, map2.ptr, interpolation.toNum(), border_mode.toNum(), border_value.toScalar().toC());
 }
 
-// Filter2D applies an arbitrary linear filter to an image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga27c049795ce870216ddfb366086b5a04
+/// Filter2D applies an arbitrary linear filter to an image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga27c049795ce870216ddfb366086b5a04
 pub fn filter2D(src: Mat, dst: *Mat, ddepth: i32, kernel: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
     c.Filter2D(src.ptr, dst.*.ptr, ddepth, kernel.ptr, anchor.toC(), delta, border_type.toNum());
 }
 
-// SepFilter2D applies a separable linear filter to the image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga910e29ff7d7b105057d1625a4bf6318d
+/// SepFilter2D applies a separable linear filter to the image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga910e29ff7d7b105057d1625a4bf6318d
 pub fn sepFilter2D(src: Mat, dst: *Mat, ddepth: i32, kernel_x: Mat, kernel_y: Mat, anchor: Point, delta: f64, border_type: BorderType) void {
     c.SepFilter2D(src.ptr, dst.*.ptr, ddepth, kernel_x.ptr, kernel_y.ptr, anchor.toC(), delta, border_type.toNum());
 }
 
-// LogPolar remaps an image to semilog-polar coordinates space.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gaec3a0b126a85b5ca2c667b16e0ae022d
+/// LogPolar remaps an image to semilog-polar coordinates space.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gaec3a0b126a85b5ca2c667b16e0ae022d
 pub fn logPolar(src: Mat, dst: *Mat, center: Point, m: f64, flags: InterpolationFlag) void {
-    c.LogPolar(src.ptr, dst.*.ptr, center.toC(), m, @enumToInt(flags));
+    c.LogPolar(src.ptr, dst.*.ptr, center.toC(), m, flags.toNum());
 }
 
-// FitLine fits a line to a 2D or 3D point set.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaf849da1fdafa67ee84b1e9a23b93f91f
+/// FitLine fits a line to a 2D or 3D point set.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaf849da1fdafa67ee84b1e9a23b93f91f
 pub fn fitLine(pts: PointVector, line_mat: *Mat, dist_type: DistanceType, param: f64, reps: f64, aeps: f64) void {
     c.FitLine(pts.toC(), line_mat.*.ptr, @enumToInt(dist_type), param, reps, aeps);
 }
 
-// LinearPolar remaps an image to polar coordinates space.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gaa38a6884ac8b6e0b9bed47939b5362f3
-//
+/// LinearPolar remaps an image to polar coordinates space.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#gaa38a6884ac8b6e0b9bed47939b5362f3
+///
 pub fn linearPolar(src: Mat, dst: *Mat, center: Point, max_radius: f64, flags: InterpolationFlag) void {
-    c.LinearPolar(src.ptr, dst.*.ptr, center.toC(), max_radius, @enumToInt(flags));
+    c.LinearPolar(src.ptr, dst.*.ptr, center.toC(), max_radius, flags.toNum());
 }
 
-// ClipLine clips the line against the image rectangle.
-// For further details, please see:
-// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#gaf483cb46ad6b049bc35ec67052ef1c2c
-//
+/// ClipLine clips the line against the image rectangle.
+/// For further details, please see:
+/// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#gaf483cb46ad6b049bc35ec67052ef1c2c
+///
 pub fn clipLine(imgSize: Size, pt1: Point, pt2: Point) bool {
     return c.ClipLine(imgSize.toC(), pt1.toC(), pt2.toC());
 }
@@ -1341,87 +1411,87 @@ pub fn invertAffineTransform(src: Mat, dst: *Mat) void {
     c.InvertAffineTransform(src.ptr, dst.*.ptr);
 }
 
-// Apply phaseCorrelate.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga552420a2ace9ef3fb053cd630fdb4952
-//
+/// Apply phaseCorrelate.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga552420a2ace9ef3fb053cd630fdb4952
+///
 pub fn phaseCorrelate(src1: Mat, src2: Mat, window: Mat) struct { point: Point2f, response: f64 } {
     var response: f64 = undefined;
     const p = c.PhaseCorrelate(src1.ptr, src2.ptr, window.ptr, &response);
-    return .{ .point = Point2f.fromC(p), .response = response };
+    return .{ .point = Point2f.initFromC(p), .response = response };
 }
 
-// Adds the square of a source image to the accumulator image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga1a567a79901513811ff3b9976923b199
-//
+/// Adds the square of a source image to the accumulator image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga1a567a79901513811ff3b9976923b199
+///
 pub fn accumulate(src: Mat, dst: *Mat) void {
-    c.Accumulate(src.ptr, dst.*.ptr);
+    c.Mat_Accumulate(src.ptr, dst.*.ptr);
 }
 
-// Adds an image to the accumulator image with mask.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga1a567a79901513811ff3b9976923b199
-//
+/// Adds an image to the accumulator image with mask.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga1a567a79901513811ff3b9976923b199
+///
 pub fn accumulateWithMask(src: Mat, dst: *Mat, mask: Mat) void {
-    c.AccumulateWithMask(src.ptr, dst.*.ptr, mask.ptr);
+    c.Mat_AccumulateWithMask(src.ptr, dst.*.ptr, mask.ptr);
 }
 
-// Adds the square of a source image to the accumulator image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#gacb75e7ffb573227088cef9ceaf80be8c
-//
+/// Adds the square of a source image to the accumulator image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#gacb75e7ffb573227088cef9ceaf80be8c
+///
 pub fn accumulateSquare(src: Mat, dst: *Mat) void {
-    c.AccumulateSquare(src.ptr, dst.*.ptr);
+    c.Mat_AccumulateSquare(src.ptr, dst.*.ptr);
 }
 
-// Adds the square of a source image to the accumulator image with mask.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#gacb75e7ffb573227088cef9ceaf80be8c
-//
+/// Adds the square of a source image to the accumulator image with mask.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#gacb75e7ffb573227088cef9ceaf80be8c
+///
 pub fn accumulateSquareWithMask(src: Mat, dst: *Mat, mask: Mat) void {
-    c.AccumulateSquareWithMask(src.ptr, dst.*.ptr, mask.ptr);
+    c.Mat_AccumulateSquareWithMask(src.ptr, dst.*.ptr, mask.ptr);
 }
 
-// Adds the per-element product of two input images to the accumulator image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga82518a940ecfda49460f66117ac82520
-//
+/// Adds the per-element product of two input images to the accumulator image.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga82518a940ecfda49460f66117ac82520
+///
 pub fn accumulateProduct(src1: Mat, src2: Mat, dst: *Mat) void {
-    c.AccumulateProduct(src1.ptr, src2.ptr, dst.*.ptr);
+    c.Mat_AccumulateProduct(src1.ptr, src2.ptr, dst.*.ptr);
 }
 
-// Adds the per-element product of two input images to the accumulator image with mask.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga82518a940ecfda49460f66117ac82520
-//
+/// Adds the per-element product of two input images to the accumulator image with mask.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga82518a940ecfda49460f66117ac82520
+///
 pub fn accumulateProductWithMask(src1: Mat, src2: Mat, dst: *Mat, mask: Mat) void {
-    c.AccumulateProductWithMask(src1.ptr, src2.ptr, dst.*.ptr, mask.ptr);
+    c.Mat_AccumulateProductWithMask(src1.ptr, src2.ptr, dst.*.ptr, mask.ptr);
 }
 
-// Updates a running average.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga4f9552b541187f61f6818e8d2d826bc7
-//
+/// Updates a running average.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga4f9552b541187f61f6818e8d2d826bc7
+///
 pub fn accumulatedWeighted(src: Mat, dst: *Mat, alpha: f64) void {
-    c.AccumulatedWeighted(src.ptr, dst.*.ptr, alpha);
+    c.Mat_AccumulatedWeighted(src.ptr, dst.*.ptr, alpha);
 }
 
-// Updates a running average with mask.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga4f9552b541187f61f6818e8d2d826bc7
-//
+/// Updates a running average with mask.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d7/df3/group__imgproc__motion.html#ga4f9552b541187f61f6818e8d2d826bc7
+///
 pub fn accumulatedWeightedWithMask(src: Mat, dst: *Mat, alpha: f64, mask: Mat) void {
-    c.AccumulatedWeightedWithMask(src.ptr, dst.*.ptr, alpha, mask.ptr);
+    c.Mat_AccumulatedWeightedWithMask(src.ptr, dst.*.ptr, alpha, mask.ptr);
 }
 
 test "imgproc" {
@@ -1435,7 +1505,7 @@ test "imgproc" {
 //*    pub extern fn CvtColor(src: Mat, dst: Mat, code: c_int) void;
 //*    pub extern fn EqualizeHist(src: Mat, dst: Mat) void;
 //*    pub extern fn CalcHist(mats: struct_Mats, chans: IntVector, mask: Mat, hist: Mat, sz: IntVector, rng: FloatVector, acc: bool) void;
-//     pub extern fn CalcBackProject(mats: struct_Mats, chans: IntVector, hist: Mat, backProject: Mat, rng: FloatVector, uniform: bool) void;
+//*    pub extern fn CalcBackProject(mats: struct_Mats, chans: IntVector, hist: Mat, backProject: Mat, rng: FloatVector, uniform: bool) void;
 //*    pub extern fn CompareHist(hist1: Mat, hist2: Mat, method: c_int) f64;
 //*    pub extern fn ConvexHull(points: PointVector, hull: Mat, clockwise: bool, returnPoints: bool) void;
 //*    pub extern fn ConvexityDefects(points: PointVector, hull: Mat, result: Mat) void;
@@ -1449,7 +1519,7 @@ test "imgproc" {
 //*    pub extern fn Erode(src: Mat, dst: Mat, kernel: Mat) void;
 //*    pub extern fn ErodeWithParams(src: Mat, dst: Mat, kernel: Mat, anchor: Point, iterations: c_int, borderType: c_int) void;
 //*    pub extern fn MatchTemplate(image: Mat, templ: Mat, result: Mat, method: c_int, mask: Mat) void;
-//     pub extern fn Moments(src: Mat, binaryImage: bool) struct_Moment;
+//*    pub extern fn Moments(src: Mat, binaryImage: bool) struct_Moment;
 //*    pub extern fn PyrDown(src: Mat, dst: Mat, dstsize: Size, borderType: c_int) void;
 //*    pub extern fn PyrUp(src: Mat, dst: Mat, dstsize: Size, borderType: c_int) void;
 //*    pub extern fn BoundingRect(pts: PointVector) struct_Rect;
@@ -1492,9 +1562,9 @@ test "imgproc" {
 //*    pub extern fn Line(img: Mat, pt1: Point, pt2: Point, color: Scalar, thickness: c_int) void;
 //*    pub extern fn Rectangle(img: Mat, rect: Rect, color: Scalar, thickness: c_int) void;
 //*    pub extern fn RectangleWithParams(img: Mat, rect: Rect, color: Scalar, thickness: c_int, lineType: c_int, shift: c_int) void;
-//     pub extern fn FillPoly(img: Mat, points: PointsVector, color: Scalar) void;
-//     pub extern fn FillPolyWithParams(img: Mat, points: PointsVector, color: Scalar, lineType: c_int, shift: c_int, offset: Point) void;
-//     pub extern fn Polylines(img: Mat, points: PointsVector, isClosed: bool, color: Scalar, thickness: c_int) void;
+//*    pub extern fn FillPoly(img: Mat, points: PointsVector, color: Scalar) void;
+//*    pub extern fn FillPolyWithParams(img: Mat, points: PointsVector, color: Scalar, lineType: c_int, shift: c_int, offset: Point) void;
+//*    pub extern fn Polylines(img: Mat, points: PointsVector, isClosed: bool, color: Scalar, thickness: c_int) void;
 //*    pub extern fn GetTextSize(text: [*c]const u8, fontFace: c_int, fontScale: f64, thickness: c_int) struct_Size;
 //*    pub extern fn GetTextSizeWithBaseline(text: [*c]const u8, fontFace: c_int, fontScale: f64, thickness: c_int, baseline: [*c]c_int) struct_Size;
 //*    pub extern fn PutText(img: Mat, text: [*c]const u8, org: Point, fontFace: c_int, fontScale: f64, color: Scalar, thickness: c_int) void;
@@ -1539,3 +1609,5 @@ test "imgproc" {
 //*    pub extern fn Mat_AccumulateProductWithMask(src1: Mat, src2: Mat, dst: Mat, mask: Mat) void;
 //*    pub extern fn Mat_AccumulatedWeighted(src: Mat, dst: Mat, alpha: f64) void;
 //*    pub extern fn Mat_AccumulatedWeightedWithMask(src: Mat, dst: Mat, alpha: f64, mask: Mat) void;
+// TODO: ToImg
+// TODO: ToImageYUV
