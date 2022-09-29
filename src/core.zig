@@ -112,7 +112,33 @@ pub const PointsVector = struct {
         const nn_ptr = try epnn(ptr);
         return .{ .ptr = nn_ptr };
     }
-    //*    pub extern fn PointsVector_NewFromPoints(points: Contours) PointsVector;
+
+    pub fn initFromPoints(points: anytype, allocator: std.mem.Allocator) !Self {
+        if (points.len == 0) return try init();
+
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        var arena_allocator = arena.allocator();
+        const len0 = @intCast(usize, points.len);
+
+        var c_points_array = try arena_allocator.alloc(c.Points, len0);
+        for (points) |point, i| {
+            const len1 = @intCast(usize, point.len);
+            var c_point_array = try arena_allocator.alloc(c.Point, len1);
+            for (point) |p, j| c_point_array[j] = p.toC();
+            c_points_array[i] = .{
+                .length = @intCast(i32, point.len),
+                .points = @ptrCast([*]c.Point, c_point_array.ptr),
+            };
+        }
+
+        var c_points = c.struct_Contours{
+            .length = @intCast(i32, points.len),
+            .contours = @ptrCast([*]c.Contour, c_points_array.ptr),
+        };
+        const ptr = c.PointsVector_NewFromPoints(c_points);
+        return try initFromC(ptr);
+    }
 
     pub fn deinit(self: *Self) void {
         _ = c.PointsVector_Close(self.ptr);
