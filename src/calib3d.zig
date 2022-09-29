@@ -500,7 +500,7 @@ test "calib3d initUndistortRectifyMap getOptimalNewCameraMatrixWithParams" {
         mapx,
         mapy,
     );
-    imgproc.remap(img, &dst, mapx, mapy, .linear, .constant, core.Color.init(0, 0, 0, 0));
+    imgproc.remap(img, &dst, mapx, mapy, .{ .type = .linear }, .{ .type = .constant }, core.Color.init(0, 0, 0, 0));
 
     try imgcodecs.imWrite(cache_dir ++ "fisheye_sample_RectifyMap.jpg", dst);
 }

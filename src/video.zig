@@ -581,7 +581,7 @@ test "video findTransformECC" {
 
     var test_img = try Mat.init();
     defer test_img.deinit();
-    imgproc.resize(img1, &test_img, Size.init(216, 216), 0, 0, .linear);
+    imgproc.resize(img1, &test_img, Size.init(216, 216), 0, 0, .{ .type = .linear });
 
     var translation_ground = try Mat.initEye(2, 3, .cv32fc1);
     defer translation_ground.deinit();
@@ -595,8 +595,8 @@ test "video findTransformECC" {
         &warped_img,
         translation_ground,
         Size.init(200, 200),
-        .warp_inverse_map,
-        .constant,
+        .{ .type = .linear, .warp_inverse_map = true },
+        .{ .type = .constant },
         core.Color{},
     );
 
