@@ -1067,6 +1067,215 @@ test "imgproc adaptiveThreshold" {
     try testing.expectEqual(img.cols(), dst.cols());
 }
 
+test "imgproc circle" {
+    var tests = [_]struct {
+        thickness: i32,
+        point: Point,
+        result: u8,
+    }{
+        .{
+            .thickness = 3,
+            .point = .{ .x = 80, .y = 89 },
+            .result = 255,
+        },
+        .{
+            .thickness = -1,
+            .point = .{ .x = 60, .y = 60 },
+            .result = 255,
+        },
+    };
+    for (tests) |t| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+        const white = Color.init(255, 255, 255, 0);
+        imgproc.circle(&img, Point.init(70, 70), 20, white, t.thickness);
+        try testing.expectEqual(t.result, img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)));
+    }
+}
+
+test "imgproc circleWithParams" {
+    var tests = [_]struct {
+        thickness: i32,
+        shift: i32,
+        point: Point,
+        result: u8,
+    }{
+        .{
+            .thickness = 3,
+            .shift = 0,
+            .point = .{ .x = 80, .y = 89 },
+            .result = 255,
+        },
+        .{
+            .thickness = -1,
+            .shift = 0,
+            .point = .{ .x = 60, .y = 60 },
+            .result = 255,
+        },
+        .{
+            .thickness = 3,
+            .shift = 1,
+            .point = .{ .x = 47, .y = 38 },
+            .result = 255,
+        },
+        .{
+            .thickness = 3,
+            .shift = 1,
+            .point = .{ .x = 48, .y = 38 },
+            .result = 0,
+        },
+    };
+    for (tests) |t| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+        const white = Color.init(255, 255, 255, 0);
+        imgproc.circleWithParams(&img, Point.init(70, 70), 20, white, t.thickness, .line4, t.shift);
+        try testing.expectEqual(t.result, img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)));
+    }
+}
+
+test "imgproc rectangle" {
+    var tests = [_]struct {
+        thickness: i32,
+        point: Point,
+    }{
+        .{
+            .thickness = 1,
+            .point = .{ .x = 10, .y = 60 },
+        },
+        .{
+            .thickness = -1,
+            .point = .{ .x = 30, .y = 30 },
+        },
+    };
+    for (tests) |t| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+        const white = Color.init(255, 255, 255, 0);
+        imgproc.rectangle(&img, Rect.init(10, 10, 70, 70), white, t.thickness);
+        try testing.expect(img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)) >= 50);
+    }
+}
+
+test "imgproc rectangleWithParams" {
+    var tests = [_]struct {
+        thickness: i32,
+        shift: i32,
+        point: Point,
+    }{
+        .{
+            .thickness = 1,
+            .shift = 0,
+            .point = .{ .x = 10, .y = 60 },
+        },
+        .{
+            .thickness = -1,
+            .shift = 0,
+            .point = .{ .x = 30, .y = 30 },
+        },
+        .{
+            .thickness = 1,
+            .shift = 1,
+            .point = .{ .x = 5, .y = 5 },
+        },
+    };
+    for (tests) |t| {
+        var img = try Mat.initSize(100, 100, .cv8uc1);
+        defer img.deinit();
+        const white = Color.init(255, 255, 255, 0);
+        imgproc.rectangleWithParams(&img, Rect.init(10, 10, 70, 70), white, t.thickness, .line4, t.shift);
+        try testing.expectEqual(@as(u8, 255), img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)));
+    }
+}
+
+test "imgproc equlizeHist" {
+    var img = try imgcodecs.imRead(face_detect_filepath, .gray_scale);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    imgproc.equalizeHist(img, &dst);
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(img.rows(), dst.rows());
+    try testing.expectEqual(img.cols(), dst.cols());
+}
+
+test "imgproc calcHist" {
+    var img = try imgcodecs.imRead(face_detect_filepath, .gray_scale);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+    var m = [1]Mat{img};
+    comptime var chans = [1]i32{0};
+    comptime var size = [1]i32{256};
+    comptime var rng = [2]f32{ 0.0, 256.0 };
+    try imgproc.calcHist(&m, &chans, mask, &dst, &size, &rng, false);
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(@as(i32, 256), dst.rows());
+    try testing.expectEqual(@as(i32, 1), dst.cols());
+}
+
+test "imgproc compareHist" {
+    var img = try imgcodecs.imRead(face_detect_filepath, .gray_scale);
+    defer img.deinit();
+    try testing.expectEqual(false, img.isEmpty());
+
+    var hist1 = try Mat.init();
+    defer hist1.deinit();
+
+    var hist2 = try Mat.init();
+    defer hist2.deinit();
+
+    var mask = try Mat.init();
+    defer mask.deinit();
+
+    var m = [1]Mat{img};
+    comptime var chans = [1]i32{0};
+    comptime var size = [1]i32{256};
+    comptime var rng = [2]f32{ 0.0, 256.0 };
+    try imgproc.calcHist(&m, &chans, mask, &hist1, &size, &rng, false);
+    try testing.expectEqual(false, hist1.isEmpty());
+    try imgproc.calcHist(&m, &chans, mask, &hist2, &size, &rng, false);
+    try testing.expectEqual(false, hist2.isEmpty());
+
+    var dist = imgproc.compareHist(hist1, hist2, .correl);
+    try testing.expectEqual(@as(f64, 1), dist);
+}
+
+test "imgproc drawing" {
+    var img = try Mat.initSize(150, 150, .cv8uc1);
+    defer img.deinit();
+
+    const blue = Color{ .b = 255 };
+
+    imgproc.arrowedLine(&img, Point.init(50, 50), Point.init(75, 75), blue, 3);
+    imgproc.circle(&img, Point.init(60, 60), 20, blue, 3);
+    imgproc.rectangle(&img, Rect.init(50, 50, 25, 25), blue, 3);
+    imgproc.line(&img, Point.init(50, 50), Point.init(75, 75), blue, 3);
+
+    try testing.expectEqual(false, img.isEmpty());
+}
+
+test "imgproc getTextSize" {
+    const size = imgproc.getTextSize("test", .{ .type = .simplex }, 1.2, 1);
+
+    try testing.expectEqual(@as(i32, 72), size.width);
+    try testing.expectEqual(@as(i32, 26), size.height);
+
+    const res = imgproc.getTextSizeWithBaseline("text", .{ .type = .simplex }, 1.2, 1);
+
+    try testing.expectEqual(@as(i32, 72), res.size.width);
+    try testing.expectEqual(@as(i32, 26), res.size.height);
+    try testing.expectEqual(@as(i32, 11), res.baseline);
+}
+
 test "imgproc putText" {
     var img = try Mat.initSize(150, 150, .cv8uc1);
     defer img.deinit();
@@ -1105,6 +1314,177 @@ test "imgproc resize" {
     try testing.expectEqual(@as(i32, 440), dst.cols());
 }
 
+test "imgproc getRectSubPix" {
+    var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer img.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    imgproc.getRectSubPix(img, Size.init(100, 100), Point.init(100, 100), &dst);
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(@as(i32, 100), dst.rows());
+    try testing.expectEqual(@as(i32, 100), dst.cols());
+}
+
+test "imgprc getRotationMatrix2D" {
+    const args = struct {
+        center: Point,
+        angle: f64,
+        scale: f64,
+    };
+    var tests = [_]struct {
+        args: args,
+        want: [2][3]f64,
+    }{
+        .{
+            .args = .{
+                .center = Point.init(0, 0),
+                .angle = 90,
+                .scale = 1,
+            },
+            .want = .{
+                .{ 6.123233995736766e-17, 1, 0 },
+                .{ -1, 6.123233995736766e-17, 0 },
+            },
+        },
+        .{ .args = .{
+            .center = Point.init(0, 0),
+            .angle = 45,
+            .scale = 1,
+        }, .want = .{
+            .{ 0.7071067811865476, 0.7071067811865475, 0 },
+            .{ -0.7071067811865475, 0.7071067811865476, 0 },
+        } },
+        .{ .args = .{
+            .center = Point.init(0, 0),
+            .angle = 0,
+            .scale = 1,
+        }, .want = .{
+            .{ 1, 0, 0 },
+            .{ 0, 1, 0 },
+        } },
+    };
+    for (tests) |tt| {
+        const got = imgproc.getRotationMatrix2D(tt.args.center, tt.args.angle, tt.args.scale);
+        {
+            var i: usize = 0;
+            while (i < got.rows()) : (i += 1) {
+                var j: usize = 0;
+                while (j < got.cols()) : (j += 1) {
+                    try testing.expectEqual(tt.want[i][j], got.at(f64, i, j));
+                }
+            }
+        }
+    }
+}
+
+test "imgproc wrapaffine" {
+    var src = try Mat.initSize(256, 256, .cv8uc1);
+    defer src.deinit();
+    var rot = try imgproc.getRotationMatrix2D(Point.init(0, 0), 1, 1);
+    defer rot.deinit();
+    var dst = try src.clone();
+    defer dst.deinit();
+
+    imgproc.warpAffine(src, &dst, rot, Size.init(256, 256));
+
+    var result = dst.norm(.l2);
+    try testing.expectEqual(@as(f64, 0), result);
+}
+
+test "imgproc wrapaffineWithParams" {
+    var src = try Mat.initSize(256, 256, .cv8uc1);
+    defer src.deinit();
+    var rot = try imgproc.getRotationMatrix2D(Point.init(0, 0), 1, 1);
+    defer rot.deinit();
+    var dst = try src.clone();
+    defer dst.deinit();
+
+    imgproc.warpAffineWithParams(
+        src,
+        &dst,
+        rot,
+        Size.init(256, 256),
+        .{ .type = .linear },
+        .{ .type = .constant },
+        Color{},
+    );
+
+    var result = dst.norm(.l2);
+    try testing.expectEqual(@as(f64, 0), result);
+}
+
+test "imgproc watershed" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
+    defer src.deinit();
+
+    var gray = try Mat.init();
+    defer gray.deinit();
+    imgproc.cvtColor(src, &gray, .bgr_to_gray);
+
+    var img_thresh = try Mat.init();
+    defer img_thresh.deinit();
+    _ = imgproc.threshold(gray, &img_thresh, 0, 255, .{ .type = .binary, .otsu = true });
+
+    var markers = try Mat.init();
+    defer markers.deinit();
+
+    _ = imgproc.connectedComponents(img_thresh, &markers);
+
+    imgproc.watershed(src, &markers);
+    try testing.expectEqual(false, markers.isEmpty());
+    try testing.expectEqual(src.rows(), markers.rows());
+    try testing.expectEqual(src.cols(), markers.cols());
+}
+
+test "imgproc applyColorMap" {
+    const args = struct {
+        colormap: imgproc.ColormapType,
+        want: f64,
+    };
+    const tests = [_]args{
+        .{ .colormap = .autumn, .want = 118090.29593069873 },
+        .{ .colormap = .bone, .want = 122067.44213343704 },
+        .{ .colormap = .jet, .want = 98220.64722857409 },
+        .{ .colormap = .winter, .want = 94279.52859449394 },
+        .{ .colormap = .rainbow, .want = 92591.40608069411 },
+        .{ .colormap = .ocean, .want = 106444.16919681415 },
+        .{ .colormap = .summer, .want = 114434.44957703952 },
+        .{ .colormap = .spring, .want = 123557.60209715953 },
+        .{ .colormap = .cool, .want = 123557.60209715953 },
+        .{ .colormap = .hsv, .want = 107679.25179903508 },
+        .{ .colormap = .pink, .want = 136043.97287274434 },
+        .{ .colormap = .hot, .want = 124941.02475968412 },
+        .{ .colormap = .parula, .want = 111483.33555738274 },
+    };
+
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .gray_scale);
+    defer src.deinit();
+
+    for (tests) |tt| {
+        var dst = try src.clone();
+        defer dst.deinit();
+        imgproc.applyColorMap(src, &dst, tt.colormap);
+        var result = dst.norm(.l2);
+        try testing.expectEqual(tt.want, result);
+    }
+}
+
+test "imgproc applyCustomColorMap" {
+    var src = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .gray_scale);
+    defer src.deinit();
+
+    var applyCustomColorMap = try Mat.initSize(256, 1, .cv8uc1);
+    defer applyCustomColorMap.deinit();
+
+    var dst = try src.clone();
+    defer dst.deinit();
+    imgproc.applyCustomColorMap(src, &dst, applyCustomColorMap);
+    var result = dst.norm(.l2);
+    try testing.expectEqual(@as(f64, 0), result);
+}
+
 test "imgproc remap" {
     var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
     defer img.deinit();
@@ -1121,17 +1501,4 @@ test "imgproc remap" {
 
     imgproc.remap(img, &dst, map1, map2, .{}, .{ .type = .constant }, Color{});
     try testing.expectEqual(false, dst.isEmpty());
-}
-
-test "imgproc textSize" {
-    const size = imgproc.getTextSize("test", .{ .type = .simplex }, 1.2, 1);
-
-    try testing.expectEqual(@as(i32, 72), size.width);
-    try testing.expectEqual(@as(i32, 26), size.height);
-
-    const res = imgproc.getTextSizeWithBaseline("text", .{ .type = .simplex }, 1.2, 1);
-
-    try testing.expectEqual(@as(i32, 72), res.size.width);
-    try testing.expectEqual(@as(i32, 26), res.size.height);
-    try testing.expectEqual(@as(i32, 11), res.baseline);
 }
