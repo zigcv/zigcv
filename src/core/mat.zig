@@ -193,6 +193,33 @@ pub const ReduceType = enum(u3) {
     min = 3,
 };
 
+pub const NormType = enum(u8) {
+
+    // NormInf indicates use infinite normalization.
+    inf = 1,
+
+    // NormL1 indicates use L1 normalization.
+    l1 = 2,
+
+    // NormL2 indicates use L2 normalization.
+    l2 = 4,
+
+    // NormL2Sqr indicates use L2 squared normalization.
+    l2_sqr = 5,
+
+    // NormHamming indicates use Hamming normalization.
+    hamming = 6,
+
+    // NormHamming2 indicates use Hamming 2-bit normalization.
+    hamming2 = 7,
+
+    // NormRelative indicates use relative normalization.
+    relative = 8,
+
+    // NormMinMax indicates use min/max normalization.
+    minMax = 32,
+};
+
 pub fn initFromC(ptr: CSelf) !Self {
     const nn_ptr = try epnn(ptr);
     return Self{ .ptr = nn_ptr };
@@ -887,6 +914,15 @@ pub fn solve(self: Self, src2: Self, dst: *Self, flag: SolveDecompositionFlag) b
 //
 pub fn solveCubic(self: Self, roots: *Self) bool {
     return c.Mat_SolveCubic(self.ptr, roots.*.ptr);
+}
+
+/// Norm calculates the absolute norm of an array.
+///
+/// For further details, please see:
+/// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga7c331fb8dd951707e184ef4e3f21dd33
+///
+pub fn norm(self: Self, normType: NormType) f64 {
+    return c.Norm(self.ptr, @enumToInt(normType));
 }
 
 // SolvePoly finds the real or complex roots of a polynomial equation.
