@@ -9,9 +9,6 @@ pub fn svdCompute(src: Mat, w: *Mat, u: *Mat, vt: *Mat) void {
     c.SVD_Compute(src.toC(), w.*.toC(), u.*.toC(), vt.*.toC());
 }
 
-//*    implementation done
-//*    pub extern fn SVD_Compute(src: Mat, w: Mat, u: Mat, vt: Mat) void;
-
 test "svd" {
     const std = @import("std");
     const testing = std.testing;
@@ -45,3 +42,6 @@ test "svd" {
     try testing.expectEqualSlices(f32, result_u[0..], data_u[0..]);
     try testing.expectEqualSlices(f32, result_vt[0..], data_vt[0..]);
 }
+
+//*    implementation done
+//*    pub extern fn SVD_Compute(src: Mat, w: Mat, u: Mat, vt: Mat) void;

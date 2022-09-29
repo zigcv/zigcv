@@ -6,9 +6,6 @@ pub fn openCVVersion() []const u8 {
     return std.mem.span(c.openCVVersion());
 }
 
-//*    implementation done
-//*    pub extern fn openCVVersion(...) [*c]const u8;
-
 test "show version" {
     const testing = std.testing;
     const allocator = testing.allocator;
@@ -27,3 +24,7 @@ test "show version" {
 
     try testing.expectEqual(parseFloat(f32, actual_version), parseFloat(f32, version));
 }
+
+//*    implementation done
+//*    pub extern fn openCVVersion(...) [*c]const u8;
+
