@@ -42,7 +42,7 @@ pub fn main() anyerror!void {
     };
     args.deinit();
 
-    const device_id = try std.fmt.parseUnsigned(c_int, device_id_char, 10);
+    const device_id = try std.fmt.parseUnsigned(i32, device_id_char, 10);
 
     // open webcam
     var webcam = try cv.VideoCapture.init();
