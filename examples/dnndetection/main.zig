@@ -103,7 +103,9 @@ pub fn main() anyerror!void {
         var prob = try net.forward("");
         defer prob.deinit();
 
-        performDetection(&img, prob);
+        var prob_flattened = try prob.reshape(1, 1);
+        defer prob_flattened.deinit();
+        performDetection(&img, prob_flattened);
 
         window.imShow(img);
         if (window.waitKey(1) >= 0) {
