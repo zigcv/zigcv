@@ -932,6 +932,10 @@ pub fn getTickFrequency() f64 {
     return c.GetTickFrequency();
 }
 
+test "core" {
+    std.testing.refAllDecls(@This());
+}
+
 //*    implementation done ("i" is internal function so we don't write zig wrappers for them)
 //i    pub extern fn MultiDMatches_get(mds: struct_MultiDMatches, index: c_int) struct_DMatches;
 //i    pub extern fn toByteArray(buf: [*c]const u8, len: c_int) struct_ByteArray;

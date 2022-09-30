@@ -1510,6 +1510,9 @@ pub fn accumulatedWeightedWithMask(src: Mat, dst: *Mat, alpha: f64, mask: Mat) v
 
 test "imgproc" {
     _ = @import("imgproc/test.zig");
+    _ = HersheyFont;
+    _ = InterpolationFlag;
+    _ = ThresholdType;
 }
 
 //*    implementation done
