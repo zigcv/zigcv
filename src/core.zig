@@ -922,6 +922,7 @@ pub inline fn toByteArray(s: []u8) c.ByteArray {
 pub fn getCVTickCount() i64 {
     return c.GetCVTickCount();
 }
+
 /// GetTickFrequency returns the number of ticks per second.
 ///
 /// For further details, please see:
@@ -931,17 +932,17 @@ pub fn getTickFrequency() f64 {
     return c.GetTickFrequency();
 }
 
-//*    implementation done
-//     pub extern fn MultiDMatches_get(mds: struct_MultiDMatches, index: c_int) struct_DMatches;
-//     pub extern fn toByteArray(buf: [*c]const u8, len: c_int) struct_ByteArray;
-//     pub extern fn ByteArray_Release(buf: struct_ByteArray) void;
-//     pub extern fn Contours_Close(cs: struct_Contours) void;
-//     pub extern fn KeyPoints_Close(ks: struct_KeyPoints) void;
+//*    implementation done ("i" is internal function so we don't write zig wrappers for them)
+//i    pub extern fn MultiDMatches_get(mds: struct_MultiDMatches, index: c_int) struct_DMatches;
+//i    pub extern fn toByteArray(buf: [*c]const u8, len: c_int) struct_ByteArray;
+//i    pub extern fn ByteArray_Release(buf: struct_ByteArray) void;
+//i    pub extern fn Contours_Close(cs: struct_Contours) void;
+//i    pub extern fn KeyPoints_Close(ks: struct_KeyPoints) void;
 //*    pub extern fn Rects_Close(rs: struct_Rects) void;
-//     pub extern fn Point_Close(p: struct_Point) void;
-//     pub extern fn Points_Close(ps: struct_Points) void;
-//     pub extern fn DMatches_Close(ds: struct_DMatches) void;
-//     pub extern fn MultiDMatches_Close(mds: struct_MultiDMatches) void;
+//i    pub extern fn Point_Close(p: struct_Point) void;
+//i    pub extern fn Points_Close(ps: struct_Points) void;
+//i    pub extern fn DMatches_Close(ds: struct_DMatches) void;
+//i    pub extern fn MultiDMatches_Close(mds: struct_MultiDMatches) void;
 //*    pub extern fn TermCriteria_New(typ: c_int, maxCount: c_int, epsilon: f64) TermCriteria;
 //*    pub extern fn GetCVTickCount(...) i64;
 //*    pub extern fn GetTickFrequency(...) f64;
@@ -964,8 +965,8 @@ pub fn getTickFrequency() f64 {
 //*    pub extern fn Point2fVector_NewFromMat(mat: Mat) Point2fVector;
 //*    pub extern fn Point2fVector_At(pfv: Point2fVector, idx: c_int) Point2f;
 //*    pub extern fn Point2fVector_Size(pfv: Point2fVector) c_int;
-//     pub extern fn IntVector_Close(ivec: struct_IntVector) void;
-//     pub extern fn CStrings_Close(cstrs: struct_CStrings) void;
+//i    pub extern fn IntVector_Close(ivec: struct_IntVector) void;
+//i    pub extern fn CStrings_Close(cstrs: struct_CStrings) void;
 //*    pub extern fn TheRNG(...) RNG;
 //*    pub extern fn SetRNGSeed(seed: c_int) void;
 //*    pub extern fn RNG_Fill(rng: RNG, mat: Mat, distType: c_int, a: f64, b: f64, saturateRange: bool) void;
@@ -975,7 +976,7 @@ pub fn getTickFrequency() f64 {
 //*    pub extern fn RandShuffle(mat: Mat) void;
 //*    pub extern fn RandShuffleWithParams(mat: Mat, iterFactor: f64, rng: RNG) void;
 //*    pub extern fn RandU(mat: Mat, low: Scalar, high: Scalar) void;
-//     pub extern fn copyPointVectorToPoint2fVector(src: PointVector, dest: Point2fVector) void;
+//i    pub extern fn copyPointVectorToPoint2fVector(src: PointVector, dest: Point2fVector) void;
 //*    pub extern fn StdByteVectorInitialize(data: ?*anyopaque) void;
 //*    pub extern fn StdByteVectorFree(data: ?*anyopaque) void;
 //*    pub extern fn StdByteVectorLen(data: ?*anyopaque) usize;
