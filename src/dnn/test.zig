@@ -73,10 +73,10 @@ fn checkNet(net: *Net, allocator: std.mem.Allocator) !void {
     var cs = [_][]const u8{"prob"};
     var prob = try net.forwardLayers(&cs, allocator);
     defer prob.deinit();
-    try testing.expect(prob.items.len > 0);
-    try testing.expectEqual(false, prob.items[0].isEmpty());
+    try testing.expect(prob.list.items.len > 0);
+    try testing.expectEqual(false, prob.list.items[0].isEmpty());
 
-    var prob_mat = try prob.items[0].reshape(1, 1);
+    var prob_mat = try prob.list.items[0].reshape(1, 1);
     defer prob_mat.deinit();
 
     const minmax = prob_mat.minMaxLoc();
@@ -454,13 +454,13 @@ test "dnn blob getImages" {
     var imgs_from_blob = try blob.getImages(test_allocator);
     defer imgs_from_blob.deinit();
     defer {
-        for (imgs_from_blob.items) |*imgi| imgi.deinit();
+        for (imgs_from_blob.list.items) |*imgi| imgi.deinit();
     }
 
     {
         var i: usize = 0;
-        while (i < imgs_from_blob.items.len) : (i += 1) {
-            var imgi = imgs_from_blob.items[i];
+        while (i < imgs_from_blob.list.items.len) : (i += 1) {
+            var imgi = imgs_from_blob.list.items[i];
             var img_from_blob = try Mat.init();
             defer img_from_blob.deinit();
             imgi.convertTo(&img_from_blob, imgi.getType());

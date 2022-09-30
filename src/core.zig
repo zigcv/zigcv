@@ -934,6 +934,19 @@ pub fn getTickFrequency() f64 {
 
 test "core" {
     std.testing.refAllDecls(@This());
+    _ = BorderType;
+    _ = Point;
+    _ = PointVector;
+    _ = PointsVector;
+    _ = Point2f;
+    _ = Point2fVector;
+    _ = Points2fVector;
+    _ = Point3f;
+    _ = Point3fVector;
+    _ = Points3fVector;
+    _ = Rect;
+    _ = Size;
+    _ = TermCriteria;
 }
 
 //*    implementation done ("i" is internal function so we don't write zig wrappers for them)
