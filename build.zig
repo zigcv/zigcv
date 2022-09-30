@@ -36,6 +36,11 @@ pub fn build(b: *std.build.Builder) void {
             .path = "examples/dnndetection/main.zig",
             .desc = "DNN Detection Demo",
         },
+        .{
+            .name = "saveimage",
+            .path = "examples/saveimage/main.zig",
+            .desc = "Save Image Demo",
+        },
     };
 
     const examples_step = b.step("examples", "Builds all the examples");
