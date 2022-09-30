@@ -11,6 +11,7 @@ const PointVector = core.PointVector;
 const RNG = core.RNG;
 const BorderType = core.BorderType;
 const TermCriteria = core.TermCriteria;
+const NormType = core.NormType;
 
 ptr: CSelf,
 
@@ -195,32 +196,6 @@ pub const ReduceType = enum(u3) {
 
     /// The output is the minimum (column/row-wise) of all rows/columns of the matrix.
     min = 3,
-};
-
-pub const NormType = enum(u8) {
-    /// NormInf indicates use infinite normalization.
-    inf = 1,
-
-    /// NormL1 indicates use L1 normalization.
-    l1 = 2,
-
-    /// NormL2 indicates use L2 normalization.
-    l2 = 4,
-
-    /// NormL2Sqr indicates use L2 squared normalization.
-    l2_sqr = 5,
-
-    /// NormHamming indicates use Hamming normalization.
-    hamming = 6,
-
-    /// NormHamming2 indicates use Hamming 2-bit normalization.
-    hamming2 = 7,
-
-    /// NormRelative indicates use relative normalization.
-    relative = 8,
-
-    /// NormMinMax indicates use min/max normalization.
-    min_max = 32,
 };
 
 /// CovarFlags are the covariation flags used by functions such as BorderInterpolate.
