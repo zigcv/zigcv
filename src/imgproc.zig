@@ -18,6 +18,8 @@ const MatType = Mat.MatType;
 const TermCriteria = core.TermCriteria;
 const ColorConversionCode = @import("imgproc/color_codes.zig").ColorConversionCode;
 
+const BorderType = core.BorderType;
+
 pub const ConnectedComponentsAlgorithmType = enum(u2) {
     /// SAUF algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
     wu = 0,
@@ -46,36 +48,6 @@ pub const ConnectedComponentsType = enum(u3) {
     stat_area = 4,
 
     stat_max = 5,
-};
-
-pub const BorderType = struct {
-    type: Type_ = .reflect101,
-    /// BorderIsolated border type
-    isolate: bool = false,
-
-    const Type_ = enum(u3) {
-        /// BorderConstant border type
-        constant = 0,
-
-        /// BorderReplicate border type
-        replicate = 1,
-
-        /// BorderReflect border type
-        reflect = 2,
-
-        /// BorderWrap border type
-        wrap = 3,
-
-        /// BorderReflect101 border type
-        reflect101 = 4,
-
-        /// BorderTransparent border type
-        transparent = 5,
-    };
-
-    pub fn toNum(self: BorderType) u5 {
-        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.isolate)) * 16;
-    }
 };
 
 pub const MorphType = enum(u3) {
@@ -147,11 +119,10 @@ pub const LineType = enum(i6) {
 };
 
 pub const HersheyFont = struct {
-    type: Type_,
     /// FontItalic is the flag for italic font.
     italic: bool = false,
 
-    const Type_ = enum(u3) {
+    type: enum(u4) {
         /// FontHersheySimplex is normal size sans-serif font.
         simplex = 0,
         /// FontHersheyPlain issmall size sans-serif font.
@@ -170,21 +141,32 @@ pub const HersheyFont = struct {
         script_simplex = 6,
         /// FontHersheyScriptComplex is a more complex variant of FontHersheyScriptSimplex.
         script_complex = 7,
-    };
+    },
 
     pub fn toNum(self: HersheyFont) u5 {
-        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.italic)) * 8;
+        return @bitCast(u5, packed struct {
+            type: u4,
+            italic: bool,
+        }{
+            .type = @enumToInt(self.type),
+            .italic = self.italic,
+        });
+    }
+
+    comptime {
+        std.debug.assert((HersheyFont{ .type = .simplex }).toNum() == 0);
+        std.debug.assert((HersheyFont{ .type = .plain }).toNum() == 1);
+        std.debug.assert((HersheyFont{ .type = .simplex, .italic = true }).toNum() == 16);
     }
 };
 
 pub const InterpolationFlag = struct {
-    type: Type_ = .linear,
     /// WarpFillOutliers fills all of the destination image pixels. If some of them correspond to outliers in the source image, they are set to zero.
     warp_fill_outliers: bool = false,
     /// WarpInverseMap, inverse transformation.
     warp_inverse_map: bool = false,
 
-    const Type_ = enum(u3) {
+    type: enum(u3) {
         /// InterpolationNearestNeighbor is nearest neighbor. (fast but low quality)
         nearest_neighbor = 0,
 
@@ -203,10 +185,27 @@ pub const InterpolationFlag = struct {
 
         /// InterpolationMax indicates use maximum interpolation.
         max = 7,
-    };
+    } = .linear,
 
     pub fn toNum(self: InterpolationFlag) u5 {
-        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.warp_fill_outliers)) * 8 + @intCast(u5, @boolToInt(self.warp_inverse_map)) * 16;
+        return @bitCast(u5, packed struct {
+            type: u3,
+            warp_fill_outliers: bool,
+            warp_inverse_map: bool,
+        }{
+            .type = @enumToInt(self.type),
+            .warp_fill_outliers = self.warp_fill_outliers,
+            .warp_inverse_map = self.warp_inverse_map,
+        });
+    }
+
+    comptime {
+        std.debug.assert((InterpolationFlag{ .type = .nearest_neighbor }).toNum() == 0);
+        std.debug.assert((InterpolationFlag{ .type = .linear }).toNum() == 1);
+        std.debug.assert((InterpolationFlag{ .type = .nearest_neighbor, .warp_fill_outliers = true }).toNum() == 8);
+        std.debug.assert((InterpolationFlag{ .type = .nearest_neighbor, .warp_inverse_map = true }).toNum() == 16);
+        std.debug.assert((InterpolationFlag{ .type = .linear, .warp_fill_outliers = true, .warp_inverse_map = true }).toNum() == 25);
+        std.debug.assert((InterpolationFlag{}).toNum() == 1);
     }
 };
 
@@ -259,13 +258,12 @@ pub const DistanceTransformMask = enum(i32) {
 };
 
 pub const ThresholdType = struct {
-    type: Type_,
     /// ThresholdOtsu threshold type
     otsu: bool = false,
     /// ThresholdTriangle threshold type
     triangle: bool = false,
 
-    const Type_ = enum(u3) {
+    type: enum(u3) {
         /// ThresholdBinary threshold type
         binary = 0,
 
@@ -283,10 +281,26 @@ pub const ThresholdType = struct {
 
         /// ThresholdMask threshold type
         mask = 7,
-    };
+    },
 
     pub fn toNum(self: ThresholdType) u5 {
-        return @enumToInt(self.type) + @intCast(u5, @boolToInt(self.otsu)) * 8 + @intCast(u5, @boolToInt(self.triangle)) * 16;
+        return @bitCast(u5, packed struct {
+            type: u3,
+            otsu: bool,
+            triangle: bool,
+        }{
+            .type = @enumToInt(self.type),
+            .otsu = self.otsu,
+            .triangle = self.triangle,
+        });
+    }
+
+    comptime {
+        std.debug.assert((ThresholdType{ .type = .binary }).toNum() == 0);
+        std.debug.assert((ThresholdType{ .type = .binary_inv }).toNum() == 1);
+        std.debug.assert((ThresholdType{ .type = .binary, .otsu = true }).toNum() == 8);
+        std.debug.assert((ThresholdType{ .type = .binary, .triangle = true }).toNum() == 16);
+        std.debug.assert((ThresholdType{ .type = .binary, .otsu = true, .triangle = true }).toNum() == 24);
     }
 };
 

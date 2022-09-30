@@ -6,6 +6,48 @@ const epnn = utils.ensurePtrNotNull;
 pub const Mat = @import("core/mat.zig");
 pub const Mats = Mat.Mats;
 
+pub const BorderType = struct {
+    /// BorderIsolated border type
+    isolate: bool = false,
+
+    type: enum(u4) {
+        /// BorderConstant border type
+        constant = 0,
+
+        /// BorderReplicate border type
+        replicate = 1,
+
+        /// BorderReflect border type
+        reflect = 2,
+
+        /// BorderWrap border type
+        wrap = 3,
+
+        /// BorderReflect101 border type
+        reflect101 = 4,
+
+        /// BorderTransparent border type
+        transparent = 5,
+    } = .reflect101,
+
+    pub fn toNum(self: BorderType) u5 {
+        return @bitCast(u5, packed struct {
+            type: u4,
+            isolate: bool,
+        }{
+            .type = @enumToInt(self.type),
+            .isolate = self.isolate,
+        });
+    }
+
+    comptime {
+        std.debug.assert((BorderType{ .type = .constant }).toNum() == 0);
+        std.debug.assert((BorderType{ .type = .replicate }).toNum() == 1);
+        std.debug.assert((BorderType{ .type = .constant, .isolate = true }).toNum() == 16);
+        std.debug.assert((BorderType{}).type == .reflect101);
+    }
+};
+
 pub const Point = struct {
     x: i32,
     y: i32,
