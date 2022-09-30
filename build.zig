@@ -24,7 +24,6 @@ pub fn build(b: *std.build.Builder) void {
             .name = "face_detection",
             .path = "examples/facedetect/main.zig",
             .desc = "Face Detection Demo",
-            .fstage1 = true,
         },
         .{
             .name = "face_blur",
