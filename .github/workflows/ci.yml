@@ -9,23 +9,24 @@ jobs:
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
-          version: 0.10.0-dev.4176+6d7b0690a
+          version: master
       - name: Update Homebrew
         run: |
           brew update --preinstall
-      - name: Configure Homebrew cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/Library/Caches/Homebrew/
-          key: brew-${{ hashFiles('.github/brew-formulae') }}
-          restore-keys: brew-
+      # - name: Configure Homebrew cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       ~/Library/Caches/Homebrew/
+      #     key: brew-${{ hashFiles('.github/brew-formulae') }}
+      #     restore-keys: brew-
       - name: Install Homebrew dependencies
         run: |
           brew install opencv
         env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
-          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          # HOMEBREW_NO_AUTO_UPDATE: 1
+          # HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       - name: checkout
         uses: actions/checkout@v2
         with:
