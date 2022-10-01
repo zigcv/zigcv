@@ -40,6 +40,11 @@ pub fn build(b: *std.build.Builder) void {
             .path = "examples/saveimage/main.zig",
             .desc = "Save Image Demo",
         },
+        .{
+            .name = "detail_enhance",
+            .path = "examples/detail_enhance/main.zig",
+            .desc = "Detail Enhanced Image Demo",
+        },
     };
 
     const examples_step = b.step("examples", "Builds all the examples");
