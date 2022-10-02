@@ -256,17 +256,6 @@ pub const QRCodeDetector = struct {
         return c.QRCodeDetector_DetectMulti(self.ptr, input.ptr, points.*.ptr);
     }
 
-    pub const ReturnDetectAndDecodeMulti = struct {
-        is_detected: bool,
-        decoded: std.ArrayList([]const u8),
-        qr_codes: std.ArrayList(Mat),
-        points: Mat,
-        arena: std.heap.ArenaAllocator,
-
-        pub fn deinit(self: *@This()) void {
-            self.arena.deinit();
-        }
-    };
     /// Decode decodes QR code in image once it's found by the detect() method. Returns UTF8-encoded output string or empty string if the code cannot be decoded.
     ///
     /// For further details, please see:
@@ -277,7 +266,17 @@ pub const QRCodeDetector = struct {
         self: Self,
         input: Mat,
         allocator: std.mem.Allocator,
-    ) !ReturnDetectAndDecodeMulti {
+    ) !struct {
+        is_detected: bool,
+        decoded: std.ArrayList([]const u8),
+        qr_codes: std.ArrayList(Mat),
+        points: Mat,
+        arena: std.heap.ArenaAllocator,
+
+        pub fn deinit(self_: *@This()) void {
+            self_.arena.deinit();
+        }
+    } {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_allocator = arena.allocator();
 
