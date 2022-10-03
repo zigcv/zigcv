@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Mats = core.Mats;
 const Point = core.Point;
@@ -186,8 +187,9 @@ pub const MergeMertens = struct {
     /// https://docs.opencv.org/master/d7/dd6/classcv_1_1MergeMertens.html
     /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga79d59aa3cb3a7c664e59a4b5acc1ccb6
     ///
-    pub fn init() Self {
-        return .{ .ptr = c.MergeMertens_Create() };
+    pub fn init() !Self {
+        const ptr = c.MergeMertens_Create();
+        return try initFromC(ptr);
     }
 
     /// NewMergeMertensWithParams returns a new MergeMertens white LDR merge algorithm
@@ -199,13 +201,19 @@ pub const MergeMertens = struct {
     /// https://docs.opencv.org/master/d7/dd6/classcv_1_1MergeMertens.html
     /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga79d59aa3cb3a7c664e59a4b5acc1ccb6
     ///
-    pub fn initWithParams(contrast_weight: f32, saturation_weight: f32, exposure_weight: f32) Self {
-        return .{ .ptr = c.MergeMertens_CreateWithParams(contrast_weight, saturation_weight, exposure_weight) };
+    pub fn initWithParams(contrast_weight: f32, saturation_weight: f32, exposure_weight: f32) !Self {
+        const ptr = c.MergeMertens_CreateWithParams(contrast_weight, saturation_weight, exposure_weight);
+        return try initFromC(ptr);
+    }
+
+    fn initFromC(ptr: c.MergeMertens) !Self {
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
     }
 
     ///Close MergeMertens
     pub fn deinit(self: *Self) void {
-        _ = c.MergeMertens_Destroy(self.ptr);
+        _ = c.MergeMertens_Close(self.ptr);
         self.*.ptr = null;
     }
 
@@ -214,9 +222,9 @@ pub const MergeMertens = struct {
     /// For further details, please see:
     /// https://docs.opencv.org/master/d7/dd6/classcv_1_1MergeMertens.html#a2d2254b2aab722c16954de13a663644d
     ///
-    pub fn process(self: *Self, src: []const Mat, dst: *Mat, allocator: std.mem.Allocator) !void {
-        var c_mats: c.struct_Mats = try Mat.toCStructs(src, allocator);
-        defer Mat.deinitCStructs(c_mats, allocator);
+    pub fn process(self: *Self, src: []const Mat, dst: *Mat) !void {
+        var c_mats: c.struct_Mats = try Mat.toCStructs(src);
+        defer Mat.deinitCStructs(c_mats);
         _ = c.MergeMertens_Process(self.ptr, c_mats, dst.*.ptr);
     }
 };
@@ -236,8 +244,9 @@ pub const AlignMTB = struct {
     /// https://docs.opencv.org/master/d7/db6/classcv_1_1AlignMTB.html
     /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga2f1fafc885a5d79dbfb3542e08db0244
     ///
-    pub fn init() Self {
-        return .{ .ptr = c.AlignMTB_Create() };
+    pub fn init() !Self {
+        const ptr = c.AlignMTB_Create();
+        return try initFromC(ptr);
     }
 
     /// NewAlignMTBWithParams returns an AlignMTB for converts images to median threshold bitmaps.
@@ -249,13 +258,19 @@ pub const AlignMTB = struct {
     /// https://docs.opencv.org/master/d7/db6/classcv_1_1AlignMTB.html
     /// https://docs.opencv.org/master/d6/df5/group__photo__hdr.html#ga2f1fafc885a5d79dbfb3542e08db0244
     ///
-    pub fn initWithParams(max_bits: i32, exclude_range: i32, cut: bool) Self {
-        return .{ .ptr = c.AlignMTB_CreateWithParams(max_bits, exclude_range, cut) };
+    pub fn initWithParams(max_bits: i32, exclude_range: i32, cut: bool) !Self {
+        const ptr = c.AlignMTB_CreateWithParams(max_bits, exclude_range, cut);
+        return try initFromC(ptr);
+    }
+
+    pub fn initFromC(ptr: c.AlignMTB) !Self {
+        const nn_ptr = try epnn(ptr);
+        return .{ .ptr = nn_ptr };
     }
 
     ///Close AlignMTB
     pub fn deinit(self: *Self) void {
-        _ = c.AlignMTB_Destroy(self.ptr);
+        _ = c.AlignMTB_Close(self.ptr);
         self.*.ptr = null;
     }
 
@@ -265,9 +280,9 @@ pub const AlignMTB = struct {
     /// https://docs.opencv.org/master/d7/db6/classcv_1_1AlignMTB.html#a37b3417d844f362d781f34155cbcb201
     ///
     pub fn process(self: Self, src: []const Mat, allocator: std.mem.Allocator) !Mats {
-        var c_mats: c.struct_Mats = try Mat.toCStructs(src, allocator);
-        defer Mat.deinitCStructs(c_mats, allocator);
-        var c_dst_mats = c.struct_Mats{};
+        var c_mats: c.struct_Mats = try Mat.toCStructs(src);
+        defer Mat.deinitCStructs(c_mats);
+        var c_dst_mats: c.struct_Mats = undefined;
         _ = c.AlignMTB_Process(self.ptr, c_mats, &c_dst_mats);
         return Mat.toArrayList(c_dst_mats, allocator);
     }
@@ -427,6 +442,43 @@ test "photo fastNlMeansDenoisingColored" {
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(src.rows(), dst.rows());
     try testing.expectEqual(src.cols(), dst.cols());
+}
+
+test "photo MergeMertens" {
+    var src: [3]Mat = undefined;
+    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv32fc3);
+    defer for (src) |*s| s.deinit();
+
+    var dst = try Mat.init();
+    defer dst.deinit();
+
+    var mertens = try MergeMertens.init();
+    defer mertens.deinit();
+
+    try mertens.process(src[0..], &dst);
+
+    try testing.expectEqual(false, dst.isEmpty());
+    try testing.expectEqual(src[0].rows(), dst.rows());
+    try testing.expectEqual(src[0].cols(), dst.cols());
+}
+
+test "photo AlignMTB" {
+    var src: [3]Mat = undefined;
+    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
+    defer for (src) |*s| s.deinit();
+
+    var align_mtb = try AlignMTB.init();
+    defer align_mtb.deinit();
+
+    var dst = try align_mtb.process(src[0..], testing.allocator);
+    defer dst.deinit();
+
+    try testing.expect(dst.list.items.len > 0);
+
+    const dst0 = dst.list.items[0];
+    try testing.expectEqual(false, dst0.isEmpty());
+    try testing.expectEqual(src[0].rows(), dst0.rows());
+    try testing.expectEqual(src[0].cols(), dst0.cols());
 }
 
 test "photo fastNlMeansDenoising" {
