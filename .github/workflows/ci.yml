@@ -17,7 +17,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build wget curl unzip
+          sudo apt-get install -y cmake wget curl unzip libgtk2.0-dev libtbb-dev libjpeg-dev libpng-dev libtiff-dev
       - name: OpenCV Build Cache
         uses: actions/cache@v2
         with:
@@ -42,6 +42,10 @@ jobs:
           cd opencv-build
           cmake \
             -D CMAKE_BUILD_TYPE=RELEASE \
+            -D WITH_IPP=OFF \
+            -D WITH_OPENGL=OFF \
+            -D WITH_QT=OFF \
+            -D CMAKE_INSTALL_PREFIX=/usr/local \
             -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.6.0/modules/ \
             -D OPENCV_ENABLE_NONFREE=ON \
             -D WITH_JASPER=OFF \
@@ -55,10 +59,12 @@ jobs:
             -D BUILD_opencv_python2=NO \
             -D BUILD_opencv_python3=NO \
             -D OPENCV_GENERATE_PKGCONFIG=ON \
-            ../opencv-4.6.0/ \
-            -G Ninja
-          ninja
-          sudo ninja install
+            ../opencv-4.6.0/
+          make -j $(nproc --all) 
+          make preinstall 
+          sudo make install 
+          ldconfig
+        shell: bash
         env:
           CC: "zig cc"
           CXX: "zig c++"
