@@ -17,7 +17,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake wget curl unzip libgtk2.0-dev libtbb-dev libjpeg-dev libpng-dev libtiff-dev
+          sudo apt-get install -y cmake wget curl unzip libgtk2.0-dev libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-dev
       - name: OpenCV Build Cache
         uses: actions/cache@v2
         with:
