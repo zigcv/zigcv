@@ -63,7 +63,7 @@ jobs:
           make -j $(nproc --all) 
           make preinstall 
           sudo make install 
-          ldconfig
+          sudo ldconfig
         shell: bash
         env:
           CC: "zig cc"
