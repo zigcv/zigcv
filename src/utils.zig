@@ -57,11 +57,10 @@ pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocat
     var child = std.ChildProcess.init(
         &.{
             "curl",
-            "--create-dirs",
-            "-LO",
-            "--output-dir",
-            dir,
             url,
+            "-Lo",
+            dir_filename,
+            "--create-dirs",
         },
         arena_allocator,
     );
