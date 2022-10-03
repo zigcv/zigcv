@@ -27,12 +27,6 @@ jobs:
           path: |
             ./opencv-build
           key: ${{ runner.os }}-opencv-build-
-      - name: Cache zig
-        id: opencv-cache
-        uses: actions/cache@v2
-        with:
-          path: ./zig-cache
-          key: ${{ runner.os }}-zig-cache
       - name: Download OpenCV
         run: |
           wget -O opencv.zip https://github.com/opencv/opencv/archive/4.6.0.zip
