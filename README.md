@@ -1,6 +1,6 @@
 # ZIGCV
 
-<!-- [![ci](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml) -->
+[![ci](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml)
 
 <div align="center">
   <img src="./logo/zigcv.png" width="50%" />

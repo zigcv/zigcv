@@ -296,7 +296,22 @@ pub const Window = struct {
 
 const testing = @import("std").testing;
 const imgcodecs = @import("imgcodecs.zig");
+
+fn hasDisplay() bool {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    const env_map = arena.allocator().create(std.process.EnvMap) catch return false;
+    env_map.* = std.process.getEnvMap(arena.allocator()) catch return false;
+
+    const display = env_map.get("DISPLAY") orelse "";
+
+    return display.len > 0;
+}
+
 test "highgui window" {
+    if (!hasDisplay()) return error.SkipZigTest;
+
     var window = try Window.init("test");
     try testing.expectEqualStrings("test", window.name);
 
@@ -322,6 +337,8 @@ test "highgui window" {
 }
 
 test "highgui window imshow" {
+    if (!hasDisplay()) return error.SkipZigTest;
+
     var window = try Window.init("imshow");
     defer window.deinit();
 
@@ -331,14 +348,20 @@ test "highgui window imshow" {
 }
 
 test "highgui window selectROI" {
+    if (!hasDisplay()) return error.SkipZigTest;
+
     // TODO
 }
 
 test "highgui window selectROIs" {
+    if (!hasDisplay()) return error.SkipZigTest;
+
     // TODO
 }
 
 test "highgui window trackbar" {
+    if (!hasDisplay()) return error.SkipZigTest;
+
     var window = try Window.init("testtrackbar");
     defer window.deinit();
 

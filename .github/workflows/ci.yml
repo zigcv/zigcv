@@ -3,40 +3,77 @@ name: ci
 on: push
 
 jobs:
-  run_test_and_build_docs:
-    runs-on: macos-latest
+  fmt:
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+      - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: master
+      - run: zig fmt --check *.zig src/**/*.zig
+
+  build_docker_image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: create tag
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}"
+          SHA=${{ github.sha }}
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            LATEST=latest
+          echo "TAGS=$IMAGE:$SHA,$IMAGE:$LATEST" >> $GITHUB_ENV
+          else
+          echo "TAGS=$IMAGE:$SHA" >> $GITHUB_ENV
+          fi
+          echo TAG $TAG
+      - name: Login GitHub Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v2
+        id: build-image
+        with:
+          push: true
+          tags: ${{ env.TAGS }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  run_test_and_build_docs:
+    runs-on: ubuntu-latest
+    needs: build_docker_image
+    container:
+      image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - run: git config --global --add safe.directory /__w/zigcv/zigcv
+        shell: bash
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
           version: master
-      - name: Update Homebrew
-        run: |
-          brew update --preinstall
-      # - name: Configure Homebrew cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       ~/Library/Caches/Homebrew/
-      #     key: brew-${{ hashFiles('.github/brew-formulae') }}
-      #     restore-keys: brew-
-      - name: Install Homebrew dependencies
-        run: |
-          brew install opencv
-        env:
-          # HOMEBREW_NO_AUTO_UPDATE: 1
-          # HOMEBREW_NO_INSTALL_CLEANUP: 1
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-      - name: checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Cache zig
-        id: opencv-cache
-        uses: actions/cache@v2
-        with:
-          path: ./zig-cache
-          key: ${{ runner.os }}-zig-cache
       - name: test
         run: zig build test
       - name: build examples
