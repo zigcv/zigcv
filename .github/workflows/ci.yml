@@ -3,10 +3,19 @@ name: ci
 on: push
 
 jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: master
+      - run: zig fmt --check *.zig src/**/*.zig
+
   build_docker_image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Cache Docker layers
@@ -55,10 +64,9 @@ jobs:
         password: ${{ secrets.github_token }}
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
-          ref: ${{ github.event.workflow_run.head_branch }}
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
