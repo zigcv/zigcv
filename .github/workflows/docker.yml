@@ -1,8 +1,5 @@
-name: Build and Deploy
-on:
-  push
-  # branches:
-  #   - main
+name: Build and Deploy Docker Image
+on: push
 
 jobs:
   check_file_change:
@@ -15,6 +12,7 @@ jobs:
         with:
           files: |
             Dockerfile
+            .github/workflows/docker.yml
 
   build:
     runs-on: ubuntu-latest
@@ -31,6 +29,17 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+      - name: create tag
+        run: |
+          SHA=${{ github.sha }}
+          TAG=${IMAGE}:${SHA:0:7}
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            LATEST=${IMAGE}:latest
+            echo "TAGS=$TAG,$LATEST" >> $GITHUB_ENV
+          else
+            echo "TAGS=$TAG" >> $GITHUB_ENV
+          fi
+          echo TAG $TAG
       - name: Login GitHub Packages
         uses: docker/login-action@v2
         with:
@@ -41,7 +50,7 @@ jobs:
         id: build-image
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}:${{ env.TAGS }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
