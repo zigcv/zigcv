@@ -6,16 +6,13 @@
   <img src="./logo/zigcv.png" width="50%" />
 </div>
 
+The ZIGCV library provides Zig language bindings for the [OpenCV 4](http://opencv.org/) computer vision library.
+
+The ZIGCV library supports the head/master of zig and OpenCV (v4.6.0) on Linux, macOS, and Windows.
+
 ## Caution
 
 Still under development, so the zig APIs will be dynamically changed.
-
-Tested on
-
-```
-zig version:  0.10.0-dev.4176+6d7b0690a
-opencv: 4.6
-```
 
 You can use `const c_api = @import("zigcv").c_api;` to call c bindings directly.  
 This C-API is currently fixed.
@@ -30,9 +27,13 @@ git clone --recursive https://github.com/ryoppippi/zigcv
 zig build
 ```
 
+## Docker
+
+You can also download and run the [Docker image](https://github.com/ryoppippi/zigcv/pkgs/container/zigcv) that has the latest opencv build compiled by zig cc compiler.
+
 ## Demos
 
-you can build some demos.  
+you can build some demos.
 For example:
 
 ```sh
