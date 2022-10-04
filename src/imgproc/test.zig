@@ -1992,7 +1992,6 @@ test "imgproc polylines" {
     try testing.expectEqual(@as(u8, 255), img.get(u8, 10, 10));
 }
 
-
 test "imgproc remap" {
     var img = try imgcodecs.imRead(img_dir ++ "gocvlogo.jpg", .color);
     defer img.deinit();
