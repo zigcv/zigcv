@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: check_file_change
-    if: needs.check_file_change.outputs.files_modified == 'true'
+    # if: needs.check_file_change.outputs.files_modified == 'true'
     steps:
       - uses: actions/checkout@v2
       - name: Set up Docker Buildx
@@ -32,9 +32,9 @@ jobs:
       - name: create tag
         run: |
           SHA=${{ github.sha }}
-          TAG=${IMAGE}:${SHA:0:7}
+          TAG=${SHA:0:7}
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            LATEST=${IMAGE}:latest
+            LATEST=latest
             echo "TAGS=$TAG,$LATEST" >> $GITHUB_ENV
           else
             echo "TAGS=$TAG" >> $GITHUB_ENV
