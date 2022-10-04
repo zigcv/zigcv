@@ -50,9 +50,9 @@ RUN curl -q -Lo opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VER
     -D BUILD_opencv_python3=NO \
     -D OPENCV_GENERATE_PKGCONFIG=ON \
     ../opencv-${OPENCV_VERSION}/ &&\
-   make -j $(nproc --all) \
-   && make preinstall \
-   && make install \
-   && ldconfig \
-   && cd / && rm -rf opencv*
+  make -j $(nproc --all) \
+  && make preinstall \
+  && make install \
+  && ldconfig \
+  && cd / && rm -rf opencv*
 
