@@ -1,17 +1,55 @@
 name: ci
 
-on:
-  workflow_run:
-    workflows: ["Build and Deploy Docker Image"]
-    types:
-      - completed
+on: push
 
 jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: create tag
+        run: |
+          TAG=${{ github.sha }}
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            LATEST=latest
+            echo "TAGS=$TAG,$LATEST" >> $GITHUB_ENV
+          else
+            echo "TAGS=$TAG" >> $GITHUB_ENV
+          fi
+          echo TAG $TAG
+      - name: Login GitHub Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v2
+        id: build-image
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ env.TAGS }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
   run_test_and_build_docs:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: build_docker_image
     container:
-      image: ghcr.io/${{ github.repository }}:&{{ github.sha }}
+      image: ghcr.io/${{ github.repository }}:${{ github.sha }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
@@ -20,6 +58,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+          ref: ${{ github.event.workflow_run.head_branch }}
       - name: setup zig master
         uses: goto-bus-stop/setup-zig@v1
         with:
