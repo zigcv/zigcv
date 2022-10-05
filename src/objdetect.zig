@@ -268,8 +268,8 @@ pub const QRCodeDetector = struct {
         allocator: std.mem.Allocator,
     ) !struct {
         is_detected: bool,
-        decoded: std.ArrayList([]const u8),
-        qr_codes: std.ArrayList(Mat),
+        decoded: []const []const u8,
+        qr_codes: []Mat,
         points: Mat,
         arena: std.heap.ArenaAllocator,
 
@@ -283,6 +283,8 @@ pub const QRCodeDetector = struct {
         var c_decoded: c.CStrings = undefined;
         var c_qr_codes: c.Mats = undefined;
 
+        defer c.CStrings_Close(c_decoded);
+
         var points = try Mat.init();
 
         const result = c.QRCodeDetector_DetectAndDecodeMulti(
@@ -292,21 +294,17 @@ pub const QRCodeDetector = struct {
             points.toC(),
             &c_qr_codes,
         );
-        var decoded = try std.ArrayList([]const u8).initCapacity(arena_allocator, if (result) @intCast(usize, c_decoded.length) else 0);
-        var qr_codes = try std.ArrayList(Mat).initCapacity(arena_allocator, if (result) @intCast(usize, c_qr_codes.length) else 0);
+
+        var decoded = try arena_allocator.alloc([]const u8, @intCast(usize, c_decoded.length));
+        var qr_codes = try arena_allocator.alloc(Mat, @intCast(usize, c_qr_codes.length));
+
         if (result) {
-            {
-                var i: usize = 0;
-                while (i < c_decoded.length) : (i += 1) {
-                    try decoded.append(std.mem.span(c_decoded.strs[i]));
-                }
+            for (decoded) |*item, i| {
+                item.* = try arena_allocator.dupe(u8, std.mem.span(c_decoded.strs[i]));
             }
 
-            {
-                var i: usize = 0;
-                while (i < c_qr_codes.length) : (i += 1) {
-                    try qr_codes.append(try Mat.initFromC(c_qr_codes.mats[i]));
-                }
+            for (qr_codes) |*item, i| {
+                item.* = try Mat.initFromC(c_qr_codes.mats[i]);
             }
         }
 
@@ -488,17 +486,10 @@ test "objdetect Multi QRCodeDetector" {
     var res2 = try detector.detectAndDecodeMulti(img, testing.allocator);
     defer res2.deinit();
     try testing.expectEqual(true, res2.is_detected);
-    try testing.expectEqual(@as(usize, 2), res2.decoded.items.len);
+    try testing.expectEqual(@as(usize, 2), res2.decoded.len);
 
-    // TODO: some environments have issues with this test
-    testing.expectEqualStrings("foo", res2.decoded.items[0]) catch |e| {
-        std.debug.print("error:\t{any}\n", .{e});
-        return error.SkipZigTest;
-    };
-    testing.expectEqualStrings("bar", res2.decoded.items[1]) catch |e| {
-        std.debug.print("error:\t{any}\n", .{e});
-        return error.SkipZigTest;
-    };
+    try testing.expectEqualStrings("foo", res2.decoded[0]);
+    try testing.expectEqualStrings("bar", res2.decoded[1]);
 }
 
 //*    implementation done

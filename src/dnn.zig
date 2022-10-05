@@ -240,18 +240,29 @@ pub const Net = struct {
         return return_res;
     }
 
-    pub fn getLayerNames(self: *Self, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
-        var c_strs: c.CStrings = undefined;
-        _ = c.Net_GetLayerNames(self.ptr, &c_strs);
-        const len = @intCast(usize, c_strs.length);
-        var return_arraylist = try std.ArrayList([]const u8).initCapacity(allocator, len);
-        {
-            var i: usize = 0;
-            while (i < len) : (i += 1) {
-                try return_arraylist.append(std.mem.span(c_strs.strs[i]));
-            }
+    pub fn getLayerNames(self: *Self, allocator: std.mem.Allocator) !struct {
+        items: []const []const u8,
+        arena: std.heap.ArenaAllocator,
+
+        pub fn deinit(self_: *@This()) void {
+            self_.arena.deinit();
         }
-        return return_arraylist;
+    } {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_allocator = arena.allocator();
+
+        var c_strs: c.CStrings = undefined;
+        defer c.CStrings_Close(c_strs);
+        c.Net_GetLayerNames(self.ptr, &c_strs);
+        const len = @intCast(usize, c_strs.length);
+        var return_array = try arena_allocator.alloc([]const u8, len);
+        for (return_array) |*item, i| {
+            item.* = try arena_allocator.dupe(u8, std.mem.span(c_strs.strs[i]));
+        }
+        return .{
+            .items = return_array,
+            .arena = arena,
+        };
     }
 
     pub fn getLayer(self: Self, layerid: i32) !Layer {
