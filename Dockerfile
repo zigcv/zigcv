@@ -3,7 +3,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    make cmake unzip git xz-utils curl\
+    make cmake unzip git xz-utils \
+    curl ca-certificates libcurl4-openssl-dev libssl-dev \
     libgtk2.0-dev libtbb-dev libavcodec-dev libavformat-dev libswscale-dev libtbb2 \
     libjpeg-dev libpng-dev libtiff-dev libdc1394-dev \
     libblas-dev libopenblas-dev libeigen3-dev liblapack-dev libatlas-base-dev gfortran \
@@ -37,7 +38,7 @@ RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERS
     -D WITH_OPENGL=OFF \
     -D WITH_QT=OFF \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib-${OPENCV_VERSION}/modules/ \
+    -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-${OPENCV_VERSION}/modules/ \
     -D OPENCV_ENABLE_NONFREE=ON \
     -D WITH_JASPER=OFF \
     -D WITH_TBB=ON \
