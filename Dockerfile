@@ -1,9 +1,8 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 RUN apt-get update \
-  && apt-get install -yqq --no-install-recommends \
-    make cmake unzip git xz-utils\
-    curl ca-certificates libcurl4-openssl-dev libssl-dev\
+  && apt-get install -y --no-install-recommends \
+    make cmake unzip git xz-utils curl\
     libgtk2.0-dev libtbb-dev libavcodec-dev libavformat-dev libswscale-dev libtbb2 \
     libjpeg-dev libpng-dev libtiff-dev libdc1394-dev \
     libblas-dev libopenblas-dev libeigen3-dev liblapack-dev libatlas-base-dev gfortran \
@@ -28,8 +27,9 @@ RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERS
   && curl -Lso opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip \
   && unzip -qq opencv.zip \
   && unzip -qq opencv_contrib.zip \
-  && mkdir -p opencv-build \
-  && cd opencv-build \
+  && cd opencv-${OPENCV_VERSION} \
+  && mkdir -p build \
+  && cd build \
   && cmake \
     -D CMAKE_BUILD_TYPE=RELEASE \
     -D WITH_IPP=OFF \
@@ -49,7 +49,7 @@ RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERS
     -D BUILD_opencv_python2=NO \
     -D BUILD_opencv_python3=NO \
     -D OPENCV_GENERATE_PKGCONFIG=ON \
-    ../opencv-${OPENCV_VERSION}/ \
+    .. \
   && make -j $(nproc --all) \
   && make preinstall \
   && make install \
