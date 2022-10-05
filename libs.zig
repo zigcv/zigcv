@@ -34,7 +34,6 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
         go_srcdir ++ "version.cpp",
         go_srcdir ++ "video.cpp",
         go_srcdir ++ "videoio.cpp",
-        zig_src_dir ++ "/core/zig_core.cpp",
     }, &.{
         "--std=c++11",
     });

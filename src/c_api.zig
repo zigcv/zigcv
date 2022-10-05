@@ -14,5 +14,4 @@ pub usingnamespace @cImport({
     @cInclude("version.h");
     @cInclude("video.h");
     @cInclude("videoio.h");
-    @cInclude("core/zig_core.h");
 });
