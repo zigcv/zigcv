@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -yqq --no-install-recommends \
     make cmake unzip git xz-utils\
     curl ca-certificates libcurl4-openssl-dev libssl-dev\
     libgtk2.0-dev libtbb-dev libavcodec-dev libavformat-dev libswscale-dev libtbb2 \
@@ -11,25 +11,25 @@ RUN apt-get update \
 
 ARG ZIG_VERSION="0.10.0-dev.4217+9d8cdb855"
 ENV ZIG_VERSION ${ZIG_VERSION}
+
 ARG ARCH="x86_64"
 ENV ARCH ${ARCH}
-
-RUN curl -q -Lo zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERSION}.tar.xz \
-  && tar -xvf zig.tar.xz \
-  && rm zig.tar.xz \
-  && mv zig-linux-${ARCH}-${ZIG_VERSION} zig
-
-ENV CC="/zig/zig cc"
-ENV CXX="/zig/zig c++"
 
 ARG OPENCV_VERSION="4.6.0"
 ENV OPENCV_VERSION $OPENCV_VERSION
 
-RUN curl -q -Lo opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
-  && curl -q -Lo opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip \
-  && unzip opencv.zip \
-  && unzip opencv_contrib.zip \
+WORKDIR /tmp
+ENV CC="/tmp/zig/zig cc"
+ENV CXX="/tmp/zig/zig c++"
+RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERSION}.tar.xz \
+  && tar -xf zig.tar.xz \
+  && mv zig-linux-${ARCH}-${ZIG_VERSION} zig \
+  && curl -Lso opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
+  && curl -Lso opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip \
+  && unzip -qq opencv.zip \
+  && unzip -qq opencv_contrib.zip \
   && mkdir -p opencv-build \
+  && cd opencv-build \
   && cmake \
     -D CMAKE_BUILD_TYPE=RELEASE \
     -D WITH_IPP=OFF \
@@ -49,10 +49,10 @@ RUN curl -q -Lo opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VER
     -D BUILD_opencv_python2=NO \
     -D BUILD_opencv_python3=NO \
     -D OPENCV_GENERATE_PKGCONFIG=ON \
-    ../opencv-${OPENCV_VERSION}/ &&\
-  make -j $(nproc --all) \
+    ../opencv-${OPENCV_VERSION}/ \
+  && make -j $(nproc --all) \
   && make preinstall \
   && make install \
   && ldconfig \
-  && cd / && rm -rf opencv*
+  && rm -rf /tmp/*
 
