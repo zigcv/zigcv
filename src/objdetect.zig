@@ -261,7 +261,6 @@ pub const QRCodeDetector = struct {
     /// For further details, please see:
     /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
     ///
-    /// TODO: some environments have issues with this test
     pub fn detectAndDecodeMulti(
         self: Self,
         input: Mat,
@@ -488,7 +487,11 @@ test "objdetect Multi QRCodeDetector" {
     try testing.expectEqual(true, res2.is_detected);
     try testing.expectEqual(@as(usize, 2), res2.decoded.len);
 
-    try testing.expectEqualStrings("foo", res2.decoded[0]);
+    testing.expectEqualStrings("foo", res2.decoded[0]) catch {
+        try testing.expectEqualStrings("bar", res2.decoded[0]);
+        try testing.expectEqualStrings("foo", res2.decoded[1]);
+        return;
+    };
     try testing.expectEqualStrings("bar", res2.decoded[1]);
 }
 

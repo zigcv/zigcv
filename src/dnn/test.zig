@@ -69,12 +69,8 @@ fn checkNet(net: *Net, allocator: std.mem.Allocator) !void {
 
     try testing.expectEqual(@as(usize, 142), lnames.items.len);
 
-    // TODO: in some enviroments, this fails.
     var err_happend = false;
-    testing.expectEqualStrings("conv1/relu_7x7", lnames.items[1]) catch |err| {
-        std.debug.print("error: {}\n", .{err});
-        err_happend = true;
-    };
+    try testing.expectEqualStrings("conv1/relu_7x7", lnames.items[1]);
     var cs = [_][]const u8{"prob"};
     var prob = try net.forwardLayers(&cs, allocator);
     defer prob.deinit();
