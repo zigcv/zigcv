@@ -341,12 +341,6 @@ pub const Tracker = struct {
     pub fn deinit(self: *Self) void {
         self.vtable.deinitFn(self);
     }
-
-    fn trackerInitialize(self: *Self, image: Mat, bounding_box: Rect) bool {
-        _ = bounding_box;
-        _ = image;
-        _ = self;
-    }
 };
 
 /// TrackerMIL is a Tracker that uses the MIL algorithm. MIL trains a classifier in an online manner
