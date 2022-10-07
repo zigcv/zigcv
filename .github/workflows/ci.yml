@@ -91,9 +91,11 @@ jobs:
       - run: git config --global --add safe.directory /__w/zigcv/zigcv
         shell: bash
       - name: setup zig master
-        uses: goto-bus-stop/setup-zig@v1
-        with:
-          version: master
+        run: |
+          zigup fetch master
+          zigup default master
+          zigup clean
+          zig version
       - name: test
         run: zig build test
       - name: build examples
