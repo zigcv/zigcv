@@ -2,8 +2,7 @@ FROM ubuntu:20.04 as base
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    unzip git xz-utils pkg-config\
-    curl ca-certificates \
+    unzip git xz-utils pkg-config curl ca-certificates \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -26,19 +25,11 @@ RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-$(uname -m)-${ZIG_
 ENV CC="/zig/zig cc"
 ENV CXX="/zig/zig c++"
 
-ARG ARCH="x86_64"
-ENV ARCH ${ARCH}
-
 ARG OPENCV_VERSION="4.6.0"
 ENV OPENCV_VERSION $OPENCV_VERSION
 
-WORKDIR /tmp
-ENV CC="/tmp/zig/zig cc"
-ENV CXX="/tmp/zig/zig c++"
-RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERSION}.tar.xz \
-  && tar -xf zig.tar.xz \
-  && mv zig-linux-${ARCH}-${ZIG_VERSION} zig \
-  && curl -Lso opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
+WORKDIR / 
+RUN curl -Lso opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
   && curl -Lso opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip \
   && unzip -qq opencv.zip \
   && unzip -qq opencv_contrib.zip
@@ -68,8 +59,7 @@ RUN mkdir -p build \
     .. \
   && make -j $(nproc --all) \
   && make preinstall \
-  && make install \
-  && ldconfig
+  && make install
 
 FROM base as zigup
 WORKDIR /
