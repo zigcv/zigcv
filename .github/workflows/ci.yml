@@ -97,7 +97,7 @@ jobs:
         run: zig build examples
       - name: build docs
         if: github.ref == 'refs/heads/main'
-        run: zig build docs
+        run: zig build test -Ddocs=true
       - uses: actions/upload-pages-artifact@v1
         if: github.ref == 'refs/heads/main'
         with:
