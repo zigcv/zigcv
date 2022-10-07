@@ -13,18 +13,15 @@ RUN apt-get update \
 ARG ZIG_VERSION="0.10.0-dev.4217+9d8cdb855"
 ENV ZIG_VERSION ${ZIG_VERSION}
 
-ARG ARCH="x86_64"
-ENV ARCH ${ARCH}
-
 ARG OPENCV_VERSION="4.6.0"
 ENV OPENCV_VERSION $OPENCV_VERSION
 
 WORKDIR /tmp
 ENV CC="/tmp/zig/zig cc"
 ENV CXX="/tmp/zig/zig c++"
-RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-${ARCH}-${ZIG_VERSION}.tar.xz \
+RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-$(uname -m)-${ZIG_VERSION}.tar.xz \
   && tar -xf zig.tar.xz \
-  && mv zig-linux-${ARCH}-${ZIG_VERSION} zig \
+  && mv zig-linux-$(uname -m)-${ZIG_VERSION} zig \
   && curl -Lso opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
   && curl -Lso opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip \
   && unzip -qq opencv.zip \
