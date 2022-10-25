@@ -63,7 +63,7 @@ jobs:
       - name: Pull the latest image
         if: steps.docker_cache.outputs.cache-hit != 'true'
         run: docker pull ${{ env.IMAGE_LATEST }} || true
-      - uses: docker/build-push-action@v2
+      - uses: docker/build-push-action@v3
         id: build-image
         with:
           push: true
