@@ -7,12 +7,14 @@ pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comp
     {
         var i: usize = 0;
         while (i < len) : (i += 1) {
-            const elem = ToType.initFromC(from_array[i]);
-            if (comptime (@typeInfo(@TypeOf(elem)) == .ErrorUnion)) {
-                try arr.append(try elem);
-            } else {
-                try arr.append(elem);
-            }
+            const elem = blk: {
+                const elem = ToType.initFromC(from_array[i]);
+                break :blk switch (comptime @typeInfo(@TypeOf(elem))) {
+                    .ErrorUnion => try elem,
+                    else => elem,
+                };
+            };
+            try arr.append(elem);
         }
     }
     return arr;
