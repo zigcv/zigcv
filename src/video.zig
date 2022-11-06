@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Rect = core.Rect;
@@ -60,6 +61,7 @@ const BackgroundSubtractorMOG2 = struct {
 
     /// Close BackgroundSubtractorMOG2.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         _ = c.BackgroundSubtractorMOG2_Close(self.ptr);
         self.*.ptr = null;
     }
@@ -113,7 +115,8 @@ pub const BackgroundSubtractorKNN = struct {
 
     /// Close BackgroundSubtractorKNN.
     pub fn deinit(self: *Self) void {
-        _ = c.BackgroundSubtractorKNN_Close(self.ptr);
+        assert(self.ptr != null);
+        c.BackgroundSubtractorKNN_Close(self.ptr);
         self.*.ptr = null;
     }
 
@@ -289,6 +292,7 @@ pub const Tracker = struct {
 
         const gen = struct {
             pub fn deinit(self: *Self) void {
+                assert(self.ptr != null);
                 T_info.Pointer.child.deinit(self.ptr);
                 self.ptr = null;
             }
@@ -358,8 +362,8 @@ pub const TrackerMIL = struct {
         return try epnn(p);
     }
 
-    fn deinit(self: c.TrackerMIL) void {
-        c.TrackerMIL_Close(self);
+    fn deinit(ptr: c.TrackerMIL) void {
+        c.TrackerMIL_Close(ptr);
     }
 
     pub fn tracker(self: *Self) !Tracker {

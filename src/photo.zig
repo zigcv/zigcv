@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Mats = core.Mats;
@@ -213,7 +214,8 @@ pub const MergeMertens = struct {
 
     ///Close MergeMertens
     pub fn deinit(self: *Self) void {
-        _ = c.MergeMertens_Close(self.ptr);
+        assert(self.ptr != null);
+        c.MergeMertens_Close(self.ptr);
         self.*.ptr = null;
     }
 
@@ -270,7 +272,8 @@ pub const AlignMTB = struct {
 
     ///Close AlignMTB
     pub fn deinit(self: *Self) void {
-        _ = c.AlignMTB_Close(self.ptr);
+        assert(self.ptr != null);
+        c.AlignMTB_Close(self.ptr);
         self.*.ptr = null;
     }
 

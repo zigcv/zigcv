@@ -1,6 +1,7 @@
 const std = @import("std");
 const c = @import("c_api.zig");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const core = @import("core.zig");
 const Mat = core.Mat;
@@ -33,6 +34,7 @@ pub const AKAZE = struct {
 
     /// Close AKAZE.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.AKAZE_Close(self.ptr);
         self.ptr = null;
     }
@@ -83,6 +85,7 @@ pub const AgastFeatureDetector = struct {
 
     /// Close AgastFeatureDetector.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.AgastFeatureDetector_Close(self.ptr);
         self.ptr = null;
     }
@@ -118,6 +121,7 @@ pub const BRISK = struct {
 
     /// Close BRISK.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.BRISK_Close(self.ptr);
         self.ptr = null;
     }
@@ -175,6 +179,7 @@ pub const FastFeatureDetector = struct {
 
     /// Close FastFeatureDetector.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.FastFeatureDetector_Close(self.ptr);
         self.ptr = null;
     }
@@ -230,6 +235,7 @@ pub const GFTTDetector = struct {
 
     /// Close GFTTDetector.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.GFTTDetector_Close(self.ptr);
         self.ptr = null;
     }
@@ -269,6 +275,7 @@ pub const KAZE = struct {
 
     /// Close KAZE.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.KAZE_Close(self.ptr);
         self.ptr = null;
     }
@@ -319,6 +326,7 @@ pub const MSER = struct {
 
     /// Close MSER.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.MSER_Close(self.ptr);
         self.ptr = null;
     }
@@ -393,6 +401,7 @@ pub const ORB = struct {
 
     /// Close ORB.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.ORB_Close(self.ptr);
         self.ptr = null;
     }
@@ -448,7 +457,8 @@ pub const SIFT = struct {
     /// https://docs.opencv.org/master/d0/d13/classcv_1_1Feature2D.html#aa4e9a7082ec61ebc108806704fbd7887
     ///
     pub fn deinit(self: *Self) void {
-        _ = c.SIFT_Close(self.ptr);
+        assert(self.ptr != null);
+        c.SIFT_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -580,6 +590,7 @@ pub const SimpleBlobDetector = struct {
 
     /// Close SimpleBlobDetector.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.SimpleBlobDetector_Close(self.ptr);
         self.ptr = null;
     }
@@ -631,6 +642,7 @@ pub const BFMatcher = struct {
 
     /// Close BFMatcher.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.BFMatcher_Close(self.ptr);
         self.ptr = null;
     }
@@ -676,6 +688,7 @@ pub const FlannBasedMatcher = struct {
 
     /// Close FlannBasedMatcher.
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.FlannBasedMatcher_Close(self.ptr);
     }
 
@@ -860,10 +873,8 @@ const MultiDMatches = struct {
     array: std.ArrayList(DMathes),
 
     pub fn deinit(self: MultiDMatches) void {
-        defer {
-            for (self.array.items) |m| m.deinit();
-            self.array.deinit();
-        }
+        for (self.array.items) |m| m.deinit();
+        self.array.deinit();
     }
 };
 
