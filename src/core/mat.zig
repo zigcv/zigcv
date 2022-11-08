@@ -2,6 +2,7 @@ const c = @import("../c_api.zig");
 const std = @import("std");
 const utils = @import("../utils.zig");
 const core = @import("../core.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const Rect = core.Rect;
 const Color = core.Color;
@@ -477,6 +478,7 @@ pub fn initOnes(rows_: i32, cols_: i32, mt: MatType) !Self {
 }
 
 pub fn deinit(self: *Self) void {
+    assert(self.*.ptr != null);
     c.Mat_Close(self.ptr);
     self.ptr = null;
 }

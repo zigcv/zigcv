@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Rect = core.Rect;
@@ -25,6 +26,7 @@ pub const CascadeClassifier = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         _ = c.CascadeClassifier_Close(self.ptr);
         self.*.ptr = null;
     }
@@ -99,7 +101,8 @@ pub const HOGDescriptor = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.HOGDescriptor_Close(self.ptr);
+        assert(self.ptr != null);
+        c.HOGDescriptor_Close(self.ptr);
         self.*.ptr = null;
     }
 
@@ -211,7 +214,8 @@ pub const QRCodeDetector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.QRCodeDetector_Close(self.ptr);
+        assert(self.ptr != null);
+        c.QRCodeDetector_Close(self.ptr);
         self.*.ptr = null;
     }
 

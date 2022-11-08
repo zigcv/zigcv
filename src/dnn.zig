@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const ensureFileExists = utils.ensureFileExists;
 const Mat = core.Mat;
@@ -100,6 +101,7 @@ pub const Net = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.Net_Close(self.ptr);
         self.*.ptr = null;
     }
@@ -374,6 +376,7 @@ pub const Layer = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.Layer_Close(self.ptr);
         self.*.ptr = null;
     }

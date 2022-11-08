@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 const core = @import("core.zig");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 const Mat = core.Mat;
 const Size = core.Size;
@@ -442,6 +443,7 @@ pub const CLAHE = struct {
 
     /// Close the CLAHE algorithm
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         c.CLAHE_Close(self.ptr);
         self.ptr = null;
     }

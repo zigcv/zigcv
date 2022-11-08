@@ -1,6 +1,7 @@
 const c = @import("c_api.zig");
 const std = @import("std");
 const utils = @import("utils.zig");
+const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
 
 pub const Mat = @import("core/mat.zig");
@@ -131,7 +132,7 @@ pub const PointVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr == null) return;
+        assert(self.ptr != null);
         c.PointVector_Close(self.ptr);
         self.ptr = null;
     }
@@ -207,7 +208,8 @@ pub const PointsVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        _ = c.PointsVector_Close(self.ptr);
+        assert(self.ptr != null);
+        c.PointsVector_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -287,8 +289,8 @@ pub const Point2fVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr == null) return;
-        _ = c.Point2fVector_Close(self.ptr);
+        assert(self.ptr != null);
+        c.Point2fVector_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -356,8 +358,8 @@ pub const Points2fVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr == null) return;
-        _ = c.Points2fVector_Close(self.ptr);
+        assert(self.ptr != null);
+        c.Points2fVector_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -438,8 +440,8 @@ pub const Point3fVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr == null) return;
-        _ = c.Point3fVector_Close(self.ptr);
+        assert(self.ptr != null);
+        c.Point3fVector_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -507,8 +509,8 @@ pub const Points3fVector = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        if (self.ptr == null) return;
-        _ = c.Points3fVector_Close(self.ptr);
+        assert(self.ptr != null);
+        c.Points3fVector_Close(self.ptr);
         self.ptr = null;
     }
 
@@ -713,7 +715,7 @@ pub const Rect = struct {
     }
 
     pub fn deinitRects(rects: c.Rects) void {
-        _ = c.Rects_Close(rects);
+        c.Rects_Close(rects);
     }
 };
 
@@ -860,20 +862,20 @@ pub const STDVector = packed struct {
     before: usize,
     after: usize,
 
-    const self = @This();
-    pub fn init(ptr: *self) void {
+    const Self = @This();
+    pub fn init(ptr: *Self) void {
         c.StdByteVectorInitialize(ptr);
     }
 
-    pub fn deinit(ptr: *self) void {
+    pub fn deinit(ptr: *Self) void {
         c.StdByteVectorFree(ptr);
     }
 
-    pub fn len(ptr: *self) usize {
+    pub fn len(ptr: *Self) usize {
         return c.StdByteVectorLen(ptr);
     }
 
-    pub fn data(ptr: *self) [*c]u8 {
+    pub fn data(ptr: *Self) [*c]u8 {
         return c.StdByteVectorData(ptr);
     }
 };
@@ -913,6 +915,7 @@ pub const TermCriteria = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        assert(self.ptr != null);
         self.ptr = null;
     }
 

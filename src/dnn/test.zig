@@ -456,9 +456,6 @@ test "dnn blob getImages" {
 
     var imgs_from_blob = try blob.getImages(test_allocator);
     defer imgs_from_blob.deinit();
-    defer {
-        for (imgs_from_blob.list.items) |*imgi| imgi.deinit();
-    }
 
     {
         var i: usize = 0;
