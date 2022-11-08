@@ -20,7 +20,8 @@ pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comp
     return arr;
 }
 
-pub fn ensurePtrNotNull(ptr: ?*anyopaque) !*anyopaque {
+//  note: cannot implicitly cast double pointer '[*c]?*anyopaque' to anyopaque pointer '?*anyopaque'
+pub fn ensurePtrNotNull(ptr: anytype) !@TypeOf(ptr) {
     if (ptr == null) return error.AllocationError;
     return ptr.?;
 }
@@ -79,6 +80,6 @@ pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocat
 }
 
 test "ensureNotNull" {
-    var ptr: ?[*]u8 = null;
+    var ptr: ?*u8 = null;
     try std.testing.expectError(error.AllocationError, ensurePtrNotNull(ptr));
 }
