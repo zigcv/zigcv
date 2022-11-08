@@ -55,3 +55,14 @@ RUN curl -Lso zig.tar.xz https://ziglang.org/builds/zig-linux-$(uname -m)-${ZIG_
   && ldconfig \
   && rm -rf /tmp/*
 
+WORKDIR /tmp
+ARG ZIGUP_VERSION="v2022_08_25"
+RUN curl -Lso zigup.zip https://github.com/marler8997/zigup/releases/download/${ZIGUP_VERSION}/zigup.ubuntu-latest-$(uname -m).zip \
+  && unzip -qq zigup.zip \
+  && chmod +x zigup \
+  && mv zigup /usr/local/bin/zigup \
+  && rm -rf /tmp/*
+
+ARG CACHE_DATE=2022-11-09
+RUN zigup master
+
