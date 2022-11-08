@@ -95,6 +95,14 @@ jobs:
         uses: goto-bus-stop/setup-zig@v1
         with:
           version: master
+      - name: save zig-cache
+        id: docker_cache
+        uses: actions/cache@v3
+        with:
+          path: ./zig-cache
+          key: ${{ runner.os }}-zig-cache-${{ github.event.repository.updated_at }}
+          restore-keys: |
+            ${{ runner.os }}-zig-cache-
       - name: test
         run: zig build test
       - name: build examples
@@ -106,8 +114,6 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: docs
-      - name: delete tmp files
-        run: rm -rf ./zig-cache/tmp
 
   deploy:
     needs: run_test_and_build_docs
