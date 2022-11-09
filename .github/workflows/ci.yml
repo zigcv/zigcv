@@ -77,8 +77,7 @@ jobs:
           submodules: true
       - run: git config --global --add safe.directory /__w/zigcv/zigcv
         shell: bash
-      - name: setup zig master
-        run: zigup master
+      - run: zig version
       - name: save zig-cache
         id: docker_cache
         uses: actions/cache@v3
