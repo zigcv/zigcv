@@ -8,10 +8,6 @@ on:
 
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   fmt:
     runs-on: ubuntu-latest
