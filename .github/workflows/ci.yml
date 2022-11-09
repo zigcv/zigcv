@@ -85,13 +85,10 @@ jobs:
           key: ${{ runner.os }}-zig-cache-${{ github.event.repository.updated_at }}
           restore-keys: |
             ${{ runner.os }}-zig-cache-
-      - name: test
-        run: zig build test
+      - name: test and build docs
+        run: zig build test -Ddocs=true
       - name: build examples
         run: zig build examples
-      - name: build docs
-        if: github.ref == 'refs/heads/main'
-        run: zig build test -Ddocs=true
       - uses: actions/upload-pages-artifact@v1
         if: github.ref == 'refs/heads/main'
         with:
