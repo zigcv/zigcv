@@ -74,9 +74,7 @@ jobs:
       - run: git config --global --add safe.directory /__w/zigcv/zigcv
         shell: bash
       - name: setup zig master
-        uses: goto-bus-stop/setup-zig@v1
-        with:
-          version: master
+        run: zigup master
       - name: save zig-cache
         id: docker_cache
         uses: actions/cache@v3
