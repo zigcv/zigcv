@@ -34,9 +34,8 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
         go_srcdir ++ "version.cpp",
         go_srcdir ++ "video.cpp",
         go_srcdir ++ "videoio.cpp",
-    }, &.{
-        "--std=c++11",
-    });
+    }, c_build_options);
+
     linkToOpenCV(cv);
 
     exe.linkLibrary(cv);
@@ -115,9 +114,7 @@ pub const contrib = struct {
             contrib_dir ++ "xfeatures2d.cpp",
             contrib_dir ++ "ximgproc.cpp",
             contrib_dir ++ "xphoto.cpp",
-        }, &.{
-            "--std=c++11",
-        });
+        }, c_build_options);
         cv_contrib.addIncludePath(contrib_dir);
         linkToOpenCV(cv_contrib);
 
@@ -158,9 +155,7 @@ pub const cuda = struct {
             cuda_dir ++ "objdetect.cpp",
             cuda_dir ++ "optflow.cpp",
             cuda_dir ++ "warping.cpp",
-        }, &.{
-            "--std=c++11",
-        });
+        }, c_build_options);
         cv_cuda.addIncludePath(go_srcdir);
         linkToOpenCV(cv_cuda);
 
@@ -189,4 +184,10 @@ const Program = struct {
     name: []const u8,
     path: []const u8,
     desc: []const u8,
+};
+
+const c_build_options: []const []const u8 = &.{
+    "-Wall",
+    "-Wextra",
+    "--std=c++11",
 };
