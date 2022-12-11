@@ -30,3 +30,22 @@ pub usingnamespace svd;
 pub usingnamespace version;
 pub usingnamespace videoio;
 pub usingnamespace video;
+
+const ma = @import("mallocz.zig");
+const std = @import("std");
+
+pub fn init(config: ma.Config) void {
+    ma.init(config);
+}
+
+pub fn deinit() void {
+    ma.deinit();
+}
+
+pub inline fn getAllocator() std.mem.Allocator {
+    return ma.getAllocator();
+}
+
+pub const malloc = ma.malloc;
+pub const realloc = ma.realloc;
+pub const free = ma.free;

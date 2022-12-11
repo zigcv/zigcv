@@ -4,6 +4,8 @@ const cv_c_api = cv.c_api;
 
 pub fn main() anyerror!void {
     var allocator = std.heap.page_allocator;
+    cv.ma.init(.{ .allocator = allocator });
+    defer cv.ma.deinit();
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
     const prog = args.next();

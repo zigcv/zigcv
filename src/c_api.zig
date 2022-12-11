@@ -1,4 +1,5 @@
 pub usingnamespace @cImport({
+    @cInclude("mallocz.h");
     @cInclude("stdlib.h");
     @cInclude("asyncarray.h");
     @cInclude("calib3d.h");

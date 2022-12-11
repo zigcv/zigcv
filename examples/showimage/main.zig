@@ -1,8 +1,12 @@
 const std = @import("std");
 const cv = @import("zigcv");
+const ma = @import("zigcv").ma;
 const cv_c_api = cv.c_api;
 
 pub fn main() anyerror!void {
+    ma.init(.{ .allocator = std.heap.page_allocator });
+    defer ma.deinit();
+
     var args = try std.process.argsWithAllocator(std.heap.page_allocator);
     defer args.deinit();
     const prog = args.next();

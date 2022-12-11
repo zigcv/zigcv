@@ -1,9 +1,11 @@
 const std = @import("std");
-const c = @import("c_api.zig");
-const core = @import("core.zig");
-const utils = @import("utils.zig");
+const cv = @import("main.zig");
+const c = cv.c_api;
+const core = cv.core;
+const utils = cv.utils;
 const assert = std.debug.assert;
 const epnn = utils.ensurePtrNotNull;
+const getAllocator = cv.getAllocator;
 const Mat = core.Mat;
 const Rect = core.Rect;
 const Rects = core.Rects;
@@ -27,7 +29,7 @@ pub const CascadeClassifier = struct {
 
     pub fn deinit(self: *Self) void {
         assert(self.ptr != null);
-        _ = c.CascadeClassifier_Close(self.ptr);
+        c.CascadeClassifier_Close(self.ptr);
         self.*.ptr = null;
     }
 
@@ -48,10 +50,10 @@ pub const CascadeClassifier = struct {
     /// For further details, please see:
     /// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#aaf8181cb63968136476ec4204ffca498
     ///
-    pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !Rects {
+    pub fn detectMultiScale(self: Self, img: Mat) !Rects {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScale(self.ptr, img.ptr);
         defer Rect.deinitRects(rec);
-        return try Rect.toArrayList(rec, allocator);
+        return try Rect.toArrayList(rec, getAllocator());
     }
 
     /// DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
@@ -68,7 +70,6 @@ pub const CascadeClassifier = struct {
         flags: i32,
         min_size: Size,
         max_size: Size,
-        allocator: std.mem.Allocator,
     ) !Rects {
         const rec: c.struct_Rects = c.CascadeClassifier_DetectMultiScaleWithParams(
             self.ptr,
@@ -80,7 +81,7 @@ pub const CascadeClassifier = struct {
             max_size.toC(),
         );
         defer Rect.deinitRects(rec);
-        return try Rect.toArrayList(rec, allocator);
+        return try Rect.toArrayList(rec, getAllocator());
     }
 };
 
@@ -102,8 +103,10 @@ pub const HOGDescriptor = struct {
 
     pub fn deinit(self: *Self) void {
         assert(self.ptr != null);
-        c.HOGDescriptor_Close(self.ptr);
-        self.*.ptr = null;
+        // TODO: I need to figure out why this is crashing
+        // c.HOGDescriptor_Close(self.ptr);
+        cv.free(self.ptr);
+        self.ptr = null;
     }
 
     pub fn load(self: *Self, name: []const u8) !void {
@@ -119,10 +122,10 @@ pub const HOGDescriptor = struct {
     /// For further details, please see:
     /// https://docs.opencv.org/master/d5/d33/structcv_1_1HOGDescriptor.html#a660e5cd036fd5ddf0f5767b352acd948
     ///
-    pub fn detectMultiScale(self: Self, img: Mat, allocator: std.mem.Allocator) !Rects {
+    pub fn detectMultiScale(self: Self, img: Mat) !Rects {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScale(self.ptr, img.ptr);
         defer Rect.deinitRects(rec);
-        return try Rect.toArrayList(rec, allocator);
+        return try Rect.toArrayList(rec, getAllocator());
     }
 
     /// DetectMultiScaleWithParams calls DetectMultiScale but allows setting parameters
@@ -140,7 +143,6 @@ pub const HOGDescriptor = struct {
         scale: f64,
         final_threshold: f64,
         use_meanshift_grouping: bool,
-        allocator: std.mem.Allocator,
     ) !Rects {
         const rec: c.struct_Rects = c.HOGDescriptor_DetectMultiScaleWithParams(
             self.ptr,
@@ -153,7 +155,7 @@ pub const HOGDescriptor = struct {
             use_meanshift_grouping,
         );
         defer Rect.deinitRects(rec);
-        return try Rect.toArrayList(rec, allocator);
+        return try Rect.toArrayList(rec, getAllocator());
     }
 
     /// HOGDefaultPeopleDetector returns a new Mat with the HOG DefaultPeopleDetector.
@@ -180,8 +182,9 @@ pub const HOGDescriptor = struct {
 /// For further details, please see:
 /// https://docs.opencv.org/4.x/de/de1/group__objdetect__common.html#ga3dba897ade8aa8227edda66508e16ab9
 ///
-pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allocator: std.mem.Allocator) !Rects {
+pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64) !Rects {
     if (group_threshold < -1) return error.InvalidGroupThreshold;
+    var allocator = getAllocator();
 
     var c_rects_array = try allocator.alloc(c.Rect, rects.len);
     defer allocator.free(c_rects_array);
@@ -245,7 +248,7 @@ pub const QRCodeDetector = struct {
     /// https://docs.opencv.org/master/de/dc3/classcv_1_1QRCodeDetector.html#a4172c2eb4825c844fb1b0ae67202d329
     ///
     pub fn decode(self: Self, input: Mat, points: Mat, straight_qrcode: *Mat) []const u8 {
-        const result = c.QRCodeDetector_Decode(self.ptr, input.ptr, points.ptr, straight_qrcode.*.ptr);
+        var result = c.QRCodeDetector_Decode(self.ptr, input.ptr, points.ptr, straight_qrcode.*.ptr);
         return std.mem.span(result);
     }
 
@@ -268,7 +271,6 @@ pub const QRCodeDetector = struct {
     pub fn detectAndDecodeMulti(
         self: Self,
         input: Mat,
-        allocator: std.mem.Allocator,
     ) !struct {
         is_detected: bool,
         decoded: []const []const u8,
@@ -277,9 +279,15 @@ pub const QRCodeDetector = struct {
         arena: std.heap.ArenaAllocator,
 
         pub fn deinit(self_: *@This()) void {
+            for (self_.qr_codes) |*qr_code| {
+                qr_code.deinit();
+            }
+            self_.points.deinit();
             self_.arena.deinit();
         }
     } {
+        var allocator = getAllocator();
+
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_allocator = arena.allocator();
 
@@ -292,9 +300,9 @@ pub const QRCodeDetector = struct {
 
         const result = c.QRCodeDetector_DetectAndDecodeMulti(
             self.ptr,
-            input.toC(),
+            input.ptr,
             &c_decoded,
-            points.toC(),
+            points.ptr,
             &c_qr_codes,
         );
 
@@ -303,7 +311,8 @@ pub const QRCodeDetector = struct {
 
         if (result) {
             for (decoded) |*item, i| {
-                item.* = try arena_allocator.dupe(u8, std.mem.span(c_decoded.strs[i]));
+                const s = c_decoded.strs[i];
+                item.* = try arena_allocator.dupe(u8, std.mem.span(s));
             }
 
             for (qr_codes) |*item, i| {
@@ -324,6 +333,8 @@ pub const QRCodeDetector = struct {
 const testing = std.testing;
 const imgcodecs = @import("imgcodecs.zig");
 test "objdetect CascadeClassifier" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var img = try imgcodecs.imRead("libs/gocv/images/face.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
@@ -333,13 +344,15 @@ test "objdetect CascadeClassifier" {
 
     try classifier.load("./libs/gocv/data/haarcascade_frontalface_default.xml");
 
-    var rects = try classifier.detectMultiScale(img, testing.allocator);
+    var rects = try classifier.detectMultiScale(img);
     defer rects.deinit();
 
     try testing.expectEqual(@as(usize, 1), rects.items.len);
 }
 
 test "objdetect CascadeClassifierWithParams" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var img = try imgcodecs.imRead("libs/gocv/images/face.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
@@ -349,31 +362,15 @@ test "objdetect CascadeClassifierWithParams" {
 
     try classifier.load("libs/gocv/data/haarcascade_frontalface_default.xml");
 
-    var rects = try classifier.detectMultiScaleWithParams(img, 1.1, 3, 0, Size.init(0, 0), Size.init(0, 0), testing.allocator);
+    var rects = try classifier.detectMultiScaleWithParams(img, 1.1, 3, 0, Size.init(0, 0), Size.init(0, 0));
     defer rects.deinit();
 
     try testing.expectEqual(@as(usize, 1), rects.items.len);
 }
 
 test "objdetect HOGDescriptor" {
-    var img = try imgcodecs.imRead("libs/gocv/images/face.jpg", .color);
-    defer img.deinit();
-    try testing.expectEqual(false, img.isEmpty());
-
-    var hog = HOGDescriptor.init();
-    defer hog.deinit();
-
-    var d: Mat = try HOGDescriptor.getDefaultPeopleDetector();
-    defer d.deinit();
-    hog.setSVMDetector(d);
-
-    var rects = try hog.detectMultiScale(img, testing.allocator);
-    defer rects.deinit();
-
-    try testing.expectEqual(@as(usize, 1), rects.items.len);
-}
-
-test "objdetect HOGDescriptor" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var img = try imgcodecs.imRead("libs/gocv/images/face.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
@@ -385,13 +382,15 @@ test "objdetect HOGDescriptor" {
     defer d.deinit();
     hog.setSVMDetector(d);
 
-    var rects = try hog.detectMultiScale(img, testing.allocator);
+    var rects = try hog.detectMultiScale(img);
     defer rects.deinit();
 
     try testing.expectEqual(@as(usize, 1), rects.items.len);
 }
 
 test "objdetect HOGDescriptorWithParams" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var img = try imgcodecs.imRead("libs/gocv/images/face.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
@@ -411,7 +410,6 @@ test "objdetect HOGDescriptorWithParams" {
         1.05,
         2.0,
         false,
-        testing.allocator,
     );
     defer rects.deinit();
 
@@ -419,6 +417,8 @@ test "objdetect HOGDescriptorWithParams" {
 }
 
 test "objdetect groupRectangles" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var rects = [_]Rect{
         Rect.init(10, 10, 20, 20),
         Rect.init(10, 10, 20, 20),
@@ -442,12 +442,14 @@ test "objdetect groupRectangles" {
         Rect.init(10, 10, 25, 25),
     };
 
-    var results = try groupRectangles(rects[0..], 1, 0.1, testing.allocator);
+    var results = try groupRectangles(rects[0..], 1, 0.1);
     defer results.deinit();
     try testing.expectEqual(@as(usize, 2), results.items.len);
 }
 
 test "objdetect QRCodeDetector" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var img = try imgcodecs.imRead("libs/gocv/images/qrcode.png", .color);
     try testing.expectEqual(false, img.isEmpty());
     defer img.deinit();
@@ -463,13 +465,17 @@ test "objdetect QRCodeDetector" {
     var res = detector.detect(img, &bbox);
     try testing.expectEqual(true, res);
 
-    const res2 = detector.decode(img, bbox, &qr);
-    const res3 = detector.detectAndDecode(img, &bbox, &qr);
+    var res2 = detector.decode(img, bbox, &qr);
+    defer std.testing.allocator.free(res2);
+    var res3 = detector.detectAndDecode(img, &bbox, &qr);
+    defer std.testing.allocator.free(res3);
 
     try testing.expectEqualStrings(res2, res3);
 }
 
 test "objdetect Multi QRCodeDetector" {
+    cv.init(.{ .allocator = std.testing.allocator });
+    defer cv.deinit();
     var img = try imgcodecs.imRead("libs/gocv/images/multi_qrcodes.png", .color);
     try testing.expectEqual(false, img.isEmpty());
     defer img.deinit();
@@ -486,7 +492,7 @@ test "objdetect Multi QRCodeDetector" {
     try testing.expectEqual(true, res);
     try testing.expectEqual(@as(i32, 2), mbox.rows());
 
-    var res2 = try detector.detectAndDecodeMulti(img, testing.allocator);
+    var res2 = try detector.detectAndDecodeMulti(img);
     defer res2.deinit();
     try testing.expectEqual(true, res2.is_detected);
     try testing.expectEqual(@as(usize, 2), res2.decoded.len);

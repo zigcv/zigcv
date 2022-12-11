@@ -3,9 +3,11 @@ const cv = @import("zigcv");
 const cv_c_api = cv.c_api;
 
 pub fn main() anyerror!void {
+    cv.ma.init(.{ .allocator = std.heap.page_allocator });
+    defer cv.ma.deinit();
     // open webcam
     var webcam = try cv.VideoCapture.init();
-    try webcam.openDevice(0);
+    try webcam.openDevice(2);
     defer webcam.deinit();
 
     // open display window
