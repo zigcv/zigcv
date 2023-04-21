@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: goto-bus-stop/setup-zig@v1
         with:
-          version: master
+          version: 0.10.1
       - run: zig fmt --check *.zig src/**/*.zig
 
   build_docker_image:
