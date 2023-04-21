@@ -10,7 +10,7 @@ RUN apt-get update \
     libblas-dev libopenblas-dev libeigen3-dev liblapack-dev libatlas-base-dev gfortran \
   && rm -rf /var/lib/apt/lists/*
 
-ARG ZIG_VERSION="0.10.0-dev.4217+9d8cdb855"
+ARG ZIG_VERSION="0.10.1"
 ENV ZIG_VERSION ${ZIG_VERSION}
 
 ARG OPENCV_VERSION="4.6.0"
@@ -64,5 +64,5 @@ RUN curl -Lso zigup.zip https://github.com/marler8997/zigup/releases/download/${
   && rm -rf /tmp/*
 
 ARG CACHE_DATE=2022-11-09
-RUN zigup 0.10.1
+RUN zigup ${ZIG_VERSION}
 
