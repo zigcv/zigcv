@@ -64,5 +64,5 @@ RUN curl -Lso zigup.zip https://github.com/marler8997/zigup/releases/download/${
   && rm -rf /tmp/*
 
 ARG CACHE_DATE=2022-11-09
-RUN zigup master
+RUN zigup 0.10.1
 
