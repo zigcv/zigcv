@@ -63,6 +63,8 @@ fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
             exe.linkSystemLibrary("c");
         },
         else => {
+            exe.addIncludePath("/usr/include");
+            exe.addIncludePath("/usr/include/opencv4");
             exe.addIncludePath("/usr/local/include");
             exe.addIncludePath("/usr/local/include/opencv4");
             exe.addIncludePath("/opt/homebrew/include");
