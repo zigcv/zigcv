@@ -1,3 +1,8 @@
+# Announcement
+This repository is no longer maintained.
+I beleve the future of zig is bright, but I don't have enough time to maintain this repository.
+Feel free to fork it and continue development!
+
 # ZIGCV
 
 [![ci](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoppippi/zigcv/actions/workflows/ci.yml)
