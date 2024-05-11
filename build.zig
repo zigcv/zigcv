@@ -80,18 +80,19 @@ pub fn build(b: *std.build.Builder) void {
     defer tmp_dir.cleanup();
 
     const test_filter = b.option([]const u8, "test-filter", "Skip tests that do not match filter") orelse null;
-    const exe_tests = b.addTest(.{
-        .name = "exe_tests",
+    const unit_tests = b.addTest(.{
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = mode,
         .filter = test_filter,
     });
-    zigcv.link(b, exe_tests);
-    zigcv.addAsPackage(exe_tests);
+    zigcv.link(b, unit_tests);
+    zigcv.addAsPackage(unit_tests);
+
+    const run_unit_tests = b.addRunArtifact(unit_tests);
 
     const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&exe_tests.step);
+    test_step.dependOn(&run_unit_tests.step);
 
     // const emit_docs = b.option(bool, "docs", "Generate Docs");
     // if (emit_docs) |d| {
