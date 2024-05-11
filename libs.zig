@@ -1,24 +1,30 @@
 const std = @import("std");
 
-pub fn addAsPackage(exe: *std.build.LibExeObjStep) void {
-    addAsPackageWithCutsomName(exe, "zigcv");
+pub fn addAsPackage(exe: *std.Build.CompileStep) void {
+    addAsPackageWithCustomName(exe, "zigcv");
 }
 
-pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u8) void {
-    exe.addPackagePath(name, getThisDir() ++ "/src/main.zig");
+pub fn addAsPackageWithCustomName(exe: *std.Build.CompileStep, name: []const u8) void {
+    const owner = exe.step.owner;
+    var module = std.build.createModule(owner, .{
+        .source_file = std.Build.FileSource.relative("src/main.zig"),
+        .dependencies = &.{},
+    });
+    exe.addModule(name, module);
 }
 
-pub fn link(exe: *std.build.LibExeObjStep) void {
+pub fn link(exe: *std.Build.CompileStep) void {
     ensureSubmodules(exe);
 
     const target = exe.target;
-    const mode = exe.build_mode;
-    const builder = exe.builder;
+    const mode = exe.optimize;
+    const builder = exe.step.owner;
 
-    const cv = builder.addStaticLibrary("opencv", null);
-    cv.setTarget(target);
-    cv.setBuildMode(mode);
-    cv.force_pic = true;
+    const cv = builder.addStaticLibrary(std.Build.StaticLibraryOptions{
+        .name = "opencv",
+        .target = target,
+        .optimize = mode,
+    });
     cv.addCSourceFiles(&.{
         go_srcdir ++ "asyncarray.cpp",
         go_srcdir ++ "calib3d.cpp",
@@ -42,19 +48,19 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
     linkToOpenCV(exe);
 }
 
-fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
+fn linkToOpenCV(exe: *std.build.CompileStep) void {
     const target_os = exe.target.toTarget().os.tag;
 
-    exe.addIncludePath(go_srcdir);
-    exe.addIncludePath(zig_src_dir);
+    exe.addIncludePath(.{ .path = go_srcdir });
+    exe.addIncludePath(.{ .path = zig_src_dir });
     switch (target_os) {
         .windows => {
-            exe.addIncludePath("c:/msys64/mingw64/include");
-            exe.addIncludePath("c:/msys64/mingw64/include/c++/12.2.0");
-            exe.addIncludePath("c:/msys64/mingw64/include/c++/12.2.0/x86_64-w64-mingw32");
-            exe.addLibraryPath("c:/msys64/mingw64/lib");
-            exe.addIncludePath("c:/opencv/build/install/include");
-            exe.addLibraryPath("c:/opencv/build/install/x64/mingw/staticlib");
+            exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include" });
+            exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include/c++/12.2.0" });
+            exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include/c++/12.2.0/x86_64-w64-mingw32" });
+            exe.addLibraryPath(.{ .path = "c:/msys64/mingw64/lib" });
+            exe.addIncludePath(.{ .path = "c:/opencv/build/install/include" });
+            exe.addLibraryPath(.{ .path = "c:/opencv/build/install/x64/mingw/staticlib" });
 
             exe.linkSystemLibrary("opencv4");
             exe.linkSystemLibrary("stdc++.dll");
@@ -63,18 +69,6 @@ fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
             exe.linkSystemLibrary("c");
         },
         else => {
-            exe.addIncludePath("/usr/include");
-            exe.addIncludePath("/usr/include/opencv4");
-            exe.addIncludePath("/usr/local/include");
-            exe.addIncludePath("/usr/local/include/opencv4");
-            exe.addIncludePath("/opt/homebrew/include");
-            exe.addIncludePath("/opt/homebrew/include/opencv4");
-
-            exe.addLibraryPath("/usr/local/lib");
-            exe.addLibraryPath("/usr/local/lib/opencv4/3rdparty");
-            exe.addLibraryPath("/opt/homebrew/lib");
-            exe.addLibraryPath("/opt/homebrew/lib/opencv4/3rdparty");
-
             exe.linkLibCpp();
             exe.linkSystemLibrary("opencv4");
             exe.linkSystemLibrary("unwind");
@@ -97,14 +91,16 @@ pub const contrib = struct {
         ensureSubmodules(exe);
 
         const target = exe.target;
-        const mode = exe.build_mode;
-        const builder = exe.builder;
+        const optimize = exe.build_mode;
+        const builder = exe.step.owner;
 
         const contrib_dir = go_srcdir ++ "contrib/";
 
-        const cv_contrib = builder.addStaticLibrary("opencv_contrib", null);
-        cv_contrib.setTarget(target);
-        cv_contrib.setBuildMode(mode);
+        const cv_contrib = builder.addStaticLibrary(.{
+            .name = "opencv_contrib",
+            .target = target,
+            .optimize = optimize,
+        });
         cv_contrib.force_pic = true;
         cv_contrib.addCSourceFiles(&.{
             contrib_dir ++ "aruco.cpp",
@@ -117,7 +113,7 @@ pub const contrib = struct {
             contrib_dir ++ "ximgproc.cpp",
             contrib_dir ++ "xphoto.cpp",
         }, c_build_options);
-        cv_contrib.addIncludePath(contrib_dir);
+        cv_contrib.addIncludePath(.{ .path = contrib_dir });
         linkToOpenCV(cv_contrib);
 
         exe.linkLibrary(cv_contrib);
@@ -139,11 +135,11 @@ pub const cuda = struct {
 
         const target = exe.target;
         const mode = exe.build_mode;
-        const builder = exe.builder;
+        const builder = exe.step.owner;
 
         const cuda_dir = go_srcdir ++ "cuda/";
 
-        const cv_cuda = builder.addStaticLibrary("opencv_cuda", null);
+        const cv_cuda = builder.addStaticLibrary("opencv_cuda");
         cv_cuda.setTarget(target);
         cv_cuda.setBuildMode(mode);
         cv_cuda.force_pic = true;
@@ -172,7 +168,7 @@ inline fn getThisDir() []const u8 {
 
 var ensure_submodule: bool = false;
 fn ensureSubmodules(exe: *std.build.LibExeObjStep) void {
-    const b = exe.builder;
+    const b = exe.step.owner;
     if (!ensure_submodule) {
         exe.step.dependOn(&b.addSystemCommand(&.{ "git", "submodule", "update", "--init", "--recursive" }).step);
         ensure_submodule = true;
