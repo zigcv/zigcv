@@ -124,13 +124,13 @@ fn performDetection(frame: *Mat, results: Mat) void {
     var i: usize = 0;
     while (i < results.total()) {
         var confidence = results.get(f32, 0, i + 2);
-        const cols = @intToFloat(f32, frame.cols());
-        const rows = @intToFloat(f32, frame.rows());
+        const cols: f32 = @floatFromInt(frame.cols());
+        const rows: f32 = @floatFromInt(frame.rows());
         if (confidence > 0.5) {
-            var left = @floatToInt(i32, results.get(f32, 0, i + 3) * cols);
-            var top = @floatToInt(i32, results.get(f32, 0, i + 4) * rows);
-            var right = @floatToInt(i32, results.get(f32, 0, i + 5) * cols);
-            var bottom = @floatToInt(i32, results.get(f32, 0, i + 6) * rows);
+            var left: i32 = @intFromFloat(results.get(f32, 0, i + 3) * cols);
+            var top: i32 = @intFromFloat(results.get(f32, 0, i + 4) * rows);
+            var right: i32 = @intFromFloat(results.get(f32, 0, i + 5) * cols);
+            var bottom: i32 = @intFromFloat(results.get(f32, 0, i + 6) * rows);
             cv.rectangle(frame, cv.Rect{ .x = left, .y = top, .width = right, .height = bottom }, green, 2);
         }
         i += 7;
