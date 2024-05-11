@@ -448,6 +448,7 @@ test "videoio VideoCapture captureFile invalid file" {
     defer vc.deinit();
     var e = vc.captureFile(video_path ++ "4");
     try testing.expectError(error.VideoCaptureOpenFileError, e);
+    std.debug.print("error '{s}' is expected\n", .{"OpenCV: Couldn't read video stream from file libs/gocv/images/small.mp44"});
 }
 
 test "videoio VideoCapture captureFileWithAPI invalid file" {
@@ -455,6 +456,7 @@ test "videoio VideoCapture captureFileWithAPI invalid file" {
     defer vc.deinit();
     var e = vc.captureFileWithAPI(video_path ++ "4", .any);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
+    std.debug.print("error '{s}' is expected\n", .{"OpenCV: Couldn't read video stream from file libs/gocv/images/small.mp44"});
 }
 
 test "videoio VideoCapture openDevice unknown error" {

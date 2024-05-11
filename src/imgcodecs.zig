@@ -270,6 +270,7 @@ test "imgcodecs imread" {
 
 test "imgcodecs imread not found error" {
     var e = imRead(face_detect_img_path ++ "aaa", .color);
+    std.debug.print("error: '{s}' is expected\n", .{"File not found: ./libs/gocv/images/face-detect.jpgaaa"});
     try testing.expectError(error.FileNotFound, e);
 }
 
