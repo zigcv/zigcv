@@ -419,8 +419,8 @@ test "photo textureFlattening" {
 
 test "photo fastNlMeansDenoisingColoredMulti" {
     var src: [3]Mat = undefined;
-    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
-    defer for (src) |*s| s.deinit();
+    for (&src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
+    defer for (&src) |*s| s.deinit();
 
     var dst = try Mat.init();
     defer dst.deinit();
@@ -434,8 +434,8 @@ test "photo fastNlMeansDenoisingColoredMulti" {
 
 test "photo fastNlMeansDenoisingColored" {
     var src: [3]Mat = undefined;
-    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
-    defer for (src) |*s| s.deinit();
+    for (&src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
+    defer for (&src) |*s| s.deinit();
 
     var dst = try Mat.init();
     defer dst.deinit();
@@ -449,8 +449,8 @@ test "photo fastNlMeansDenoisingColored" {
 
 test "photo MergeMertens" {
     var src: [3]Mat = undefined;
-    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv32fc3);
-    defer for (src) |*s| s.deinit();
+    for (&src) |*s| s.* = try Mat.initSize(20, 20, .cv32fc3);
+    defer for (&src) |*s| s.deinit();
 
     var dst = try Mat.init();
     defer dst.deinit();
@@ -467,8 +467,8 @@ test "photo MergeMertens" {
 
 test "photo AlignMTB" {
     var src: [3]Mat = undefined;
-    for (src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
-    defer for (src) |*s| s.deinit();
+    for (&src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
+    defer for (&src) |*s| s.deinit();
 
     var align_mtb = try AlignMTB.init();
     defer align_mtb.deinit();
