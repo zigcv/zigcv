@@ -226,19 +226,19 @@ pub const CovarFlags = struct {
     cols: bool = false,
 
     pub fn toNum(self: CovarFlags) u32 {
-        return @bitCast(u5, packed struct {
+        return @as(u5, @bitCast(packed struct {
             type: u1,
             use_avg: bool,
             scale: bool,
             rows: bool,
             cols: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .use_avg = self.use_avg,
             .scale = self.scale,
             .rows = self.rows,
             .cols = self.cols,
-        });
+        }));
     }
 
     comptime {
@@ -278,7 +278,7 @@ pub const DftFlags = struct {
     complex_input: bool = false,
 
     pub fn toNum(self: DftFlags) u7 {
-        return @bitCast(u7, packed struct {
+        return @as(u7, @bitCast(packed struct {
             inverse: bool,
             scale: bool,
             rows: bool,
@@ -293,7 +293,7 @@ pub const DftFlags = struct {
             .complex_output = self.complex_output,
             .real_output = self.real_output,
             .complex_input = self.complex_input,
-        });
+        }));
     }
 
     comptime {
@@ -356,14 +356,14 @@ pub const SortFlags = struct {
     descending: bool = false,
 
     pub fn toNum(self: SortFlags) u5 {
-        return @bitCast(u5, packed struct {
+        return @as(u5, @bitCast(packed struct {
             type: u1,
             _padding: u3 = 0,
             descending: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .descending = self.descending,
-        });
+        }));
     }
 
     comptime {
@@ -385,24 +385,24 @@ pub fn init() !Self {
 
 /// init Mat with size and type
 pub fn initSize(n_rows: i32, n_cols: i32, mt: MatType) !Self {
-    const ptr = c.Mat_NewWithSize(n_rows, n_cols, @enumToInt(mt));
+    const ptr = c.Mat_NewWithSize(n_rows, n_cols, @intFromEnum(mt));
     return try Self.initFromC(ptr);
 }
 
 /// init multidimentional Mat with sizes and type
 pub fn initSizes(size_array: []i32, mt: MatType) !Self {
     const c_size_vector = c.IntVector{
-        .val = @ptrCast([*]i32, size_array),
-        .length = @intCast(i32, size_array.len),
+        .val = @as([*]i32, @ptrCast(size_array)),
+        .length = @as(i32, @intCast(size_array.len)),
     };
 
-    const ptr = c.Mat_NewWithSizes(c_size_vector, @enumToInt(mt));
+    const ptr = c.Mat_NewWithSizes(c_size_vector, @intFromEnum(mt));
     return try Self.initFromC(ptr);
 }
 
 pub fn initFromMat(self: *Self, n_rows: i32, n_cols: i32, mt: MatType, prows: i32, pcols: i32) !Self {
     const mat_ptr = try epnn(self.*.ptr);
-    const ptr = c.Mat_FromPtr(mat_ptr, n_rows, n_cols, @enumToInt(mt), prows, pcols);
+    const ptr = c.Mat_FromPtr(mat_ptr, n_rows, n_cols, @intFromEnum(mt), prows, pcols);
     return try Self.initFromC(ptr);
 }
 
@@ -413,37 +413,37 @@ pub fn initFromScalar(s: Scalar) !Self {
 
 pub fn initFromBytes(rows_: i32, cols_: i32, bytes: []u8, mt: MatType) !Self {
     var c_bytes = c.ByteVector{
-        .val = @ptrCast([*]u8, bytes),
-        .length = @intCast(i32, bytes.len),
+        .val = @as([*]u8, @ptrCast(bytes)),
+        .length = @as(i32, @intCast(bytes.len)),
     };
-    const ptr = c.Mat_NewFromBytes(rows_, cols_, @enumToInt(mt), c_bytes);
+    const ptr = c.Mat_NewFromBytes(rows_, cols_, @intFromEnum(mt), c_bytes);
     return try Self.initFromC(ptr);
 }
 
 pub fn initSizeFromScalar(s: Scalar, n_rows: i32, n_cols: i32, mt: MatType) !Self {
-    const ptr = c.Mat_NewWithSizeFromScalar(s.toC(), n_rows, n_cols, @enumToInt(mt));
+    const ptr = c.Mat_NewWithSizeFromScalar(s.toC(), n_rows, n_cols, @intFromEnum(mt));
     return try Self.initFromC(ptr);
 }
 
 pub fn initSizesFromScalar(size_array: []const i32, s: Scalar, mt: MatType) !Self {
     const c_size_vector = c.IntVector{
-        .val = @ptrCast([*]i32, size_array),
-        .length = @intCast(i32, size_array.len),
+        .val = @as([*]i32, @ptrCast(size_array)),
+        .length = @as(i32, @intCast(size_array.len)),
     };
-    const ptr = c.Mat_NewWithSizesFromScalar(c_size_vector, @enumToInt(mt), s.toC());
+    const ptr = c.Mat_NewWithSizesFromScalar(c_size_vector, @intFromEnum(mt), s.toC());
     return try Self.initFromC(ptr);
 }
 
 pub fn initSizesFromBytes(size_array: []const i32, bytes: []u8, mt: MatType) !Self {
     const c_size_vector = c.IntVector{
-        .val = @ptrCast([*]i32, size_array),
-        .length = @intCast(i32, size_array.len),
+        .val = @as([*]i32, @ptrCast(size_array)),
+        .length = @as(i32, @intCast(size_array.len)),
     };
     var c_bytes = c.ByteVector{
-        .val = @ptrCast([*]u8, bytes),
-        .length = @intCast(i32, bytes.len),
+        .val = @as([*]u8, @ptrCast(bytes)),
+        .length = @as(i32, @intCast(bytes.len)),
     };
-    const ptr = c.Mat_NewWithSizesFromBytes(c_size_vector, @enumToInt(mt), c_bytes);
+    const ptr = c.Mat_NewWithSizesFromBytes(c_size_vector, @intFromEnum(mt), c_bytes);
     return try Self.initFromC(ptr);
 }
 
@@ -453,7 +453,7 @@ pub fn initSizesFromBytes(size_array: []const i32, bytes: []u8, mt: MatType) !Se
 /// For further details, please see:
 /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a2cf9b9acde7a9852542bbc20ef851ed2
 pub fn initEye(rows_: i32, cols_: i32, mt: MatType) !Self {
-    const ptr = c.Eye(rows_, cols_, @enumToInt(mt));
+    const ptr = c.Eye(rows_, cols_, @intFromEnum(mt));
     return try Self.initFromC(ptr);
 }
 
@@ -463,7 +463,7 @@ pub fn initEye(rows_: i32, cols_: i32, mt: MatType) !Self {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a0b57b6a326c8876d944d188a46e0f556
 pub fn initZeros(rows_: i32, cols_: i32, mt: MatType) !Self {
-    const ptr = c.Zeros(rows_, cols_, @enumToInt(mt));
+    const ptr = c.Zeros(rows_, cols_, @intFromEnum(mt));
     return try Self.initFromC(ptr);
 }
 
@@ -473,7 +473,7 @@ pub fn initZeros(rows_: i32, cols_: i32, mt: MatType) !Self {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a69ae0402d116fc9c71908d8508dc2f09
 pub fn initOnes(rows_: i32, cols_: i32, mt: MatType) !Self {
-    const ptr = c.Ones(rows_, cols_, @enumToInt(mt));
+    const ptr = c.Ones(rows_, cols_, @intFromEnum(mt));
     return try Self.initFromC(ptr);
 }
 
@@ -516,10 +516,10 @@ pub fn clone(self: Self) !Self {
 // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#adf88c60c5b4980e05bb556080916978b
 //
 pub fn convertTo(self: Self, dst: *Self, mt: MatType) void {
-    _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @enumToInt(mt));
+    _ = c.Mat_ConvertTo(self.ptr, dst.*.ptr, @intFromEnum(mt));
 }
 pub fn convertToWithParams(self: Self, dst: *Self, mt: MatType, alpha: f32, beta: f32) void {
-    _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @enumToInt(mt), alpha, beta);
+    _ = c.Mat_ConvertToWithParams(self.ptr, dst.*.ptr, @intFromEnum(mt), alpha, beta);
 }
 
 pub fn cols(self: Self) i32 {
@@ -536,7 +536,7 @@ pub fn channels(self: Self) i32 {
 
 pub fn getType(self: Self) MatType {
     var type_ = c.Mat_Type(self.ptr);
-    return @intToEnum(MatType, type_);
+    return @as(MatType, @enumFromInt(type_));
 }
 
 pub fn step(self: Self) i32 {
@@ -564,7 +564,7 @@ pub fn total(self: Self) i32 {
 pub fn size(self: Self) []const i32 {
     var v: c.IntVector = undefined;
     _ = c.Mat_Size(self.ptr, &v);
-    return v.val[0..@intCast(usize, v.length)];
+    return v.val[0..@as(usize, @intCast(v.length))];
 }
 
 // getAt returns a value from a specific row/col
@@ -575,8 +575,8 @@ pub fn size(self: Self) []const i32 {
 // in this Mat expecting it to be of type float aka CV_32F.
 // in this Mat expecting it to be of type double aka CV_64F.
 pub fn get(self: Self, comptime T: type, row: usize, col: usize) T {
-    const row_ = @intCast(i32, row);
-    const col_ = @intCast(i32, col);
+    const row_ = @as(i32, @intCast(row));
+    const col_ = @as(i32, @intCast(col));
     return switch (T) {
         u8 => c.Mat_GetUChar(self.ptr, row_, col_),
         i8 => c.Mat_GetSChar(self.ptr, row_, col_),
@@ -596,9 +596,9 @@ pub fn get(self: Self, comptime T: type, row: usize, col: usize) T {
 // in this Mat expecting it to be of type float aka CV_32F.
 // in this Mat expecting it to be of type double aka CV_64F.
 pub fn get3(self: Self, comptime T: type, x: usize, y: usize, z: usize) T {
-    const x_ = @intCast(i32, x);
-    const y_ = @intCast(i32, y);
-    const z_ = @intCast(i32, z);
+    const x_ = @as(i32, @intCast(x));
+    const y_ = @as(i32, @intCast(y));
+    const z_ = @as(i32, @intCast(z));
     return switch (T) {
         u8 => c.Mat_GetUChar3(self.ptr, x_, y_, z_),
         i8 => c.Mat_GetSChar3(self.ptr, x_, y_, z_),
@@ -615,8 +615,8 @@ pub fn setTo(self: *Self, value: Scalar) void {
 }
 
 pub fn set(self: *Self, comptime T: type, row: usize, col: usize, val: T) void {
-    const row_ = @intCast(u31, row);
-    const col_ = @intCast(u31, col);
+    const row_ = @as(u31, @intCast(row));
+    const col_ = @as(u31, @intCast(col));
     _ = switch (T) {
         u8 => c.Mat_SetUChar(self.ptr, row_, col_, val),
         i8 => c.Mat_SetSChar(self.ptr, row_, col_, val),
@@ -629,9 +629,9 @@ pub fn set(self: *Self, comptime T: type, row: usize, col: usize, val: T) void {
 }
 
 pub fn set3(self: *Self, comptime T: type, x: usize, y: usize, z: usize, val: T) void {
-    const x_ = @intCast(u31, x);
-    const y_ = @intCast(u31, y);
-    const z_ = @intCast(u31, z);
+    const x_ = @as(u31, @intCast(x));
+    const y_ = @as(u31, @intCast(y));
+    const z_ = @as(u31, @intCast(z));
     _ = switch (T) {
         u8 => c.Mat_SetUChar3(self.ptr, x_, y_, z_, val),
         i8 => c.Mat_SetSChar3(self.ptr, x_, y_, z_, val),
@@ -853,7 +853,7 @@ pub fn flip(self: Self, dest: *Self, flipCode: i32) void {
 // https://docs.opencv.org/master/d2/de8/group__core__array.html#gacb6e64071dffe36434e1e7ee79e7cb35
 //
 pub fn gemm(self: Self, m1: Self, alpha: f64, m2: Self, beta: f64, dest: *Self, flags: GemmFlags) void {
-    c.Mat_Gemm(self.ptr, m1.ptr, alpha, m2.ptr, beta, dest.*.ptr, @enumToInt(flags));
+    c.Mat_Gemm(self.ptr, m1.ptr, alpha, m2.ptr, beta, dest.*.ptr, @intFromEnum(flags));
 }
 
 // GetOptimalDFTSize returns the optimal Discrete Fourier Transform (DFT) size
@@ -889,7 +889,7 @@ pub fn vconcat(src1: Self, src2: Self, dst: *Self) void {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga4ad01c0978b0ce64baa246811deeac24
 pub fn rotate(self: Self, dest: *Self, rotation_code: RotateFlag) void {
-    c.Mat_Rotate(self.ptr, dest.*.ptr, @enumToInt(rotation_code));
+    c.Mat_Rotate(self.ptr, dest.*.ptr, @intFromEnum(rotation_code));
 }
 
 /// IDCT calculates the inverse Discrete Cosine Transform of a 1D or 2D array.
@@ -899,7 +899,7 @@ pub fn rotate(self: Self, dest: *Self, rotation_code: RotateFlag) void {
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga77b168d84e564c50228b69730a227ef2
 ///
 pub fn idct(self: Self, dest: *Self, flags: DftFlags) void {
-    c.Mat_IDCT(self.ptr, dest.*.ptr, @enumToInt(flags));
+    c.Mat_IDCT(self.ptr, dest.*.ptr, @intFromEnum(flags));
 }
 
 /// IDFT calculates the inverse Discrete Fourier Transform of a 1D or 2D array.
@@ -909,7 +909,7 @@ pub fn idct(self: Self, dest: *Self, flags: DftFlags) void {
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#gaa708aa2d2e57a508f968eb0f69aa5ff1
 ///
 pub fn idft(self: Self, dest: *Self, flags: DftFlags, nonzeroRows: i32) void {
-    c.Mat_IDFT(self.ptr, dest.*.ptr, @enumToInt(flags), nonzeroRows);
+    c.Mat_IDFT(self.ptr, dest.*.ptr, @intFromEnum(flags), nonzeroRows);
 }
 
 /// InRange checks if array elements lie between the elements of two Mat arrays.
@@ -948,7 +948,7 @@ pub fn insertChannel(self: Self, dest: *Self, coi: i32) void {
 ///
 //     pub extern fn Mat_Invert(src: Mat, dst: Mat, flags: c_int) f64;
 pub fn invert(self: Self, dest: *Self, flags: SolveDecompositionFlag) f64 {
-    return c.Mat_Invert(self.ptr, dest.*.ptr, @enumToInt(flags));
+    return c.Mat_Invert(self.ptr, dest.*.ptr, @intFromEnum(flags));
 }
 
 /// KMeans finds centers of clusters and groups input samples around the clusters.
@@ -957,7 +957,7 @@ pub fn invert(self: Self, dest: *Self, flags: SolveDecompositionFlag) f64 {
 /// https://docs.opencv.org/master/d5/d38/group__core__cluster.html#ga9a34dc06c6ec9460e90860f15bcd2f88
 ///
 pub fn kmeans(data: Self, k: i32, bestLabels: *Self, criteria: TermCriteria, attempts: i32, flags: KMeansFlag, centers: *Self) f64 {
-    return c.KMeans(data.ptr, k, bestLabels.*.ptr, criteria, attempts, @enumToInt(flags), centers.*.ptr);
+    return c.KMeans(data.ptr, k, bestLabels.*.ptr, criteria, attempts, @intFromEnum(flags), centers.*.ptr);
 }
 
 /// KMeansPoints finds centers of clusters and groups input samples around the clusters.
@@ -966,7 +966,7 @@ pub fn kmeans(data: Self, k: i32, bestLabels: *Self, criteria: TermCriteria, att
 /// https://docs.opencv.org/master/d5/d38/group__core__cluster.html#ga9a34dc06c6ec9460e90860f15bcd2f88
 ///
 pub fn kmeansPoints(pts: PointVector, k: i32, bestLabels: *Self, criteria: TermCriteria, attempts: i32, flags: KMeansFlag, centers: *Self) f64 {
-    return c.KMeansPoints(pts.ptr, k, bestLabels.*.ptr, criteria, attempts, @enumToInt(flags), centers.*.ptr);
+    return c.KMeansPoints(pts.ptr, k, bestLabels.*.ptr, criteria, attempts, @intFromEnum(flags), centers.*.ptr);
 }
 
 /// Log calculates the natural logarithm of every array element.
@@ -1137,7 +1137,7 @@ pub fn bitwiseXorWithMask(self: Self, m: Self, dest: *Self, mask: Self) void {
 }
 
 pub fn compare(self: Self, m: Self, dest: *Self, comptime op: CompareType) void {
-    _ = c.Mat_Compare(self.ptr, m.ptr, dest.*.ptr, @enumToInt(op));
+    _ = c.Mat_Compare(self.ptr, m.ptr, dest.*.ptr, @intFromEnum(op));
 }
 
 // BatchDistance is a naive nearest neighbor finder.
@@ -1164,7 +1164,7 @@ pub fn borderInterpolate(p: c_int, len: c_int, border_type: BorderType) c_int {
 // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga017122d912af19d7d0d2cccc2d63819f
 //
 pub fn calcCovarMatrix(samples: Self, covar: *Self, mean_: *Self, flags: CovarFlags, ctype: MatType) void {
-    _ = c.Mat_CalcCovarMatrix(samples.ptr, covar.*.ptr, mean_.*.ptr, flags.toNum(), @enumToInt(ctype));
+    _ = c.Mat_CalcCovarMatrix(samples.ptr, covar.*.ptr, mean_.*.ptr, flags.toNum(), @intFromEnum(ctype));
 }
 
 // CartToPolar calculates the magnitude and angle of 2D vectors.
@@ -1251,12 +1251,12 @@ pub fn copyMakeBorder(self: Self, dest: *Self, top: i32, bottom: i32, left: i32,
 
 pub fn dataPtr(self: Self, comptime T: type) ![]T {
     if (switch (T) {
-        u8 => @enumToInt(self.getType()) & MatType.cv8u != MatType.cv8u,
-        i8 => @enumToInt(self.getType()) & MatType.cv8s != MatType.cv8s,
-        u16 => @enumToInt(self.getType()) & MatType.cv16u != MatType.cv16u,
-        i16 => @enumToInt(self.getType()) & MatType.cv16s != MatType.cv16s,
-        f32 => @enumToInt(self.getType()) & MatType.cv32f != MatType.cv32f,
-        f64 => @enumToInt(self.getType()) & MatType.cv64f != MatType.cv64f,
+        u8 => @intFromEnum(self.getType()) & MatType.cv8u != MatType.cv8u,
+        i8 => @intFromEnum(self.getType()) & MatType.cv8s != MatType.cv8s,
+        u16 => @intFromEnum(self.getType()) & MatType.cv16u != MatType.cv16u,
+        i16 => @intFromEnum(self.getType()) & MatType.cv16s != MatType.cv16s,
+        f32 => @intFromEnum(self.getType()) & MatType.cv32f != MatType.cv32f,
+        f64 => @intFromEnum(self.getType()) & MatType.cv64f != MatType.cv64f,
         else => @compileError("Unsupported type"),
     }) {
         return error.RuntimeError;
@@ -1267,14 +1267,14 @@ pub fn dataPtr(self: Self, comptime T: type) ![]T {
     }
 
     var p: c.ByteArray = c.Mat_DataPtr(self.ptr);
-    var len = @intCast(usize, p.length);
+    var len = @as(usize, @intCast(p.length));
     const bit_scale = @sizeOf(T) / @sizeOf(u8);
-    return @ptrCast([*]T, @alignCast(@alignOf(T), p.data))[0 .. len / bit_scale];
+    return @as([*]T, @ptrCast(@alignCast(p.data)))[0 .. len / bit_scale];
 }
 
 pub fn toBytes(self: Self) []u8 {
     var p: c.struct_ByteArray = c.Mat_ToBytes(self.ptr);
-    var len = @intCast(usize, p.length);
+    var len = @as(usize, @intCast(p.length));
     return p[0..len];
 }
 
@@ -1284,7 +1284,7 @@ pub fn toBytes(self: Self) []u8 {
 // https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a4eb96e3251417fa88b78e2abd6cfd7d8
 //
 pub fn reshape(self: Self, cn: i32, rows_: usize) !Self {
-    const ptr = c.Mat_Reshape(self.ptr, @intCast(u31, cn), @intCast(i32, rows_));
+    const ptr = c.Mat_Reshape(self.ptr, @as(u31, @intCast(cn)), @as(i32, @intCast(rows_)));
     return try initFromC(ptr);
 }
 
@@ -1432,7 +1432,7 @@ pub fn randU(self: *Self, low: Scalar, high: Scalar) void {
 // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga12b43690dbd31fed96f213eefead2373
 //
 pub fn solve(self: Self, src2: Self, dst: *Self, flag: SolveDecompositionFlag) bool {
-    return c.Mat_Solve(self.ptr, src2.ptr, dst.*.ptr, @enumToInt(flag));
+    return c.Mat_Solve(self.ptr, src2.ptr, dst.*.ptr, @intFromEnum(flag));
 }
 // SolveCubic finds the real roots of a cubic equation.
 //
@@ -1449,7 +1449,7 @@ pub fn solveCubic(self: Self, roots: *Self) bool {
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga87eef7ee3970f86906d69a92cbf064bd
 ///
 pub fn normalize(self: Self, dst: *Self, alpha: f64, beta: f64, typ: NormType) void {
-    c.Mat_Normalize(self.ptr, dst.*.ptr, alpha, beta, @enumToInt(typ));
+    c.Mat_Normalize(self.ptr, dst.*.ptr, alpha, beta, @intFromEnum(typ));
 }
 
 /// Norm calculates the absolute norm of an array.
@@ -1458,7 +1458,7 @@ pub fn normalize(self: Self, dst: *Self, alpha: f64, beta: f64, typ: NormType) v
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga7c331fb8dd951707e184ef4e3f21dd33
 ///
 pub fn norm(self: Self, normType: NormType) f64 {
-    return c.Norm(self.ptr, @enumToInt(normType));
+    return c.Norm(self.ptr, @intFromEnum(normType));
 }
 
 /// Norm calculates the absolute difference/relative norm of two arrays.
@@ -1467,7 +1467,7 @@ pub fn norm(self: Self, normType: NormType) f64 {
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga7c331fb8dd951707e184ef4e3f21dd33
 ///
 pub fn normWithMats(self: Self, src2: Self, norm_type: NormType) f64 {
-    return c.NormWithMats(self.ptr, src2.ptr, @enumToInt(norm_type));
+    return c.NormWithMats(self.ptr, src2.ptr, @intFromEnum(norm_type));
 }
 
 /// PerspectiveTransform performs the perspective matrix transformation of vectors.
@@ -1489,7 +1489,7 @@ pub fn solvePoly(self: Self, roots: *Self, max_iters: i32) bool {
 }
 
 pub fn reduce(self: Self, dst: *Self, dim: i32, r_type: ReduceType, d_type: MatType) void {
-    c.Mat_Reduce(self.ptr, dst.*.ptr, dim, @enumToInt(r_type), @enumToInt(d_type));
+    c.Mat_Reduce(self.ptr, dst.*.ptr, dim, @intFromEnum(r_type), @intFromEnum(d_type));
 }
 
 /// Repeat fills the output array with repeated copies of the input array.
@@ -1524,7 +1524,7 @@ pub fn setIdentity(self: Self, s: f64) void {
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#ga45dd56da289494ce874be2324856898f
 ///
 pub fn sort(self: Self, dst: *Self, flags: SortFlags) void {
-    c.Mat_Sort(self.ptr, dst.*.ptr, @enumToInt(flags));
+    c.Mat_Sort(self.ptr, dst.*.ptr, @intFromEnum(flags));
 }
 
 /// SortIdx sorts each row or each column of a matrix.
@@ -1534,7 +1534,7 @@ pub fn sort(self: Self, dst: *Self, flags: SortFlags) void {
 /// https://docs.opencv.org/master/d2/de8/group__core__array.html#gadf35157cbf97f3cb85a545380e383506
 ///
 pub fn sortIdx(self: Self, dst: *Self, flags: SortFlags) void {
-    c.Mat_SortIdx(self.ptr, dst.*.ptr, @enumToInt(flags));
+    c.Mat_SortIdx(self.ptr, dst.*.ptr, @intFromEnum(flags));
 }
 
 // Split creates an array of single channel images from a multi-channel image
@@ -1646,12 +1646,12 @@ pub fn mixChannels(src: []Self, dst: *[]Self, from_to: []i32) !void {
     var c_dst = toCStructs(dst.*);
     defer deinitCStructs(c_dst);
     var c_from_to = c.struct_IntVector{
-        .val = @ptrCast([*]i32, from_to.ptr),
-        .length = @intCast(i32, from_to.len),
+        .val = @as([*]i32, @ptrCast(from_to.ptr)),
+        .length = @as(i32, @intCast(from_to.len)),
     };
     c.Mat_MixChannels(c_src, c_dst, c_from_to);
 
-    for (dst.*) |*d, i| {
+    for (dst.*, 0..) |*d, i| {
         d.*.deinit();
         d.* = try Self.initFromC(c_dst.val[i]);
     }
@@ -1663,7 +1663,7 @@ pub fn mixChannels(src: []Self, dst: *[]Self, from_to: []i32) !void {
 // https://docs.opencv.org/master/d2/de8/group__core__array.html#ga3ab38646463c59bf0ce962a9d51db64f
 //
 pub fn mulSpectrums(self: Self, src2: Self, dst: *Self, flags: DftFlags) void {
-    c.Mat_MulSpectrums(self.ptr, src2.ptr, dst.*.ptr, @enumToInt(flags));
+    c.Mat_MulSpectrums(self.ptr, src2.ptr, dst.*.ptr, @intFromEnum(flags));
 }
 
 pub fn toArrayList(c_mats: c.Mats, allocator: std.mem.Allocator) !Mats {
@@ -1672,7 +1672,7 @@ pub fn toArrayList(c_mats: c.Mats, allocator: std.mem.Allocator) !Mats {
 }
 
 pub inline fn toCStructs(mats: []const Self) !c.Mats {
-    const len = @intCast(i32, mats.len);
+    const len = @as(i32, @intCast(mats.len));
     var c_mats = c.Mats_New(len);
     if (c_mats.length != len) return error.AllocationError;
     _ = try epnn(c_mats.mats);

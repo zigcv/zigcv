@@ -170,7 +170,7 @@ pub const CalcOpticalFlow = struct {
             iterations,
             poly_n,
             poly_sigma,
-            @enumToInt(flags),
+            @intFromEnum(flags),
         );
     }
 
@@ -227,7 +227,7 @@ pub const CalcOpticalFlow = struct {
             win_size.toC(),
             max_level,
             criteria.toC(),
-            @enumToInt(flags),
+            @intFromEnum(flags),
             min_eig_threshold,
         );
     }
@@ -251,7 +251,7 @@ pub fn findTransformECC(
         template_image.toC(),
         input_image.toC(),
         warp_matrix.*.toC(),
-        @enumToInt(motion_type),
+        @intFromEnum(motion_type),
         criteria.toC(),
         input_mask.toC(),
         gauss_filt_size,
@@ -303,7 +303,7 @@ pub const Tracker = struct {
 
             pub fn update(self: *Self, image: Mat) UpdateReturn {
                 var c_box: c.Rect = undefined;
-                const success = c.Tracker_Update(self.ptr, image.toC(), @ptrCast([*]c.Rect, &c_box));
+                const success = c.Tracker_Update(self.ptr, image.toC(), @ptrCast(&c_box));
                 var rect = Rect.initFromC(c_box);
                 return UpdateReturn{
                     .box = rect,
@@ -461,7 +461,7 @@ test "video CalcOpticalFlow.pyrLK" {
     defer err.deinit();
 }
 
-test "video CalcOpticalFlow.pyrLK" {
+test "video CalcOpticalFlow.pyrLK with params" {
     var img1 = try imgcodecs.imRead(file_path, .color);
     defer img1.deinit();
     try testing.expectEqual(false, img1.isEmpty());
@@ -633,7 +633,7 @@ test "video findTransformECC" {
                 }
             }
         }
-        rms /= @intToFloat(f64, map_translation.rows() * map_translation.cols());
+        rms /= @floatFromInt(map_translation.rows() * map_translation.cols());
         break :b rms;
     };
     try testing.expect(rms < max_rms_ecc);

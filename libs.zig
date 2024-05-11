@@ -1,40 +1,58 @@
 const std = @import("std");
+const ArrayList = std.ArrayList;
+const LazyPath = std.build.LazyPath;
 
-pub fn addAsPackage(exe: *std.build.LibExeObjStep) void {
-    addAsPackageWithCutsomName(exe, "zigcv");
+pub fn addAsPackage(exe: *std.Build.CompileStep) void {
+    addAsPackageWithCustomName(exe, "zigcv");
 }
 
-pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u8) void {
-    exe.addPackagePath(name, getThisDir() ++ "/src/main.zig");
+pub fn addAsPackageWithCustomName(exe: *std.Build.CompileStep, name: []const u8) void {
+    const owner = exe.step.owner;
+    var module = std.build.createModule(owner, .{
+        .source_file = std.Build.FileSource.relative("src/main.zig"),
+        .dependencies = &.{},
+    });
+    exe.addModule(name, module);
 }
 
-pub fn link(exe: *std.build.LibExeObjStep) void {
+pub fn link(b: *std.build.Builder, exe: *std.Build.CompileStep) void {
     ensureSubmodules(exe);
 
     const target = exe.target;
-    const mode = exe.build_mode;
-    const builder = exe.builder;
+    const mode = exe.optimize;
+    const builder = exe.step.owner;
 
-    const cv = builder.addStaticLibrary("opencv", null);
-    cv.setTarget(target);
-    cv.setBuildMode(mode);
-    cv.force_pic = true;
-    cv.addCSourceFiles(&.{
-        go_srcdir ++ "asyncarray.cpp",
-        go_srcdir ++ "calib3d.cpp",
-        go_srcdir ++ "core.cpp",
-        go_srcdir ++ "dnn.cpp",
-        go_srcdir ++ "features2d.cpp",
-        go_srcdir ++ "highgui.cpp",
-        go_srcdir ++ "imgcodecs.cpp",
-        go_srcdir ++ "imgproc.cpp",
-        go_srcdir ++ "objdetect.cpp",
-        go_srcdir ++ "photo.cpp",
-        go_srcdir ++ "svd.cpp",
-        go_srcdir ++ "version.cpp",
-        go_srcdir ++ "video.cpp",
-        go_srcdir ++ "videoio.cpp",
-    }, c_build_options);
+    const go_src_files = .{
+        "asyncarray.cpp",
+        "calib3d.cpp",
+        "core.cpp",
+        "dnn.cpp",
+        "features2d.cpp",
+        "highgui.cpp",
+        "imgcodecs.cpp",
+        "imgproc.cpp",
+        "objdetect.cpp",
+        "photo.cpp",
+        "svd.cpp",
+        "version.cpp",
+        "video.cpp",
+        "videoio.cpp",
+    };
+
+    const cv = builder.addStaticLibrary(std.Build.StaticLibraryOptions{
+        .name = "opencv",
+        .target = target,
+        .optimize = mode,
+    });
+
+    inline for (go_src_files) |file| {
+        const go_src_dir_path = go_src_dir.getPath(b);
+        const c_file_path = b.pathJoin(&.{ go_src_dir_path, file });
+        cv.addCSourceFile(.{
+            .file = .{ .path = c_file_path },
+            .flags = c_build_options,
+        });
+    }
 
     linkToOpenCV(cv);
 
@@ -42,19 +60,19 @@ pub fn link(exe: *std.build.LibExeObjStep) void {
     linkToOpenCV(exe);
 }
 
-fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
+fn linkToOpenCV(exe: *std.build.CompileStep) void {
     const target_os = exe.target.toTarget().os.tag;
 
-    exe.addIncludePath(go_srcdir);
+    exe.addIncludePath(go_src_dir);
     exe.addIncludePath(zig_src_dir);
     switch (target_os) {
         .windows => {
-            exe.addIncludePath("c:/msys64/mingw64/include");
-            exe.addIncludePath("c:/msys64/mingw64/include/c++/12.2.0");
-            exe.addIncludePath("c:/msys64/mingw64/include/c++/12.2.0/x86_64-w64-mingw32");
-            exe.addLibraryPath("c:/msys64/mingw64/lib");
-            exe.addIncludePath("c:/opencv/build/install/include");
-            exe.addLibraryPath("c:/opencv/build/install/x64/mingw/staticlib");
+            exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include" });
+            exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include/c++/12.2.0" });
+            exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include/c++/12.2.0/x86_64-w64-mingw32" });
+            exe.addLibraryPath(.{ .path = "c:/msys64/mingw64/lib" });
+            exe.addIncludePath(.{ .path = "c:/opencv/build/install/include" });
+            exe.addLibraryPath(.{ .path = "c:/opencv/build/install/x64/mingw/staticlib" });
 
             exe.linkSystemLibrary("opencv4");
             exe.linkSystemLibrary("stdc++.dll");
@@ -63,18 +81,6 @@ fn linkToOpenCV(exe: *std.build.LibExeObjStep) void {
             exe.linkSystemLibrary("c");
         },
         else => {
-            exe.addIncludePath("/usr/include");
-            exe.addIncludePath("/usr/include/opencv4");
-            exe.addIncludePath("/usr/local/include");
-            exe.addIncludePath("/usr/local/include/opencv4");
-            exe.addIncludePath("/opt/homebrew/include");
-            exe.addIncludePath("/opt/homebrew/include/opencv4");
-
-            exe.addLibraryPath("/usr/local/lib");
-            exe.addLibraryPath("/usr/local/lib/opencv4/3rdparty");
-            exe.addLibraryPath("/opt/homebrew/lib");
-            exe.addLibraryPath("/opt/homebrew/lib/opencv4/3rdparty");
-
             exe.linkLibCpp();
             exe.linkSystemLibrary("opencv4");
             exe.linkSystemLibrary("unwind");
@@ -90,34 +96,44 @@ pub const contrib = struct {
     }
 
     pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u8) void {
-        exe.addPackagePath(name, getThisDir() ++ "/src/contrib/main.zig");
+        exe.addPackagePath(name, .{ .path = "src/contrib/main.zig" });
     }
 
-    pub fn link(exe: *std.build.LibExeObjStep) void {
+    pub fn link(b: *std.build.Builder, exe: *std.build.LibExeObjStep) void {
         ensureSubmodules(exe);
 
         const target = exe.target;
-        const mode = exe.build_mode;
-        const builder = exe.builder;
+        const optimize = exe.optimize;
+        const builder = exe.step.owner;
 
-        const contrib_dir = go_srcdir ++ "contrib/";
+        const contrib_dir = b.pathJoin(.{ go_src_dir.getPath(b), "contrib/" });
 
-        const cv_contrib = builder.addStaticLibrary("opencv_contrib", null);
-        cv_contrib.setTarget(target);
-        cv_contrib.setBuildMode(mode);
+        const contrib_files = .{
+            "aruco.cpp",
+            "bgsegm.cpp",
+            "face.cpp",
+            "img_hash.cpp",
+            "tracking.cpp",
+            "wechat_qrcode.cpp",
+            "xfeatures2d.cpp",
+            "ximgproc.cpp",
+            "xphoto.cpp",
+        };
+
+        const cv_contrib = builder.addStaticLibrary(.{
+            .name = "opencv_contrib",
+            .target = target,
+            .optimize = optimize,
+        });
         cv_contrib.force_pic = true;
-        cv_contrib.addCSourceFiles(&.{
-            contrib_dir ++ "aruco.cpp",
-            contrib_dir ++ "bgsegm.cpp",
-            contrib_dir ++ "face.cpp",
-            contrib_dir ++ "img_hash.cpp",
-            contrib_dir ++ "tracking.cpp",
-            contrib_dir ++ "wechat_qrcode.cpp",
-            contrib_dir ++ "xfeatures2d.cpp",
-            contrib_dir ++ "ximgproc.cpp",
-            contrib_dir ++ "xphoto.cpp",
-        }, c_build_options);
-        cv_contrib.addIncludePath(contrib_dir);
+        for (contrib_files) |file| {
+            const c_path = b.pathJoin(&.{ contrib_dir, file });
+            cv_contrib.addCSourceFile(.{
+                .file = .{ .path = c_path },
+                .flags = c_build_options,
+            });
+        }
+        cv_contrib.addIncludePath(.{ .path = contrib_dir });
         linkToOpenCV(cv_contrib);
 
         exe.linkLibrary(cv_contrib);
@@ -131,34 +147,42 @@ pub const cuda = struct {
     }
 
     pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u8) void {
-        exe.addPackagePath(name, getThisDir() ++ "/src/cuda/main.zig");
+        exe.addPackagePath(name, .{ .path = "src/cuda/main.zig" });
     }
 
-    pub fn link(exe: *std.build.LibExeObjStep) void {
+    pub fn link(b: *std.build.Builder, exe: *std.build.LibExeObjStep) void {
         ensureSubmodules(exe);
 
         const target = exe.target;
         const mode = exe.build_mode;
-        const builder = exe.builder;
+        const builder = exe.step.owner;
 
-        const cuda_dir = go_srcdir ++ "cuda/";
+        const cuda_dir = b.pathJoin(&.{ go_src_dir.getPath(builder), "cuda/" });
 
-        const cv_cuda = builder.addStaticLibrary("opencv_cuda", null);
+        const cuda_files = .{
+            "arithm.cpp",
+            "bgsegm.cpp",
+            "core.cpp",
+            "cuda.cpp",
+            "filters.cpp",
+            "imgproc.cpp",
+            "objdetect.cpp",
+            "optflow.cpp",
+            "warping.cpp",
+        };
+
+        const cv_cuda = builder.addStaticLibrary("opencv_cuda");
         cv_cuda.setTarget(target);
         cv_cuda.setBuildMode(mode);
         cv_cuda.force_pic = true;
-        cv_cuda.addCSourceFiles(&.{
-            cuda_dir ++ "arithm.cpp",
-            cuda_dir ++ "bgsegm.cpp",
-            cuda_dir ++ "core.cpp",
-            cuda_dir ++ "cuda.cpp",
-            cuda_dir ++ "filters.cpp",
-            cuda_dir ++ "imgproc.cpp",
-            cuda_dir ++ "objdetect.cpp",
-            cuda_dir ++ "optflow.cpp",
-            cuda_dir ++ "warping.cpp",
-        }, c_build_options);
-        cv_cuda.addIncludePath(go_srcdir);
+        for (cuda_files) |file| {
+            const c_path = b.pathJoin(&.{ cuda_dir, file });
+            cv_cuda.addCSourceFile(.{
+                .file = .{ .path = c_path },
+                .flags = c_build_options,
+            });
+        }
+        cv_cuda.addIncludePath(go_src_dir);
         linkToOpenCV(cv_cuda);
 
         exe.linkLibrary(cv_cuda);
@@ -166,21 +190,17 @@ pub const cuda = struct {
     }
 };
 
-inline fn getThisDir() []const u8 {
-    return comptime std.fs.path.dirname(@src().file) orelse ".";
-}
-
 var ensure_submodule: bool = false;
 fn ensureSubmodules(exe: *std.build.LibExeObjStep) void {
-    const b = exe.builder;
+    const b = exe.step.owner;
     if (!ensure_submodule) {
         exe.step.dependOn(&b.addSystemCommand(&.{ "git", "submodule", "update", "--init", "--recursive" }).step);
         ensure_submodule = true;
     }
 }
 
-const go_srcdir = getThisDir() ++ "/libs/gocv/";
-const zig_src_dir = getThisDir() ++ "/src";
+const go_src_dir = (LazyPath{ .path = "libs/gocv/" });
+const zig_src_dir = (LazyPath{ .path = "src/" });
 
 const Program = struct {
     name: []const u8,

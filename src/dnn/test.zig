@@ -17,18 +17,18 @@ const cache_dir = "./zig-cache/tmp/";
 
 const caffe_model_url = "http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel";
 const caffe_model_file = cache_dir ++ "bvlc_googlenet.caffemodel";
-const caffe_prototext_url = "https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/bvlc_googlenet.prototxt";
+const caffe_prototext_url = "https://raw.githubusercontent.com/opencv/opencv_extra/20d18acad1bcb312045ea64a239ebe68c8728b88/testdata/dnn/bvlc_googlenet.prototxt";
 const caffe_prototext_file = cache_dir ++ "bvlc_googlenet.prototxt";
 const tensorflow_model_zip_url = "https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip";
 const tensorflow_model_zip_file = cache_dir ++ "inception5h.zip";
 const tensorflow_model_filename = "tensorflow_inception_graph.pb";
 const tensorflow_model_file = cache_dir ++ tensorflow_model_filename;
-const onnx_model_url = "https://github.com/onnx/models/raw/main/vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.onnx";
+const onnx_model_url = "https://github.com/onnx/models/raw/4eff8f9b9189672de28d087684e7085ad977747c/vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.onnx";
 const onnx_model_file = cache_dir ++ "googlenet-9.onnx";
 
-pub fn downloadModel(url: []const u8, allocator_: std.mem.Allocator) !void {
-    try utils.downloadFile(url, cache_dir, allocator_);
-}
+// pub fn downloadModel(url: []const u8, allocator_: std.mem.Allocator) !void {
+//     try utils.downloadFile(url, cache_dir, allocator_);
+// }
 
 fn checkNet(net: *Net, allocator: std.mem.Allocator) !void {
     net.setPreferableBackend(.default);
@@ -95,8 +95,8 @@ fn checkNet(net: *Net, allocator: std.mem.Allocator) !void {
 }
 
 test "dnn read net from disk" {
-    try downloadModel(caffe_model_url, test_allocator);
-    try downloadModel(caffe_prototext_url, test_allocator);
+    // try downloadModel(caffe_model_url, test_allocator);
+    // try downloadModel(caffe_prototext_url, test_allocator);
     var net = try Net.readNet(
         caffe_model_file,
         caffe_prototext_file,
@@ -108,8 +108,8 @@ test "dnn read net from disk" {
 }
 
 test "dnn read net from memory" {
-    try downloadModel(caffe_model_url, test_allocator);
-    try downloadModel(caffe_prototext_url, test_allocator);
+    // try downloadModel(caffe_model_url, test_allocator);
+    // try downloadModel(caffe_prototext_url, test_allocator);
 
     var model_file = try std.fs.cwd().openFile(caffe_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(caffe_model_file);
@@ -169,8 +169,8 @@ fn checkCaffeNet(net: *Net) !void {
 }
 
 test "dnn read caffe disk" {
-    try downloadModel(caffe_model_url, test_allocator);
-    try downloadModel(caffe_prototext_url, test_allocator);
+    // try downloadModel(caffe_model_url, test_allocator);
+    // try downloadModel(caffe_prototext_url, test_allocator);
     var net = try Net.readNetFromCaffe(
         caffe_prototext_file,
         caffe_model_file,
@@ -181,8 +181,8 @@ test "dnn read caffe disk" {
 }
 
 test "dnn read caffe memory" {
-    try downloadModel(caffe_model_url, test_allocator);
-    try downloadModel(caffe_prototext_url, test_allocator);
+    // try downloadModel(caffe_model_url, test_allocator);
+    // try downloadModel(caffe_prototext_url, test_allocator);
 
     var model_file = try std.fs.cwd().openFile(caffe_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(caffe_model_file);
@@ -240,7 +240,7 @@ fn checkTensorflow(net: *Net) !void {
 }
 
 fn downloadTFModel() !void {
-    try downloadModel(tensorflow_model_zip_url, test_allocator);
+    // try downloadModel(tensorflow_model_zip_url, test_allocator);
     var arena = std.heap.ArenaAllocator.init(test_allocator);
     defer arena.deinit();
     const arena_allocator = arena.allocator();
@@ -322,7 +322,7 @@ fn checkONNX(net: *Net) !void {
 }
 
 test "dnn read onnx disk" {
-    try downloadModel(onnx_model_url, test_allocator);
+    // try downloadModel(onnx_model_url, test_allocator);
     var net = try Net.readNetFromONNX(onnx_model_file);
     defer net.deinit();
 
@@ -330,7 +330,7 @@ test "dnn read onnx disk" {
 }
 
 test "dnn read onnx memory" {
-    try downloadModel(onnx_model_url, test_allocator);
+    // try downloadModel(onnx_model_url, test_allocator);
     var model_file = try std.fs.cwd().openFile(onnx_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(onnx_model_file);
     defer model_file.close();

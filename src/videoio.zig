@@ -272,15 +272,15 @@ pub const VideoCapture = struct {
     }
 
     pub fn captureFile(self: *Self, uri: []const u8) !void {
-        const c_uri = @ptrCast([*]const u8, uri);
+        const c_uri = @as([*]const u8, @ptrCast(uri));
         if (!c.VideoCapture_Open(self.ptr, c_uri)) {
             return error.VideoCaptureOpenFileError;
         }
     }
 
     pub fn captureFileWithAPI(self: *Self, uri: []const u8, api_preference: API) !void {
-        const cURI = @ptrCast([*]const u8, uri);
-        if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @enumToInt(api_preference))) {
+        const cURI = @as([*]const u8, @ptrCast(uri));
+        if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @intFromEnum(api_preference))) {
             return error.VideoCaptureOpenFileError;
         }
     }
@@ -292,17 +292,17 @@ pub const VideoCapture = struct {
     }
 
     pub fn openDeviceWithAPI(self: *Self, device: i32, api_preference: API) !void {
-        if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @enumToInt(api_preference))) {
+        if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @intFromEnum(api_preference))) {
             return error.VideoCaptureOpenDeviceError;
         }
     }
 
     pub fn get(self: Self, prop: Properties) f64 {
-        return c.VideoCapture_Get(self.ptr, @enumToInt(prop));
+        return c.VideoCapture_Get(self.ptr, @intFromEnum(prop));
     }
 
     pub fn set(self: *Self, prop: Properties, param: f64) void {
-        return c.VideoCapture_Set(self.ptr, @enumToInt(prop), param);
+        return c.VideoCapture_Set(self.ptr, @intFromEnum(prop), param);
     }
 
     pub fn grab(self: Self, skip: i32) void {
@@ -325,8 +325,8 @@ pub const VideoCapture = struct {
     /// returns a string representation of FourCC bytes, i.e. the name of a codec
     pub fn getCodecString(self: Self) []const u8 {
         const fourcc_f = get(self, .fourcc);
-        const fourcc = @floatToInt(u32, fourcc_f);
-        const ps_fourcc = @bitCast(ConvertStruct, fourcc);
+        const fourcc = @as(u32, @intFromFloat(fourcc_f));
+        const ps_fourcc = @as(ConvertStruct, @bitCast(fourcc));
         const result =
             [_]u8{
             ps_fourcc.c0,
@@ -334,7 +334,7 @@ pub const VideoCapture = struct {
             ps_fourcc.c2,
             ps_fourcc.c3,
         };
-        return std.mem.span(&result);
+        return &result;
     }
 
     /// ToCodec returns an float64 representation of FourCC bytes
@@ -349,8 +349,8 @@ pub const VideoCapture = struct {
             .c2 = codec[2],
             .c3 = codec[3],
         };
-        const u_fourcc = @bitCast(u32, ps_fourcc);
-        return @intToFloat(f64, u_fourcc);
+        const u_fourcc = @as(u32, @bitCast(ps_fourcc));
+        return @as(f64, @floatFromInt(u_fourcc));
     }
 
     pub fn isOpened(self: Self) bool {
@@ -388,8 +388,8 @@ pub const VideoWriter = struct {
         height: i32,
         is_color: bool,
     ) void {
-        const c_name = @ptrCast([*]const u8, name);
-        const c_codec = @ptrCast([*]const u8, codec);
+        const c_name = @as([*]const u8, @ptrCast(name));
+        const c_codec = @as([*]const u8, @ptrCast(codec));
         _ = c.VideoWriter_Open(
             self.ptr,
             c_name,
@@ -440,20 +440,20 @@ test "videoio VideoCapture captureFileWithAPI" {
     try vc.captureFileWithAPI(video_path, .any);
 
     var backend = vc.get(.backend);
-    try testing.expect(@as(f64, @enumToInt(VideoCapture.API.any)) != backend);
+    try testing.expect(@as(f64, @intFromEnum(VideoCapture.API.any)) != backend);
 }
 
 test "videoio VideoCapture captureFile invalid file" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.captureFile(video_path ++ "4");
+    var e = vc.captureFile("not-exist-path/" ++ video_path);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
 }
 
 test "videoio VideoCapture captureFileWithAPI invalid file" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.captureFileWithAPI(video_path ++ "4", .any);
+    var e = vc.captureFileWithAPI("not-exist-path/" ++ video_path, .any);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
 }
 

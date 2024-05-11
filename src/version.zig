@@ -27,4 +27,3 @@ test "show version" {
 
 //*    implementation done
 //*    pub extern fn openCVVersion(...) [*c]const u8;
-

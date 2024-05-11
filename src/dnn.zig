@@ -25,10 +25,10 @@ pub const Net = struct {
         halide = 1,
 
         /// NetBackendOpenVINO is the OpenVINO backend.
-        open_vino = 2,
+        openvino = 2,
 
         /// NetBackendOpenCV is the OpenCV backend.
-        open_cv = 3,
+        opencv = 3,
 
         /// NetBackendVKCOM is the Vulkan backend.
         vkcom = 4,
@@ -44,14 +44,7 @@ pub const Net = struct {
         /// - cuda
         /// - default
         pub fn toEnum(backend: []const u8) BackendType {
-            return switch (backend) {
-                "halide" => .halide,
-                "openvino" => .open_vino,
-                "opencv" => .open_cv,
-                "vulkan" => .vkcom,
-                "cuda" => .cuda,
-                else => .default,
-            };
+            return std.meta.stringToEnum(BackendType, backend) orelse .default;
         }
     };
 
@@ -81,17 +74,7 @@ pub const Net = struct {
         cuda_fp16 = 7,
 
         pub fn toEnum(target: []const u8) TargetType {
-            return switch (target) {
-                "fp32" => .fp32,
-                "fp16" => .fp16,
-                "vpu" => .vpu,
-                "vulkan" => .vkcom,
-                "fpga" => .fpga,
-                "cuda" => .cuda,
-                "cuda_fp16" => .cuda_fp16,
-                "cpu" => .cpu,
-                else => .cpu,
-            };
+            return std.meta.stringToEnum(TargetType, target) orelse .cpu;
         }
     };
 
@@ -109,7 +92,7 @@ pub const Net = struct {
     pub fn readNet(model: []const u8, config: []const u8) !Self {
         _ = try ensureFileExists(model, false);
         _ = try ensureFileExists(config, false);
-        const nn_ptr = c.Net_ReadNet(@ptrCast([*]const u8, model), @ptrCast([*]const u8, config));
+        const nn_ptr = c.Net_ReadNet(@as([*]const u8, @ptrCast(model)), @as([*]const u8, @ptrCast(config)));
         return try initFromC(nn_ptr);
     }
 
@@ -119,7 +102,7 @@ pub const Net = struct {
         if (config.len == 0) return error.ConfigIsNotProvided;
         const c_model = core.toByteArray(model);
         const c_config = core.toByteArray(config);
-        const c_framework = @ptrCast([*]const u8, framework);
+        const c_framework = @as([*]const u8, @ptrCast(framework));
         const nn_ptr = c.Net_ReadNetBytes(c_framework, c_model, c_config);
         return try initFromC(nn_ptr);
     }
@@ -127,7 +110,7 @@ pub const Net = struct {
     pub fn readNetFromCaffe(prototxt: []const u8, caffe_model: []const u8) !Self {
         _ = try ensureFileExists(prototxt, false);
         _ = try ensureFileExists(caffe_model, false);
-        const nn_ptr = c.Net_ReadNetFromCaffe(@ptrCast([*]const u8, prototxt), @ptrCast([*]const u8, caffe_model));
+        const nn_ptr = c.Net_ReadNetFromCaffe(@as([*]const u8, @ptrCast(prototxt)), @as([*]const u8, @ptrCast(caffe_model)));
         return try initFromC(nn_ptr);
     }
 
@@ -140,7 +123,7 @@ pub const Net = struct {
 
     pub fn readNetFromTensorflow(model: []const u8) !Self {
         _ = try ensureFileExists(model, false);
-        const nn_ptr = c.Net_ReadNetFromTensorflow(@ptrCast([*]const u8, model));
+        const nn_ptr = c.Net_ReadNetFromTensorflow(@as([*]const u8, @ptrCast(model)));
         return try initFromC(nn_ptr);
     }
 
@@ -158,7 +141,7 @@ pub const Net = struct {
 
     pub fn readNetFromONNX(model: []const u8) !Self {
         _ = try ensureFileExists(model, false);
-        const nn_ptr = c.Net_ReadNetFromONNX(@ptrCast([*]const u8, model));
+        const nn_ptr = c.Net_ReadNetFromONNX(@as([*]const u8, @ptrCast(model)));
         return try initFromC(nn_ptr);
     }
 
@@ -174,11 +157,11 @@ pub const Net = struct {
     }
 
     pub fn setInput(self: *Self, blob: Blob, name: []const u8) void {
-        _ = c.Net_SetInput(self.ptr, blob.mat.toC(), @ptrCast([*]const u8, name));
+        _ = c.Net_SetInput(self.ptr, blob.mat.toC(), @as([*]const u8, @ptrCast(name)));
     }
 
     pub fn forward(self: *Self, output_name: []const u8) !Mat {
-        const mat_ptr = c.Net_Forward(self.ptr, @ptrCast([*]const u8, output_name));
+        const mat_ptr = c.Net_Forward(self.ptr, @as([*]const u8, @ptrCast(output_name)));
         return try Mat.initFromC(mat_ptr);
     }
 
@@ -186,11 +169,11 @@ pub const Net = struct {
         var c_mats: c.Mats = undefined;
         var c_string_array = try allocator.alloc([*]const u8, output_blob_names.len);
         defer allocator.free(c_string_array);
-        for (output_blob_names) |name, i| c_string_array[i] = @ptrCast([*]const u8, name);
+        for (output_blob_names, 0..) |name, i| c_string_array[i] = @as([*]const u8, @ptrCast(name));
 
         const c_strings = c.CStrings{
-            .strs = @ptrCast([*c][*c]const u8, c_string_array.ptr),
-            .length = @intCast(i32, output_blob_names.len),
+            .strs = @as([*c][*c]const u8, @ptrCast(c_string_array.ptr)),
+            .length = @as(i32, @intCast(output_blob_names.len)),
         };
 
         c.Net_ForwardLayers(self.ptr, &c_mats, c_strings);
@@ -208,7 +191,7 @@ pub const Net = struct {
     // https://docs.opencv.org/3.4/db/d30/classcv_1_1dnn_1_1Net.html#a7f767df11386d39374db49cd8df8f59e
     //
     pub fn setPreferableBackend(self: *Self, backend: BackendType) void {
-        _ = c.Net_SetPreferableBackend(self.ptr, @enumToInt(backend));
+        _ = c.Net_SetPreferableBackend(self.ptr, @intFromEnum(backend));
     }
 
     // SetPreferableTarget ask network to make computations on specific target device.
@@ -216,7 +199,7 @@ pub const Net = struct {
     // For further details, please see:
     // https://docs.opencv.org/3.4/db/d30/classcv_1_1dnn_1_1Net.html#a9dddbefbc7f3defbe3eeb5dc3d3483f4
     pub fn setPreferableTarget(self: *Self, target: TargetType) void {
-        _ = c.Net_SetPreferableTarget(self.ptr, @enumToInt(target));
+        _ = c.Net_SetPreferableTarget(self.ptr, @intFromEnum(target));
     }
 
     // GetPerfProfile returns overall time for inference and timings (in ticks) for layers
@@ -225,7 +208,7 @@ pub const Net = struct {
     // https://docs.opencv.org/master/db/d30/classcv_1_1dnn_1_1Net.html#a06ce946f675f75d1c020c5ddbc78aedc
     //
     pub fn getPerfProfile(self: Self) f64 {
-        return @intToFloat(f64, c.Net_GetPerfProfile(self.ptr));
+        return @as(f64, @floatFromInt(c.Net_GetPerfProfile(self.ptr)));
     }
 
     pub fn getUnconnectedOutLayers(self: Self, allocator: std.mem.Allocator) !std.ArrayList(i32) {
@@ -256,9 +239,9 @@ pub const Net = struct {
         var c_strs: c.CStrings = undefined;
         defer c.CStrings_Close(c_strs);
         c.Net_GetLayerNames(self.ptr, &c_strs);
-        const len = @intCast(usize, c_strs.length);
+        const len = @as(usize, @intCast(c_strs.length));
         var return_array = try arena_allocator.alloc([]const u8, len);
-        for (return_array) |*item, i| {
+        for (return_array, 0..) |*item, i| {
             item.* = try arena_allocator.dupe(u8, std.mem.span(c_strs.strs[i]));
         }
         return .{
@@ -330,7 +313,7 @@ pub const Blob = struct {
             mean.toC(),
             swap_r_b,
             crop,
-            @enumToInt(ddepth),
+            @intFromEnum(ddepth),
         );
         return try initFromMat(new_blob_mat);
     }
@@ -386,11 +369,11 @@ pub const Layer = struct {
     }
 
     pub fn inputNameToIndex(self: *Self, name: []const u8) i32 {
-        return c.Layer_InputNameToIndex(self.ptr, @ptrCast([*]const u8, name));
+        return c.Layer_InputNameToIndex(self.ptr, @as([*]const u8, @ptrCast(name)));
     }
 
     pub fn outputNameToIndex(self: *Self, name: []const u8) i32 {
-        return c.Layer_OutputNameToIndex(self.ptr, @ptrCast([*]const u8, name));
+        return c.Layer_OutputNameToIndex(self.ptr, @as([*]const u8, @ptrCast(name)));
     }
 
     pub fn getName(self: Self) []const u8 {
@@ -416,19 +399,19 @@ pub fn nmsBoxes(
 ) !std.ArrayList(i32) {
     var c_bboxes_array = try allocator.alloc(c.Rect, bboxes.len);
     defer allocator.free(c_bboxes_array);
-    for (bboxes) |bbox, i| c_bboxes_array[i] = bbox.toC();
+    for (bboxes, 0..) |bbox, i| c_bboxes_array[i] = bbox.toC();
     const c_bboxes_struct = c.Rects{
-        .rects = @ptrCast([*]c.Rect, c_bboxes_array.ptr),
-        .length = @intCast(i32, bboxes.len),
+        .rects = @as([*]c.Rect, @ptrCast(c_bboxes_array.ptr)),
+        .length = @as(i32, @intCast(bboxes.len)),
     };
 
     var c_scores_struct = c.FloatVector{
-        .val = @ptrCast([*]f32, scores.ptr),
-        .length = @intCast(i32, scores.len),
+        .val = @as([*]f32, @ptrCast(scores.ptr)),
+        .length = @as(i32, @intCast(scores.len)),
     };
 
     var indices_vector: c.IntVector = undefined;
-    indices_vector.length = @intCast(i32, max_index);
+    indices_vector.length = @as(i32, @intCast(max_index));
 
     c.NMSBoxes(
         c_bboxes_struct,
@@ -439,7 +422,7 @@ pub fn nmsBoxes(
     );
     defer c.IntVector_Close(indices_vector);
 
-    const len = @intCast(usize, indices_vector.length);
+    const len = @as(usize, @intCast(indices_vector.length));
     var indices = try std.ArrayList(i32).initCapacity(allocator, len);
     {
         var i: usize = 0;
@@ -466,19 +449,19 @@ pub fn nmsBoxesWithParams(
 ) !std.ArrayList(i32) {
     var c_bboxes_array = try allocator.alloc(c.Rect, bboxes.len);
     defer allocator.free(c_bboxes_array);
-    for (bboxes) |bbox, i| c_bboxes_array[i] = bbox.toC();
+    for (bboxes, 0..) |bbox, i| c_bboxes_array[i] = bbox.toC();
     const c_bboxes_struct = c.Rects{
-        .rects = @ptrCast([*]c.Rect, c_bboxes_array.ptr),
-        .length = @intCast(i32, bboxes.len),
+        .rects = @as([*]c.Rect, @ptrCast(c_bboxes_array.ptr)),
+        .length = @as(i32, @intCast(bboxes.len)),
     };
 
     const c_scores_struct = c.FloatVector{
-        .val = @ptrCast([*]f32, scores.ptr),
-        .length = @intCast(i32, scores.len),
+        .val = @as([*]f32, @ptrCast(scores.ptr)),
+        .length = @as(i32, @intCast(scores.len)),
     };
 
     var indices_vector: c.IntVector = undefined;
-    indices_vector.length = @intCast(i32, max_index);
+    indices_vector.length = @as(i32, @intCast(max_index));
 
     c.NMSBoxesWithParams(
         c_bboxes_struct,
@@ -491,7 +474,7 @@ pub fn nmsBoxesWithParams(
     );
     defer c.IntVector_Close(indices_vector);
 
-    const len = @intCast(usize, indices_vector.length);
+    const len = @as(usize, @intCast(indices_vector.length));
     var indices = try std.ArrayList(i32).initCapacity(allocator, len);
     {
         var i: usize = 0;

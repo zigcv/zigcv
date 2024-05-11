@@ -61,7 +61,7 @@ pub const CalibFlags = packed struct(i32) {
     const Self = @This();
 
     pub fn toNum(self: Self) i32 {
-        return @bitCast(i32, self);
+        return @as(i32, @bitCast(self));
     }
 
     comptime {
@@ -98,7 +98,7 @@ pub const CalibCBFlags = packed struct(i32) {
     const Self = @This();
 
     pub fn toNum(self: Self) i32 {
-        return @bitCast(i32, self);
+        return @as(i32, @bitCast(self));
     }
 
     comptime {
@@ -172,7 +172,7 @@ pub fn initUndistortRectifyMap(
         r.toC(),
         new_camera_matrix.toC(),
         size.toC(),
-        @enumToInt(m1type),
+        @intFromEnum(m1type),
         map1.toC(),
         map2.toC(),
     );
@@ -346,7 +346,7 @@ pub fn estimateAffine2DWithParams(
         from.toC(),
         to.toC(),
         inliers.toC(),
-        @enumToInt(method),
+        @intFromEnum(method),
         ransac_reproj_threshold,
         max_iters,
         confidence,
@@ -709,9 +709,9 @@ test "calib3d calibrateCamera" {
 
     {
         var j: f32 = 0;
-        while (j < @intToFloat(f32, size.height)) : (j += 1) {
+        while (j < @as(f32, @floatFromInt(size.height))) : (j += 1) {
             var i: f32 = 0;
-            while (i < @intToFloat(f32, size.width)) : (i += 1) {
+            while (i < @as(f32, @floatFromInt(size.width))) : (i += 1) {
                 obj_points.append(Point3f.init(
                     100 * i,
                     100 * j,
@@ -762,7 +762,7 @@ test "calib3d calibrateCamera" {
 
     Mat.bitwiseXor(dest, target, &xor);
     const different_pixels_number = xor.sum().val1;
-    const max_different_pixels_number: f32 = @intToFloat(f32, img.cols()) * @intToFloat(f32, img.rows()) * 0.005;
+    const max_different_pixels_number: f32 = @as(f32, @floatFromInt(img.cols())) * @as(f32, @floatFromInt(img.rows())) * 0.005;
     try testing.expect(max_different_pixels_number >= different_pixels_number);
 }
 

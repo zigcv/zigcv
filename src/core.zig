@@ -32,13 +32,13 @@ pub const BorderType = struct {
     } = .reflect101,
 
     pub fn toNum(self: BorderType) u5 {
-        return @bitCast(u5, packed struct {
+        return @as(u5, @bitCast(packed struct {
             type: u4,
             isolate: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .isolate = self.isolate,
-        });
+        }));
     }
 
     comptime {
@@ -114,13 +114,13 @@ pub const PointVector = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         defer arena.deinit();
         var arena_allocator = arena.allocator();
-        const len = @intCast(usize, points.len);
+        const len = @as(usize, @intCast(points.len));
 
         var c_point_array = try arena_allocator.alloc(c.Point, len);
-        for (points) |point, i| c_point_array[i] = point.toC();
+        for (points, 0..) |point, i| c_point_array[i] = point.toC();
         var contour: c.Contour = .{
-            .length = @intCast(i32, points.len),
-            .points = @ptrCast([*]c.Point, c_point_array.ptr),
+            .length = @as(i32, @intCast(points.len)),
+            .points = @as([*]c.Point, @ptrCast(c_point_array.ptr)),
         };
         const ptr = c.PointVector_NewFromPoints(contour);
         return try initFromC(ptr);
@@ -156,7 +156,7 @@ pub const PointVector = struct {
 
     pub fn toPoints(self: Self, allocator: std.mem.Allocator) !std.ArrayList(Point) {
         const size_ = self.size();
-        var array = try std.ArrayList(Point).initCapacity(allocator, @intCast(usize, size_));
+        var array = try std.ArrayList(Point).initCapacity(allocator, @as(usize, @intCast(size_)));
         {
             var i: i32 = 0;
             while (i < size_) : (i += 1) {
@@ -185,18 +185,18 @@ pub const PointsVector = struct {
         var arena_allocator = arena.allocator();
 
         var c_points_array = try arena_allocator.alloc(c.Points, points.len);
-        for (points) |point, i| {
+        for (points, 0..) |point, i| {
             var c_point_array = try arena_allocator.alloc(c.Point, point.len);
-            for (point) |p, j| c_point_array[j] = p.toC();
+            for (point, 0..) |p, j| c_point_array[j] = p.toC();
             c_points_array[i] = .{
-                .length = @intCast(i32, point.len),
-                .points = @ptrCast([*]c.Point, c_point_array.ptr),
+                .length = @as(i32, @intCast(point.len)),
+                .points = @as([*]c.Point, @ptrCast(c_point_array.ptr)),
             };
         }
 
         var c_points = c.struct_Contours{
-            .length = @intCast(i32, points.len),
-            .contours = @ptrCast([*]c.Contour, c_points_array.ptr),
+            .length = @as(i32, @intCast(points.len)),
+            .contours = @as([*]c.Contour, @ptrCast(c_points_array.ptr)),
         };
         const ptr = c.PointsVector_NewFromPoints(c_points);
         return try initFromC(ptr);
@@ -272,12 +272,12 @@ pub const Point2fVector = struct {
         var arena_allocator = arena.allocator();
 
         var c_point_array = try arena_allocator.alloc(c.Point2f, points.len);
-        for (points) |point, i| c_point_array[i] = point.toC();
+        for (points, 0..) |point, i| c_point_array[i] = point.toC();
         return .{
             .ptr = c.Point2fVector_NewFromPoints(
                 c.Points2f{
-                    .length = @intCast(i32, points.len),
-                    .points = @ptrCast([*]c.Point2f, c_point_array.ptr),
+                    .length = @as(i32, @intCast(points.len)),
+                    .points = @as([*]c.Point2f, @ptrCast(c_point_array.ptr)),
                 },
             ),
         };
@@ -335,18 +335,18 @@ pub const Points2fVector = struct {
         var arena_allocator = arena.allocator();
 
         var c_points_array = try arena_allocator.alloc(c.Points2f, points.len);
-        for (points) |point, i| {
+        for (points, 0..) |point, i| {
             var c_point_array = try arena_allocator.alloc(c.Point2f, point.len);
-            for (point) |p, j| c_point_array[j] = p.toC();
+            for (point, 0..) |p, j| c_point_array[j] = p.toC();
             c_points_array[i] = .{
-                .length = @intCast(i32, point.len),
-                .points = @ptrCast([*]c.Point, c_point_array.ptr),
+                .length = @as(i32, @intCast(point.len)),
+                .points = @as([*]c.Point, @ptrCast(c_point_array.ptr)),
             };
         }
 
         var c_points = c.struct_Contours{
-            .length = @intCast(i32, points.len),
-            .contours = @ptrCast([*]c.Contour, c_points_array.ptr),
+            .length = @as(i32, @intCast(points.len)),
+            .contours = @as([*]c.Contour, @ptrCast(c_points_array.ptr)),
         };
         const ptr = c.Points2fVector_NewFromPoints(c_points);
         return try initFromC(ptr);
@@ -420,15 +420,15 @@ pub const Point3fVector = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         defer arena.deinit();
         var arena_allocator = arena.allocator();
-        const len = @intCast(usize, points.len);
+        const len = @as(usize, @intCast(points.len));
 
         var c_point_array = try arena_allocator.alloc(c.Point3f, len);
-        for (points) |point, i| c_point_array[i] = point.toC();
+        for (points, 0..) |point, i| c_point_array[i] = point.toC();
         return .{
             .ptr = c.Point3fVector_NewFromPoints(
                 c.Points3f{
-                    .length = @intCast(i32, points.len),
-                    .points = @ptrCast([*]c.Point3f, c_point_array.ptr),
+                    .length = @as(i32, @intCast(points.len)),
+                    .points = @as([*]c.Point3f, @ptrCast(c_point_array.ptr)),
                 },
             ),
         };
@@ -486,18 +486,18 @@ pub const Points3fVector = struct {
         var arena_allocator = arena.allocator();
 
         var c_points_array = try arena_allocator.alloc(c.Points3f, points.len);
-        for (points) |point, i| {
+        for (points, 0..) |point, i| {
             var c_point_array = try arena_allocator.alloc(c.Point3f, point.len);
-            for (point) |p, j| c_point_array[j] = p.toC();
+            for (point, 0..) |p, j| c_point_array[j] = p.toC();
             c_points_array[i] = .{
-                .length = @intCast(i32, point.len),
-                .points = @ptrCast([*]c.Point, c_point_array.ptr),
+                .length = @as(i32, @intCast(point.len)),
+                .points = @as([*]c.Point, @ptrCast(c_point_array.ptr)),
             };
         }
 
         var c_points = c.struct_Contours{
-            .length = @intCast(i32, points.len),
-            .contours = @ptrCast([*]c.Contour, c_points_array.ptr),
+            .length = @as(i32, @intCast(points.len)),
+            .contours = @as([*]c.Contour, @ptrCast(c_points_array.ptr)),
         };
         const ptr = c.Points3fVector_NewFromPoints(c_points);
         return try initFromC(ptr);
@@ -789,8 +789,8 @@ pub const Size = struct {
 
     pub fn toC(self: Self) c.Size {
         return .{
-            .width = @intCast(c_int, self.width),
-            .height = @intCast(c_int, self.height),
+            .width = @as(c_int, @intCast(self.width)),
+            .height = @as(c_int, @intCast(self.height)),
         };
     }
 };
@@ -900,7 +900,7 @@ pub const TermCriteria = struct {
         eps: bool = false,
 
         pub fn toNum(self: @This()) u2 {
-            return @bitCast(u2, self);
+            return @as(u2, @bitCast(self));
         }
     };
 
@@ -926,8 +926,8 @@ pub const TermCriteria = struct {
 
 pub inline fn toByteArray(s: []u8) c.ByteArray {
     return c.ByteArray{
-        .data = @ptrCast([*c]u8, s.ptr),
-        .length = @intCast(i32, s.len),
+        .data = @as([*c]u8, @ptrCast(s.ptr)),
+        .length = @as(i32, @intCast(s.len)),
     };
 }
 

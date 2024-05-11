@@ -1,8 +1,9 @@
 const std = @import("std");
+const LazyPath = std.build.LazyPath;
 const zigcv = @import("libs.zig");
 pub fn build(b: *std.build.Builder) void {
     const target = b.standardTargetOptions(.{});
-    const mode = b.standardReleaseOptions();
+    const mode = b.standardOptimizeOption(.{});
 
     const examples = [_]Program{
         .{
@@ -50,20 +51,22 @@ pub fn build(b: *std.build.Builder) void {
     const examples_step = b.step("examples", "Builds all the examples");
 
     for (examples) |ex| {
-        const exe = b.addExecutable(ex.name, ex.path);
+        const exe = b.addExecutable(.{
+            .name = ex.name,
+            .root_source_file = .{ .path = ex.path },
+            .target = target,
+            .optimize = mode,
+        });
         const exe_step = &exe.step;
 
-        exe.setBuildMode(mode);
-        exe.setTarget(target);
-        exe.install();
-        exe.use_stage1 = ex.fstage1;
+        b.installArtifact(exe);
 
-        zigcv.link(exe);
+        zigcv.link(b, exe);
         zigcv.addAsPackage(exe);
 
-        const run_cmd = exe.run();
+        const run_cmd = b.addRunArtifact(exe);
         const run_step = b.step(ex.name, ex.desc);
-        const artifact_step = &b.addInstallArtifact(exe).step;
+        const artifact_step = &b.addInstallArtifact(exe, .{}).step;
         if (b.args) |args| {
             run_cmd.addArgs(args);
         }
@@ -76,23 +79,25 @@ pub fn build(b: *std.build.Builder) void {
     var tmp_dir = std.testing.tmpDir(.{});
     defer tmp_dir.cleanup();
 
-    const exe_tests = b.addTest("src/main.zig");
-    zigcv.link(exe_tests);
-    zigcv.addAsPackage(exe_tests);
+    const test_filter = b.option([]const u8, "test-filter", "Skip tests that do not match filter") orelse null;
+    const unit_tests = b.addTest(.{
+        .root_source_file = .{ .path = "src/main.zig" },
+        .target = target,
+        .optimize = mode,
+        .filter = test_filter,
+    });
+    zigcv.link(b, unit_tests);
+    zigcv.addAsPackage(unit_tests);
 
-    const test_filter = b.option([]const u8, "test-filter", "Skip tests that do not match filter");
-    if (test_filter) |filter| exe_tests.filter = filter;
-
-    exe_tests.setTarget(target);
-    exe_tests.setBuildMode(mode);
+    const run_unit_tests = b.addRunArtifact(unit_tests);
 
     const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&exe_tests.step);
+    test_step.dependOn(&run_unit_tests.step);
 
-    const emit_docs = b.option(bool, "docs", "Generate Docs");
-    if (emit_docs) |d| {
-        if (d) exe_tests.emit_docs = .emit;
-    }
+    // const emit_docs = b.option(bool, "docs", "Generate Docs");
+    // if (emit_docs) |d| {
+    //     if (d) exe_tests.emit_docs = .emit;
+    // }
 }
 
 inline fn thisDir() []const u8 {

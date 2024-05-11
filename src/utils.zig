@@ -2,7 +2,7 @@ const std = @import("std");
 const c = @import("c_api.zig");
 
 pub fn fromCStructsToArrayList(from_array: anytype, from_array_length: i32, comptime ToType: type, allocator: std.mem.Allocator) !std.ArrayList(ToType) {
-    const len = @intCast(usize, from_array_length);
+    const len = @as(usize, @intCast(from_array_length));
     var arr = try std.ArrayList(ToType).initCapacity(allocator, len);
     {
         var i: usize = 0;

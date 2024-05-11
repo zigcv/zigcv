@@ -92,7 +92,7 @@ test "imgproc approxPolyDP" {
     defer actual_triangle_contour.deinit();
 
     try testing.expectEqual(expected_triangle_contour.len, actual_triangle_contour.items.len);
-    for (expected_triangle_contour) |expected_point, i| {
+    for (expected_triangle_contour, 0..) |expected_point, i| {
         try testing.expectEqual(expected_point, actual_triangle_contour.items[i]);
     }
 
@@ -112,7 +112,7 @@ test "imgproc approxPolyDP" {
     defer actual_rectangle_contour.deinit();
 
     try testing.expectEqual(expected_rectangle_contour.len, actual_rectangle_contour.items.len);
-    for (expected_rectangle_contour) |expected_point, i| {
+    for (expected_rectangle_contour, 0..) |expected_point, i| {
         try testing.expectEqual(expected_point, actual_rectangle_contour.items[i]);
     }
 }
@@ -380,8 +380,8 @@ test "imgproc pyrdown" {
 
     imgproc.pyrDown(img, &dst, Size.init(dst.cols(), dst.rows()), .{});
     try testing.expectEqual(false, dst.isEmpty());
-    try testing.expect(@fabs(@intToFloat(f64, (img.cols() - 2 * dst.cols()))) < 2.0);
-    try testing.expect(@fabs(@intToFloat(f64, (img.rows() - 2 * dst.rows()))) < 2.0);
+    try testing.expect(@fabs(@as(f64, @floatFromInt((img.cols() - 2 * dst.cols())))) < 2.0);
+    try testing.expect(@fabs(@as(f64, @floatFromInt((img.rows() - 2 * dst.rows())))) < 2.0);
 }
 
 test "imgproc pyrup" {
@@ -394,8 +394,8 @@ test "imgproc pyrup" {
 
     imgproc.pyrUp(img, &dst, Size.init(dst.cols(), dst.rows()), .{});
     try testing.expectEqual(false, dst.isEmpty());
-    try testing.expect(@fabs(@intToFloat(f64, (2 * img.cols() - dst.cols()))) < 2.0);
-    try testing.expect(@fabs(@intToFloat(f64, (2 * img.rows() - dst.rows()))) < 2.0);
+    try testing.expect(@fabs(@as(f64, @floatFromInt((2 * img.cols() - dst.cols())))) < 2.0);
+    try testing.expect(@fabs(@as(f64, @floatFromInt((2 * img.rows() - dst.rows())))) < 2.0);
 }
 
 test "imgproc boxPoints" {
@@ -506,10 +506,10 @@ test "imgproc findContours" {
     try testing.expectEqual(@as(i32, 320), r.height);
 
     var length = imgproc.arcLength(r0, true);
-    try testing.expectEqual(@as(i32, 1436), @floatToInt(i32, length));
+    try testing.expectEqual(@as(i32, 1436), @as(i32, @intFromFloat(length)));
 
     length = imgproc.arcLength(r0, false);
-    try testing.expectEqual(@as(i32, 1037), @floatToInt(i32, length));
+    try testing.expectEqual(@as(i32, 1037), @as(i32, @intFromFloat(length)));
 }
 
 test "imgproc findContoursWithParams" {
@@ -976,7 +976,7 @@ test "imgproc houghLinesPointSet" {
     var img = try Mat.initSize(points.len, 1, .cv32fc2);
     defer img.deinit();
 
-    for (points) |p, i| {
+    for (points, 0..) |p, i| {
         img.set(f32, i, 0, p[0]);
         img.set(f32, i, 1, p[1]);
     }
@@ -1092,7 +1092,7 @@ test "imgproc circle" {
         defer img.deinit();
         const white = Color.init(255, 255, 255, 0);
         imgproc.circle(&img, Point.init(70, 70), 20, white, t.thickness);
-        try testing.expectEqual(t.result, img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)));
+        try testing.expectEqual(t.result, img.get(u8, @as(usize, @intCast(t.point.x)), @as(usize, @intCast(t.point.y))));
     }
 }
 
@@ -1133,7 +1133,7 @@ test "imgproc circleWithParams" {
         defer img.deinit();
         const white = Color.init(255, 255, 255, 0);
         imgproc.circleWithParams(&img, Point.init(70, 70), 20, white, t.thickness, .line4, t.shift);
-        try testing.expectEqual(t.result, img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)));
+        try testing.expectEqual(t.result, img.get(u8, @as(usize, @intCast(t.point.x)), @as(usize, @intCast(t.point.y))));
     }
 }
 
@@ -1156,7 +1156,7 @@ test "imgproc rectangle" {
         defer img.deinit();
         const white = Color.init(255, 255, 255, 0);
         imgproc.rectangle(&img, Rect.init(10, 10, 70, 70), white, t.thickness);
-        try testing.expect(img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)) >= 50);
+        try testing.expect(img.get(u8, @as(usize, @intCast(t.point.x)), @as(usize, @intCast(t.point.y))) >= 50);
     }
 }
 
@@ -1187,7 +1187,7 @@ test "imgproc rectangleWithParams" {
         defer img.deinit();
         const white = Color.init(255, 255, 255, 0);
         imgproc.rectangleWithParams(&img, Rect.init(10, 10, 70, 70), white, t.thickness, .line4, t.shift);
-        try testing.expectEqual(@as(u8, 255), img.get(u8, @intCast(usize, t.point.x), @intCast(usize, t.point.y)));
+        try testing.expectEqual(@as(u8, 255), img.get(u8, @as(usize, @intCast(t.point.x)), @as(usize, @intCast(t.point.y))));
     }
 }
 
@@ -1573,7 +1573,7 @@ test "imgproc getAffineTransform2f" {
     try testing.expectEqual(@as(i32, 2), m.rows());
 }
 
-test "imgproc getAffineTransform2f" {
+test "imgproc getAffineTransform2f 2" {
     var src = [_]Point{
         Point.init(0, 0),
         Point.init(10, 5),
@@ -1618,12 +1618,12 @@ test "imgproc findHomography" {
         Point2f.init(51.51214828037607, -0.1042212249954444),
     };
 
-    for (srcPoints) |point, i| {
+    for (srcPoints, 0..) |point, i| {
         src.set(f64, i, 0, @as(f64, point.x));
         src.set(f64, i, 1, @as(f64, point.y));
     }
 
-    for (dstPoints) |point, i| {
+    for (dstPoints, 0..) |point, i| {
         dst.set(f64, i, 0, @as(f64, point.x));
         dst.set(f64, i, 1, @as(f64, point.y));
     }
@@ -1827,7 +1827,7 @@ test "imgproc ellipse" {
         var white = Color{ .r = 255, .g = 255, .b = 255, .a = 255 };
         imgproc.ellipse(&img, Point.init(50, 50), Point.init(25, 25), 0, 0, 360, white, tc.thickness);
 
-        try testing.expectEqual(@as(u8, 255), img.get(u8, @intCast(usize, tc.point.x), @intCast(usize, tc.point.y)));
+        try testing.expectEqual(@as(u8, 255), img.get(u8, @as(usize, @intCast(tc.point.x)), @as(usize, @intCast(tc.point.y))));
     }
 }
 
@@ -1893,7 +1893,7 @@ test "imgproc ellipseWithParams" {
             tc.linetype,
             tc.shift,
         );
-        const r = img.get(u8, @intCast(usize, tc.point.x), @intCast(usize, tc.point.y));
+        const r = img.get(u8, @as(usize, @intCast(tc.point.x)), @as(usize, @intCast(tc.point.y)));
         if (tc.want) |want| {
             testing.expectEqual(want, r) catch |e| {
                 std.debug.print("test: {s}\n", .{tc.name});
@@ -1967,7 +1967,7 @@ test "imgproc fillPolyWithParams" {
 
         imgproc.fillPolyWithParams(&img, pv, white, .line4, 0, tc.offset);
 
-        try testing.expectEqual(tc.result, img.get(u8, @intCast(usize, tc.point.x), @intCast(usize, tc.point.y)));
+        try testing.expectEqual(tc.result, img.get(u8, @as(usize, @intCast(tc.point.x)), @as(usize, @intCast(tc.point.y))));
     }
 }
 

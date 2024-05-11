@@ -21,7 +21,7 @@
 
 const std = @import("std");
 const cv = @import("zigcv");
-const downloadFile = cv.utils.downloadFile;
+// const downloadFile = cv.utils.downloadFile;
 const Mat = cv.Mat;
 const Size = cv.Size;
 const c_api = cv.c_api;
@@ -59,8 +59,8 @@ pub fn main() anyerror!void {
     defer img.deinit();
 
     // open DNN object tracking model
-    try downloadFile(model_url, cache_dir, allocator);
-    try downloadFile(config_url, cache_dir, allocator);
+    // try downloadFile(model_url, cache_dir, allocator);
+    // try downloadFile(config_url, cache_dir, allocator);
     var net = cv.Net.readNet(model_path, config_path) catch |err| {
         std.debug.print("Error: {}\n", .{err});
         std.os.exit(1);
@@ -124,13 +124,13 @@ fn performDetection(frame: *Mat, results: Mat) void {
     var i: usize = 0;
     while (i < results.total()) {
         var confidence = results.get(f32, 0, i + 2);
-        const cols = @intToFloat(f32, frame.cols());
-        const rows = @intToFloat(f32, frame.rows());
+        const cols: f32 = @floatFromInt(frame.cols());
+        const rows: f32 = @floatFromInt(frame.rows());
         if (confidence > 0.5) {
-            var left = @floatToInt(i32, results.get(f32, 0, i + 3) * cols);
-            var top = @floatToInt(i32, results.get(f32, 0, i + 4) * rows);
-            var right = @floatToInt(i32, results.get(f32, 0, i + 5) * cols);
-            var bottom = @floatToInt(i32, results.get(f32, 0, i + 6) * rows);
+            var left: i32 = @intFromFloat(results.get(f32, 0, i + 3) * cols);
+            var top: i32 = @intFromFloat(results.get(f32, 0, i + 4) * rows);
+            var right: i32 = @intFromFloat(results.get(f32, 0, i + 5) * cols);
+            var bottom: i32 = @intFromFloat(results.get(f32, 0, i + 6) * rows);
             cv.rectangle(frame, cv.Rect{ .x = left, .y = top, .width = right, .height = bottom }, green, 2);
         }
         i += 7;

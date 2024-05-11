@@ -190,7 +190,7 @@ pub const FastFeatureDetector = struct {
     /// https://docs.opencv.org/master/df/d74/classcv_1_1FastFeatureDetector.html#ab986f2ff8f8778aab1707e2642bc7f8e
     ///
     pub fn initWithParams(threshold: i32, nonmax_suppression: bool, type_: Type) !Self {
-        const ptr = c.FastFeatureDetector_CreateWithParams(threshold, nonmax_suppression, @enumToInt(type_));
+        const ptr = c.FastFeatureDetector_CreateWithParams(threshold, nonmax_suppression, @intFromEnum(type_));
         return try Self.initFromC(ptr);
     }
 
@@ -387,7 +387,7 @@ pub const ORB = struct {
             edge_threshold,
             firstLevel,
             WTA_K,
-            @enumToInt(score_type),
+            @intFromEnum(score_type),
             patchSize,
             fast_threshold,
         );
@@ -631,7 +631,7 @@ pub const BFMatcher = struct {
         norm_type: NormTypes,
         cross_check: bool,
     ) !Self {
-        const ptr = c.BFMatcher_Create_WithParams(@enumToInt(norm_type), cross_check);
+        const ptr = c.BFMatcher_Create_WithParams(@intFromEnum(norm_type), cross_check);
         return try Self.initFromC(ptr);
     }
 
@@ -661,7 +661,7 @@ pub const BFMatcher = struct {
     ) !MultiDMatches {
         const res: c.MultiDMatches = c.BFMatcher_KnnMatch(self.ptr, query.toC(), train.toC(), k);
         defer c.MultiDMatches_Close(res);
-        return try DMatch.toMultiArrayList(res.dmatches[0..@intCast(usize, res.length)], allocator);
+        return try DMatch.toMultiArrayList(res.dmatches[0..@as(usize, @intCast(res.length))], allocator);
     }
 };
 
@@ -706,7 +706,7 @@ pub const FlannBasedMatcher = struct {
     ) !MultiDMatches {
         const res: c.MultiDMatches = c.FlannBasedMatcher_KnnMatch(self.ptr, query.toC(), train.toC(), k);
         defer c.MultiDMatches_Close(res);
-        return try DMatch.toMultiArrayList(res.dmatches[0..@intCast(usize, res.length)], allocator);
+        return try DMatch.toMultiArrayList(res.dmatches[0..@as(usize, @intCast(res.length))], allocator);
     }
 };
 
@@ -734,10 +734,10 @@ pub fn drawKeyPoints(src: Mat, kp: []KeyPoint, dst: *Mat, color_: Color, flags: 
     defer c_keypoints_array.deinit();
     for (kp) |keypoint| try c_keypoints_array.append(keypoint.toC());
     const c_keypoints = c.KeyPoints{
-        .length = @intCast(i32, kp.len),
-        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array.items),
+        .length = @as(i32, @intCast(kp.len)),
+        .keypoints = @as([*]c.KeyPoint, @ptrCast(c_keypoints_array.items)),
     };
-    c.DrawKeyPoints(src.toC(), c_keypoints, dst.*.toC(), color_.toScalar().toC(), @enumToInt(flags));
+    c.DrawKeyPoints(src.toC(), c_keypoints, dst.*.toC(), color_.toScalar().toC(), @intFromEnum(flags));
 }
 
 /// DrawMatches draws matches on combined train and querry images.
@@ -759,26 +759,26 @@ pub fn drawMatches(
 ) !void {
     var c_keypoints_array1 = try allocator.alloc(c.KeyPoint, kp1.len);
     defer allocator.free(c_keypoints_array1);
-    for (kp1) |keypoint, i| c_keypoints_array1[i] = keypoint.toC();
+    for (kp1, 0..) |keypoint, i| c_keypoints_array1[i] = keypoint.toC();
     const c_keypoints1 = c.KeyPoints{
-        .length = @intCast(i32, kp1.len),
-        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array1.ptr),
+        .length = @as(i32, @intCast(kp1.len)),
+        .keypoints = @as([*]c.KeyPoint, @ptrCast(c_keypoints_array1.ptr)),
     };
 
     var c_keypoints_array2 = try allocator.alloc(c.KeyPoint, kp2.len);
     defer allocator.free(c_keypoints_array2);
-    for (kp2) |keypoint, i| c_keypoints_array2[i] = keypoint.toC();
+    for (kp2, 0..) |keypoint, i| c_keypoints_array2[i] = keypoint.toC();
     const c_keypoints2 = c.KeyPoints{
-        .length = @intCast(i32, kp2.len),
-        .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array2.ptr),
+        .length = @as(i32, @intCast(kp2.len)),
+        .keypoints = @as([*]c.KeyPoint, @ptrCast(c_keypoints_array2.ptr)),
     };
 
     var c_matches1to2_array = try allocator.alloc(c.DMatch, matches1to2.len);
     defer allocator.free(c_matches1to2_array);
-    for (matches1to2) |match, i| c_matches1to2_array[i] = match.toC();
+    for (matches1to2, 0..) |match, i| c_matches1to2_array[i] = match.toC();
     const c_matches1to2 = c.DMatches{
-        .length = @intCast(i32, matches1to2.len),
-        .dmatches = @ptrCast([*]c.DMatch, c_matches1to2_array.ptr),
+        .length = @as(i32, @intCast(matches1to2.len)),
+        .dmatches = @as([*]c.DMatch, @ptrCast(c_matches1to2_array.ptr)),
     };
 
     var c_matches_mask = core.toByteArray(matches_mask);
@@ -792,7 +792,7 @@ pub fn drawMatches(
         matches_color.toScalar().toC(),
         point_color.toScalar().toC(),
         c_matches_mask,
-        @enumToInt(flags),
+        @intFromEnum(flags),
     );
 }
 
@@ -829,7 +829,7 @@ pub const DMatch = struct {
     }
 
     pub fn toArrayList(ret: []CSelf, allocator: std.mem.Allocator) !DMathes {
-        const len = @intCast(usize, ret.len);
+        const len = @as(usize, @intCast(ret.len));
         var result = try std.ArrayList(Self).initCapacity(allocator, len);
         {
             for (ret) |dmatch| {
@@ -845,10 +845,10 @@ pub const DMatch = struct {
     }
 
     pub fn toMultiArrayList(ret: []c.DMatches, allocator: std.mem.Allocator) !MultiDMatches {
-        const m_len = @intCast(usize, ret.len);
+        const m_len = @as(usize, @intCast(ret.len));
         var result = try std.ArrayList(std.ArrayList(Self)).initCapacity(allocator, m_len);
         for (ret) |dmatches| {
-            const len = @intCast(usize, dmatches.length);
+            const len = @as(usize, @intCast(dmatches.length));
             var dmatch_list = try std.ArrayList(Self).initCapacity(allocator, len);
             {
                 var i: usize = 0;
