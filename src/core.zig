@@ -36,7 +36,7 @@ pub const BorderType = struct {
             type: u4,
             isolate: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .isolate = self.isolate,
         });
     }

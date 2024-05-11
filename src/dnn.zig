@@ -208,7 +208,7 @@ pub const Net = struct {
     // https://docs.opencv.org/3.4/db/d30/classcv_1_1dnn_1_1Net.html#a7f767df11386d39374db49cd8df8f59e
     //
     pub fn setPreferableBackend(self: *Self, backend: BackendType) void {
-        _ = c.Net_SetPreferableBackend(self.ptr, @enumToInt(backend));
+        _ = c.Net_SetPreferableBackend(self.ptr, @intFromEnum(backend));
     }
 
     // SetPreferableTarget ask network to make computations on specific target device.
@@ -216,7 +216,7 @@ pub const Net = struct {
     // For further details, please see:
     // https://docs.opencv.org/3.4/db/d30/classcv_1_1dnn_1_1Net.html#a9dddbefbc7f3defbe3eeb5dc3d3483f4
     pub fn setPreferableTarget(self: *Self, target: TargetType) void {
-        _ = c.Net_SetPreferableTarget(self.ptr, @enumToInt(target));
+        _ = c.Net_SetPreferableTarget(self.ptr, @intFromEnum(target));
     }
 
     // GetPerfProfile returns overall time for inference and timings (in ticks) for layers
@@ -330,7 +330,7 @@ pub const Blob = struct {
             mean.toC(),
             swap_r_b,
             crop,
-            @enumToInt(ddepth),
+            @intFromEnum(ddepth),
         );
         return try initFromMat(new_blob_mat);
     }

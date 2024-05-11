@@ -190,7 +190,7 @@ pub const FastFeatureDetector = struct {
     /// https://docs.opencv.org/master/df/d74/classcv_1_1FastFeatureDetector.html#ab986f2ff8f8778aab1707e2642bc7f8e
     ///
     pub fn initWithParams(threshold: i32, nonmax_suppression: bool, type_: Type) !Self {
-        const ptr = c.FastFeatureDetector_CreateWithParams(threshold, nonmax_suppression, @enumToInt(type_));
+        const ptr = c.FastFeatureDetector_CreateWithParams(threshold, nonmax_suppression, @intFromEnum(type_));
         return try Self.initFromC(ptr);
     }
 
@@ -387,7 +387,7 @@ pub const ORB = struct {
             edge_threshold,
             firstLevel,
             WTA_K,
-            @enumToInt(score_type),
+            @intFromEnum(score_type),
             patchSize,
             fast_threshold,
         );
@@ -631,7 +631,7 @@ pub const BFMatcher = struct {
         norm_type: NormTypes,
         cross_check: bool,
     ) !Self {
-        const ptr = c.BFMatcher_Create_WithParams(@enumToInt(norm_type), cross_check);
+        const ptr = c.BFMatcher_Create_WithParams(@intFromEnum(norm_type), cross_check);
         return try Self.initFromC(ptr);
     }
 
@@ -737,7 +737,7 @@ pub fn drawKeyPoints(src: Mat, kp: []KeyPoint, dst: *Mat, color_: Color, flags: 
         .length = @intCast(i32, kp.len),
         .keypoints = @ptrCast([*]c.KeyPoint, c_keypoints_array.items),
     };
-    c.DrawKeyPoints(src.toC(), c_keypoints, dst.*.toC(), color_.toScalar().toC(), @enumToInt(flags));
+    c.DrawKeyPoints(src.toC(), c_keypoints, dst.*.toC(), color_.toScalar().toC(), @intFromEnum(flags));
 }
 
 /// DrawMatches draws matches on combined train and querry images.
@@ -792,7 +792,7 @@ pub fn drawMatches(
         matches_color.toScalar().toC(),
         point_color.toScalar().toC(),
         c_matches_mask,
-        @enumToInt(flags),
+        @intFromEnum(flags),
     );
 }
 

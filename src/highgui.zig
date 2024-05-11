@@ -130,7 +130,7 @@ pub const Window = struct {
     pub fn setProperty(self: *Self, flag: PropertyFlag, value: Flag) void {
         _ = c.Window_SetProperty(
             self.getCWindowName(),
-            @enumToInt(flag),
+            @intFromEnum(flag),
             Flag.toNum(flag, value, f64),
         );
     }
@@ -143,7 +143,7 @@ pub const Window = struct {
     pub fn getProperty(self: Self, comptime flag: PropertyFlag) Flag {
         const wf: f64 = c.Window_GetProperty(
             self.getCWindowName(),
-            @enumToInt(flag),
+            @intFromEnum(flag),
         );
         const wpf = flag;
         return Flag.toEnum(wpf, wf);

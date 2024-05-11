@@ -170,7 +170,7 @@ pub const CalcOpticalFlow = struct {
             iterations,
             poly_n,
             poly_sigma,
-            @enumToInt(flags),
+            @intFromEnum(flags),
         );
     }
 
@@ -227,7 +227,7 @@ pub const CalcOpticalFlow = struct {
             win_size.toC(),
             max_level,
             criteria.toC(),
-            @enumToInt(flags),
+            @intFromEnum(flags),
             min_eig_threshold,
         );
     }
@@ -251,7 +251,7 @@ pub fn findTransformECC(
         template_image.toC(),
         input_image.toC(),
         warp_matrix.*.toC(),
-        @enumToInt(motion_type),
+        @intFromEnum(motion_type),
         criteria.toC(),
         input_mask.toC(),
         gauss_filt_size,

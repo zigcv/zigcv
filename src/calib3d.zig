@@ -172,7 +172,7 @@ pub fn initUndistortRectifyMap(
         r.toC(),
         new_camera_matrix.toC(),
         size.toC(),
-        @enumToInt(m1type),
+        @intFromEnum(m1type),
         map1.toC(),
         map2.toC(),
     );
@@ -346,7 +346,7 @@ pub fn estimateAffine2DWithParams(
         from.toC(),
         to.toC(),
         inliers.toC(),
-        @enumToInt(method),
+        @intFromEnum(method),
         ransac_reproj_threshold,
         max_iters,
         confidence,

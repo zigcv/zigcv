@@ -280,7 +280,7 @@ pub const VideoCapture = struct {
 
     pub fn captureFileWithAPI(self: *Self, uri: []const u8, api_preference: API) !void {
         const cURI = @ptrCast([*]const u8, uri);
-        if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @enumToInt(api_preference))) {
+        if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @intFromEnum(api_preference))) {
             return error.VideoCaptureOpenFileError;
         }
     }
@@ -292,17 +292,17 @@ pub const VideoCapture = struct {
     }
 
     pub fn openDeviceWithAPI(self: *Self, device: i32, api_preference: API) !void {
-        if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @enumToInt(api_preference))) {
+        if (!c.VideoCapture_OpenDeviceWithAPI(self.ptr, device, @intFromEnum(api_preference))) {
             return error.VideoCaptureOpenDeviceError;
         }
     }
 
     pub fn get(self: Self, prop: Properties) f64 {
-        return c.VideoCapture_Get(self.ptr, @enumToInt(prop));
+        return c.VideoCapture_Get(self.ptr, @intFromEnum(prop));
     }
 
     pub fn set(self: *Self, prop: Properties, param: f64) void {
-        return c.VideoCapture_Set(self.ptr, @enumToInt(prop), param);
+        return c.VideoCapture_Set(self.ptr, @intFromEnum(prop), param);
     }
 
     pub fn grab(self: Self, skip: i32) void {
@@ -440,7 +440,7 @@ test "videoio VideoCapture captureFileWithAPI" {
     try vc.captureFileWithAPI(video_path, .any);
 
     var backend = vc.get(.backend);
-    try testing.expect(@as(f64, @enumToInt(VideoCapture.API.any)) != backend);
+    try testing.expect(@as(f64, @intFromEnum(VideoCapture.API.any)) != backend);
 }
 
 test "videoio VideoCapture captureFile invalid file" {

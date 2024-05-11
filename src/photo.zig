@@ -42,7 +42,7 @@ pub fn colorChange(src: Mat, mask: Mat, dst: *Mat, red_mul: f32, green_mul: f32,
 /// https://docs.opencv.org/master/df/da0/group__photo__clone.html#ga2bf426e4c93a6b1f21705513dfeca49d
 ///
 pub fn seamlessClone(src: Mat, dst: *Mat, mask: Mat, p: Point, blend: Mat, flags: SeamlessCloneFlag) void {
-    _ = c.SeamlessClone(src.ptr, dst.*.ptr, mask.ptr, p.toC(), blend.ptr, @enumToInt(flags));
+    _ = c.SeamlessClone(src.ptr, dst.*.ptr, mask.ptr, p.toC(), blend.ptr, @intFromEnum(flags));
 }
 
 /// IlluminationChange modifies locally the apparent illumination of an image.
@@ -307,7 +307,7 @@ pub fn detailEnhance(src: Mat, dst: *Mat, sigma_s: f32, sigma_r: f32) void {
 /// https://docs.opencv.org/4.x/df/dac/group__photo__render.html#gafaee2977597029bc8e35da6e67bd31f7
 ///
 pub fn edgePreservingFilter(src: Mat, dst: *Mat, flags: EdgeFilter, sigma_s: f32, sigma_r: f32) void {
-    _ = c.EdgePreservingFilter(src.ptr, dst.*.ptr, @enumToInt(flags), sigma_s, sigma_r);
+    _ = c.EdgePreservingFilter(src.ptr, dst.*.ptr, @intFromEnum(flags), sigma_s, sigma_r);
 }
 
 /// EdgePreservingFilter filtering is the fundamental operation in image and video processing.

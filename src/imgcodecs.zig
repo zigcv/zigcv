@@ -138,7 +138,7 @@ pub const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
 ///
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
     try ensureFileExists(filename, true);
-    var cMat: c.Mat = c.Image_IMRead(@ptrCast([*]const u8, filename), @enumToInt(flags));
+    var cMat: c.Mat = c.Image_IMRead(@ptrCast([*]const u8, filename), @intFromEnum(flags));
     return try Mat.initFromC(cMat);
 }
 
@@ -166,7 +166,7 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
         const len = params.len * 2;
         var pa: [len]i32 = undefined;
         inline for (params) |p, i| {
-            pa[2 * i] = @enumToInt(p.f);
+            pa[2 * i] = @intFromEnum(p.f);
             pa[2 * i + 1] = p.v;
         }
         break :blk c.IntVector{
@@ -193,7 +193,7 @@ pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
         return Mat.init();
     }
     var data = core.toByteArray(buf);
-    return try Mat.initFromC(c.Image_IMDecode(data, @enumToInt(flags)));
+    return try Mat.initFromC(c.Image_IMDecode(data, @intFromEnum(flags)));
 }
 
 /// IMEncode encodes an image Mat into a memory buffer.
@@ -233,7 +233,7 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
         const len = params.len * 2;
         var pa: [len]i32 = undefined;
         inline for (params) |p, i| {
-            pa[2 * i] = @enumToInt(p.f);
+            pa[2 * i] = @intFromEnum(p.f);
             pa[2 * i + 1] = p.v;
         }
         break :blk c.IntVector{

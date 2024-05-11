@@ -149,7 +149,7 @@ pub const HersheyFont = struct {
             type: u4,
             italic: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .italic = self.italic,
         });
     }
@@ -194,7 +194,7 @@ pub const InterpolationFlag = struct {
             warp_fill_outliers: bool,
             warp_inverse_map: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .warp_fill_outliers = self.warp_fill_outliers,
             .warp_inverse_map = self.warp_inverse_map,
         });
@@ -290,7 +290,7 @@ pub const ThresholdType = struct {
             otsu: bool,
             triangle: bool,
         }{
-            .type = @enumToInt(self.type),
+            .type = @intFromEnum(self.type),
             .otsu = self.otsu,
             .triangle = self.triangle,
         });
@@ -479,7 +479,7 @@ pub fn approxPolyDP(curve: PointVector, epsilon: f64, closed: bool) !PointVector
 /// http://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga4e0972be5de079fed4e3a10e24ef5ef0
 ///
 pub fn cvtColor(src: Mat, dst: *Mat, code: ColorConversionCode) void {
-    c.CvtColor(src.ptr, dst.*.ptr, @enumToInt(code));
+    c.CvtColor(src.ptr, dst.*.ptr, @intFromEnum(code));
 }
 
 /// EqualizeHist normalizes the brightness and increases the contrast of the image.
@@ -516,7 +516,7 @@ pub fn calcHist(mats: []Mat, chans: []i32, mask: Mat, hist: *Mat, sz: []i32, rng
 /// For further details, please see:
 /// https://docs.opencv.org/master/d6/dc7/group__imgproc__hist.html#gaf4190090efa5c47cb367cf97a9a519bd
 pub fn compareHist(hist1: Mat, hist2: Mat, method: HistCompMethod) f64 {
-    return c.CompareHist(hist1.ptr, hist2.ptr, @enumToInt(method));
+    return c.CompareHist(hist1.ptr, hist2.ptr, @intFromEnum(method));
 }
 
 pub fn calcBackProject(mats: []Mat, chans: []i32, hist: *Mat, backProject: Mat, rng: []f32, uniform: bool) !void {
@@ -609,7 +609,7 @@ pub fn dilateWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iterati
 /// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga8a0b7fdfcb7a13dde018988ba3a43042
 ///
 pub fn distanceTransform(src: Mat, dst: *Mat, labels: *Mat, distance_type: DistanceType, mask_size: DistanceTransformMask, label_type: DistanceTransformLabelType) void {
-    c.DistanceTransform(src.ptr, dst.*.ptr, labels.*.ptr, @enumToInt(distance_type), @enumToInt(mask_size), @enumToInt(label_type));
+    c.DistanceTransform(src.ptr, dst.*.ptr, labels.*.ptr, @intFromEnum(distance_type), @intFromEnum(mask_size), @intFromEnum(label_type));
 }
 
 /// Erode erodes an image by using a specific structuring element.
@@ -636,7 +636,7 @@ pub fn erodeWithParams(src: Mat, dst: *Mat, kernel: Mat, anchor: Point, iteratio
 /// https://docs.opencv.org/master/df/dfb/group__imgproc__object.html#ga586ebfb0a7fb604b35a23d85391329be
 ///
 pub fn matchTemplate(image: Mat, templ: Mat, result: *Mat, method: TemplateMatchMode, mask: Mat) void {
-    c.MatchTemplate(image.ptr, templ.ptr, result.*.ptr, @enumToInt(method), mask.ptr);
+    c.MatchTemplate(image.ptr, templ.ptr, result.*.ptr, @intFromEnum(method), mask.ptr);
 }
 
 /// Moments calculates all of the moments up to the third order of a polygon
@@ -742,7 +742,7 @@ pub fn findContours(src: Mat, mode: RetrievalMode, method: ContourApproximationM
 /// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a
 ///
 pub fn findContoursWithParams(src: Mat, hierarchy: *Mat, mode: RetrievalMode, method: ContourApproximationMode) !PointsVector {
-    return try PointsVector.initFromC(c.FindContours(src.toC(), hierarchy.*.toC(), @enumToInt(mode), @enumToInt(method)));
+    return try PointsVector.initFromC(c.FindContours(src.toC(), hierarchy.*.toC(), @intFromEnum(mode), @intFromEnum(method)));
 }
 
 /// PointPolygonTest performs a point-in-contour test.
@@ -764,8 +764,8 @@ pub fn connectedComponents(src: Mat, labels: *Mat) i32 {
         src.ptr,
         labels.*.ptr,
         8,
-        @enumToInt(MatType.cv32sc1),
-        @enumToInt(ConnectedComponentsAlgorithmType.default),
+        @intFromEnum(MatType.cv32sc1),
+        @intFromEnum(ConnectedComponentsAlgorithmType.default),
     );
 }
 
@@ -775,7 +775,7 @@ pub fn connectedComponents(src: Mat, labels: *Mat) i32 {
 /// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
 ///
 pub fn connectedComponentsWithParams(src: Mat, labels: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) i32 {
-    return c.ConnectedComponents(src.ptr, labels.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
+    return c.ConnectedComponents(src.ptr, labels.*.ptr, connectivity, @intFromEnum(ltype), @intFromEnum(ccltype));
 }
 
 /// ConnectedComponentsWithStats computes the connected components labeled image of boolean
@@ -791,8 +791,8 @@ pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroi
         stats.*.ptr,
         centroids.*.ptr,
         8,
-        @enumToInt(MatType.cv32sc1),
-        @enumToInt(ConnectedComponentsAlgorithmType.default),
+        @intFromEnum(MatType.cv32sc1),
+        @intFromEnum(ConnectedComponentsAlgorithmType.default),
     );
 }
 
@@ -803,7 +803,7 @@ pub fn connectedComponentsWithStats(src: Mat, labels: *Mat, stats: *Mat, centroi
 /// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
 ///
 pub fn connectedComponentsWithStatsWithParams(src: Mat, labels: *Mat, stats: *Mat, centroids: *Mat, connectivity: i32, ltype: MatType, ccltype: ConnectedComponentsAlgorithmType) i32 {
-    return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, @enumToInt(ltype), @enumToInt(ccltype));
+    return c.ConnectedComponentsWithStats(src.ptr, labels.*.ptr, stats.*.ptr, centroids.*.ptr, connectivity, @intFromEnum(ltype), @intFromEnum(ccltype));
 }
 
 /// GaussianBlur blurs an image Mat using a Gaussian filter.
@@ -822,7 +822,7 @@ pub fn gaussianBlur(src: Mat, dst: *Mat, ps: Size, sigma_x: f64, sigma_y: f64, b
 /// For further details, please see:
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernel(ksize: i32, sigma: f64) !Mat {
-    return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(MatType.cv64fc1)));
+    return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @intFromEnum(MatType.cv64fc1)));
 }
 
 /// GetGaussianKernelWithParams returns Gaussian filter coefficients.
@@ -830,7 +830,7 @@ pub fn getGaussianKernel(ksize: i32, sigma: f64) !Mat {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
 pub fn getGaussianKernelWithParams(ksize: i32, sigma: f64, ktype: MatType) !Mat {
-    return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @enumToInt(ktype)));
+    return try Mat.initFromC(c.GetGaussianKernel(ksize, sigma, @intFromEnum(ktype)));
 }
 
 /// Laplacian calculates the Laplacian of an image.
@@ -839,7 +839,7 @@ pub fn getGaussianKernelWithParams(ksize: i32, sigma: f64, ktype: MatType) !Mat 
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gad78703e4c8fe703d479c1860d76429e6
 ///
 pub fn laplacian(src: Mat, dst: *Mat, d_depth: MatType, k_size: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    c.Laplacian(src.ptr, dst.*.ptr, @enumToInt(d_depth), k_size, scale, delta, border_type.toNum());
+    c.Laplacian(src.ptr, dst.*.ptr, @intFromEnum(d_depth), k_size, scale, delta, border_type.toNum());
 }
 
 /// Scharr calculates the first x- or y- image derivative using Scharr operator.
@@ -848,7 +848,7 @@ pub fn laplacian(src: Mat, dst: *Mat, d_depth: MatType, k_size: i32, scale: f64,
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gaa13106761eedf14798f37aa2d60404c9
 ///
 pub fn scharr(src: Mat, dst: *Mat, d_depth: MatType, dx: i32, dy: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    c.Scharr(src.ptr, dst.*.ptr, @enumToInt(d_depth), dx, dy, scale, delta, border_type.toNum());
+    c.Scharr(src.ptr, dst.*.ptr, @intFromEnum(d_depth), dx, dy, scale, delta, border_type.toNum());
 }
 
 /// GetStructuringElement returns a structuring element of the specified size
@@ -858,7 +858,7 @@ pub fn scharr(src: Mat, dst: *Mat, d_depth: MatType, dx: i32, dy: i32, scale: f6
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc
 ///
 pub fn getStructuringElement(shape: MorphShape, ksize: Size) !Mat {
-    return try Mat.initFromC(c.GetStructuringElement(@enumToInt(shape), ksize.toC()));
+    return try Mat.initFromC(c.GetStructuringElement(@intFromEnum(shape), ksize.toC()));
 }
 
 /// MorphologyDefaultBorder returns "magic" border value for erosion and dilation.
@@ -876,7 +876,7 @@ pub fn morphologyDefaultBorderValue() Scalar {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f
 pub fn morphologyEx(src: Mat, dst: *Mat, op: MorphType, kernel: Mat) void {
-    c.MorphologyEx(src.ptr, dst.*.ptr, @enumToInt(op), kernel.ptr);
+    c.MorphologyEx(src.ptr, dst.*.ptr, @intFromEnum(op), kernel.ptr);
 }
 
 /// MorphologyExWithParams performs advanced morphological transformations.
@@ -885,7 +885,7 @@ pub fn morphologyEx(src: Mat, dst: *Mat, op: MorphType, kernel: Mat) void {
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f
 pub fn morphologyExWithParams(src: Mat, dst: *Mat, op: MorphType, kernel: Mat, iterations: i32, border_type: BorderType) void {
     const c_pt = Point.init(-1, -1).toC();
-    c.MorphologyExWithParams(src.ptr, dst.*.ptr, @enumToInt(op), kernel.ptr, c_pt, iterations, border_type.toNum());
+    c.MorphologyExWithParams(src.ptr, dst.*.ptr, @intFromEnum(op), kernel.ptr, c_pt, iterations, border_type.toNum());
 }
 
 /// MedianBlur blurs an image using the median filter.
@@ -935,7 +935,7 @@ pub fn goodFeaturesToTrack(img: Mat, corners: *Mat, maxCorners: i32, quality: f6
 /// For further details, please see:
 /// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga909c1dda50efcbeaa3ce126be862b37f
 pub fn grabCut(img: Mat, mask: *Mat, rect: Rect, bgd_model: *Mat, fgd_model: *Mat, iter_count: i32, mode: GrabCutMode) void {
-    c.GrabCut(img.ptr, mask.*.ptr, rect.toC(), bgd_model.*.ptr, fgd_model.*.ptr, iter_count, @enumToInt(mode));
+    c.GrabCut(img.ptr, mask.*.ptr, rect.toC(), bgd_model.*.ptr, fgd_model.*.ptr, iter_count, @intFromEnum(mode));
 }
 
 /// HoughCircles finds circles in a grayscale image using the Hough transform.
@@ -945,7 +945,7 @@ pub fn grabCut(img: Mat, mask: *Mat, rect: Rect, bgd_model: *Mat, fgd_model: *Ma
 /// For further details, please see:
 /// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
 pub fn houghCircles(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dist: f64) void {
-    c.HoughCircles(src.ptr, circles.*.ptr, @enumToInt(method), dp, min_dist);
+    c.HoughCircles(src.ptr, circles.*.ptr, @intFromEnum(method), dp, min_dist);
 }
 
 /// HoughCirclesWithParams finds circles in a grayscale image using the Hough
@@ -954,7 +954,7 @@ pub fn houghCircles(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dis
 /// For further details, please see:
 /// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
 pub fn houghCirclesWithParams(src: Mat, circles: *Mat, method: HoughMode, dp: f64, min_dist: f64, param1: f64, param2: f64, min_radius: i32, max_radius: i32) void {
-    c.HoughCirclesWithParams(src.ptr, circles.*.ptr, @enumToInt(method), dp, min_dist, param1, param2, min_radius, max_radius);
+    c.HoughCirclesWithParams(src.ptr, circles.*.ptr, @intFromEnum(method), dp, min_dist, param1, param2, min_radius, max_radius);
 }
 
 /// HoughLines implements the standard or standard multi-scale Hough transform
@@ -1029,7 +1029,7 @@ pub fn threshold(src: Mat, dst: *Mat, thresh: f64, maxvalue: f64, typ: Threshold
 }
 
 pub fn adaptiveThreshold(src: Mat, dst: *Mat, max_value: f64, adaptive_type: AdaptiveThresholdType, type_: ThresholdType, block_size: i32, C: f64) void {
-    c.AdaptiveThreshold(src.ptr, dst.*.ptr, max_value, @enumToInt(adaptive_type), type_.toNum(), block_size, C);
+    c.AdaptiveThreshold(src.ptr, dst.*.ptr, max_value, @intFromEnum(adaptive_type), type_.toNum(), block_size, C);
 }
 // ArrowedLine draws a arrow segment pointing from the first point
 // to the second one.
@@ -1056,7 +1056,7 @@ pub fn circle(img: *Mat, center: Point, radius: i32, color: Color, thickness: i3
 /// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#gaf10604b069374903dbd0f0488cb43670
 ///
 pub fn circleWithParams(img: *Mat, center: Point, radius: i32, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
-    c.CircleWithParams(img.*.ptr, center.toC(), radius, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
+    c.CircleWithParams(img.*.ptr, center.toC(), radius, color.toScalar().toC(), thickness, @intFromEnum(line_type), shift);
 }
 
 /// Ellipse draws a simple or thick elliptic arc or fills an ellipse sector.
@@ -1073,7 +1073,7 @@ pub fn ellipse(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f
 /// For further details, please see:
 /// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga28b2267d35786f5f890ca167236cbc69
 pub fn ellipseWithParams(img: *Mat, center: Point, axes: Point, angle: f64, start_angle: f64, end_angle: f64, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
-    c.EllipseWithParams(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
+    c.EllipseWithParams(img.*.ptr, center.toC(), axes.toC(), angle, start_angle, end_angle, color.toScalar().toC(), thickness, @intFromEnum(line_type), shift);
 }
 
 /// Line draws a line segment connecting two points.
@@ -1101,7 +1101,7 @@ pub fn rectangle(img: *Mat, rect: Rect, color: Color, thickness: i32) void {
 /// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga346ac30b5c74e9b5137576c9ee9e0e8c
 ///
 pub fn rectangleWithParams(img: *Mat, rect: Rect, color: Color, thickness: i32, line_type: LineType, shift: i32) void {
-    c.RectangleWithParams(img.*.ptr, rect.toC(), color.toScalar().toC(), thickness, @enumToInt(line_type), shift);
+    c.RectangleWithParams(img.*.ptr, rect.toC(), color.toScalar().toC(), thickness, @intFromEnum(line_type), shift);
 }
 
 /// FillPoly fills the area bounded by one or more polygons.
@@ -1117,7 +1117,7 @@ pub fn fillPoly(img: *Mat, points: PointsVector, color: Color) void {
 /// For more information, see:
 /// https://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#gaf30888828337aa4c6b56782b5dfbd4b7
 pub fn fillPolyWithParams(img: *Mat, points: PointsVector, color: Color, line_type: LineType, shift: i32, offset: Point) void {
-    c.FillPolyWithParams(img.*.ptr, points.toC(), color.toScalar().toC(), @enumToInt(line_type), shift, offset.toC());
+    c.FillPolyWithParams(img.*.ptr, points.toC(), color.toScalar().toC(), @intFromEnum(line_type), shift, offset.toC());
 }
 
 /// Polylines draws several polygonal curves.
@@ -1178,7 +1178,7 @@ pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, 
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32, line_type: LineType, bottom_left_origin: bool) void {
-    c.PutTextWithParams(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness, @enumToInt(line_type), bottom_left_origin);
+    c.PutTextWithParams(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness, @intFromEnum(line_type), bottom_left_origin);
 }
 
 /// Resize resizes an image.
@@ -1256,7 +1256,7 @@ pub fn watershed(image: Mat, markers: *Mat) void {
 /// For further details, please see:
 /// https://docs.opencv.org/master/d3/d50/group__imgproc__colormap.html#gadf478a5e5ff49d8aa24e726ea6f65d15
 pub fn applyColorMap(src: Mat, dst: *Mat, colormap: ColormapType) void {
-    c.ApplyColorMap(src.ptr, dst.*.ptr, @enumToInt(colormap));
+    c.ApplyColorMap(src.ptr, dst.*.ptr, @intFromEnum(colormap));
 }
 
 /// ApplyCustomColorMap applies a custom defined colormap on a given image.
@@ -1309,7 +1309,7 @@ pub fn getAffineTransform2f(src: Point2fVector, dst: Point2fVector) !Mat {
 /// https://docs.opencv.org/master/d9/d0c/group__calib3d.html#ga4abc2ece9fab9398f2e560d53c8c9780
 ///
 pub fn findHomography(src: Mat, dst: *Mat, method: HomographyMethod, ransac_reproj_threshold: f64, mask: *Mat, max_iters: i32, confidence: f64) !Mat {
-    return try Mat.initFromC(c.FindHomography(src.ptr, dst.*.ptr, @enumToInt(method), ransac_reproj_threshold, mask.*.ptr, max_iters, confidence));
+    return try Mat.initFromC(c.FindHomography(src.ptr, dst.*.ptr, @intFromEnum(method), ransac_reproj_threshold, mask.*.ptr, max_iters, confidence));
 }
 
 /// DrawContours draws contours outlines or filled contours.
@@ -1341,7 +1341,7 @@ pub fn drawContoursWithParams(
         contour_idx,
         color.toScalar().toC(),
         thickness,
-        @enumToInt(line_type),
+        @intFromEnum(line_type),
         hierarchy.ptr,
         max_level,
         offset.toC(),
@@ -1354,7 +1354,7 @@ pub fn drawContoursWithParams(
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#gacea54f142e81b6758cb6f375ce782c8d
 ///
 pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: i32, dy: i32, ksize: i32, scale: f64, delta: f64, border_type: BorderType) void {
-    c.Sobel(src.ptr, dst.*.ptr, @enumToInt(ddepth), dx, dy, ksize, scale, delta, border_type.toNum());
+    c.Sobel(src.ptr, dst.*.ptr, @intFromEnum(ddepth), dx, dy, ksize, scale, delta, border_type.toNum());
 }
 
 /// SpatialGradient calculates the first order image derivative in both x and y using a Sobel operator.
@@ -1363,7 +1363,7 @@ pub fn sobel(src: Mat, dst: *Mat, ddepth: MatType, dx: i32, dy: i32, ksize: i32,
 /// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga405d03b20c782b65a4daf54d233239a2
 ///
 pub fn spatialGradient(src: Mat, dx: *Mat, dy: *Mat, ksize: MatType, border_type: BorderType) void {
-    c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, @enumToInt(ksize), border_type.toNum());
+    c.SpatialGradient(src.ptr, dx.*.ptr, dy.*.ptr, @intFromEnum(ksize), border_type.toNum());
 }
 
 /// Remap applies a generic geometrical transformation to an image.
@@ -1403,7 +1403,7 @@ pub fn logPolar(src: Mat, dst: *Mat, center: Point, m: f64, flags: Interpolation
 /// For further details, please see:
 /// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaf849da1fdafa67ee84b1e9a23b93f91f
 pub fn fitLine(pts: PointVector, line_mat: *Mat, dist_type: DistanceType, param: f64, reps: f64, aeps: f64) void {
-    c.FitLine(pts.toC(), line_mat.*.ptr, @enumToInt(dist_type), param, reps, aeps);
+    c.FitLine(pts.toC(), line_mat.*.ptr, @intFromEnum(dist_type), param, reps, aeps);
 }
 
 /// LinearPolar remaps an image to polar coordinates space.
