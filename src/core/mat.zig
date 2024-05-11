@@ -1269,7 +1269,7 @@ pub fn dataPtr(self: Self, comptime T: type) ![]T {
     var p: c.ByteArray = c.Mat_DataPtr(self.ptr);
     var len = @as(usize, @intCast(p.length));
     const bit_scale = @sizeOf(T) / @sizeOf(u8);
-    return @as([*]T, @ptrCast(@alignCast(@alignOf(T), p.data)))[0 .. len / bit_scale];
+    return @as([*]T, @ptrCast(@alignCast(p.data)))[0 .. len / bit_scale];
 }
 
 pub fn toBytes(self: Self) []u8 {
