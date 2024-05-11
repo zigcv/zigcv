@@ -1,4 +1,5 @@
 const std = @import("std");
+const LazyPath = std.build.LazyPath;
 const zigcv = @import("libs.zig");
 pub fn build(b: *std.build.Builder) void {
     const target = b.standardTargetOptions(.{});
@@ -52,7 +53,7 @@ pub fn build(b: *std.build.Builder) void {
     for (examples) |ex| {
         const exe = b.addExecutable(.{
             .name = ex.name,
-            .root_source_file = std.Build.FileSource.relative(ex.path),
+            .root_source_file = .{ .path = ex.path },
             .target = target,
             .optimize = mode,
         });
@@ -60,7 +61,7 @@ pub fn build(b: *std.build.Builder) void {
 
         b.installArtifact(exe);
 
-        zigcv.link(exe);
+        zigcv.link(b, exe);
         zigcv.addAsPackage(exe);
 
         const run_cmd = b.addRunArtifact(exe);
@@ -78,17 +79,16 @@ pub fn build(b: *std.build.Builder) void {
     var tmp_dir = std.testing.tmpDir(.{});
     defer tmp_dir.cleanup();
 
+    const test_filter = b.option([]const u8, "test-filter", "Skip tests that do not match filter") orelse null;
     const exe_tests = b.addTest(.{
         .name = "exe_tests",
-        .root_source_file = std.build.FileSource.relative("src/main.zig"),
+        .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = mode,
+        .filter = test_filter,
     });
-    zigcv.link(exe_tests);
+    zigcv.link(b, exe_tests);
     zigcv.addAsPackage(exe_tests);
-
-    const test_filter = b.option([]const u8, "test-filter", "Skip tests that do not match filter");
-    if (test_filter) |filter| exe_tests.filter = filter;
 
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&exe_tests.step);
