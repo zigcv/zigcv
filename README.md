@@ -19,17 +19,30 @@ This C-API is currently fixed.
 
 ## How to execute
 
+### Use your own package manager
 At first, install openCV 4.6. (maybe you can read how to install from [here](https://github.com/hybridgroup/gocv#how-to-install)).  
 Then:
 
 ```sh
 git clone --recursive https://github.com/ryoppippi/zigcv
+cd zigcv
 zig build
 ```
 
-## Docker
+Currently this repo works with zig 0.11.0, so make sure you have it installed.
+We are working on updating to zig 0.12.0.
 
-You can also download and run the [Docker image](https://github.com/ryoppippi/zigcv/pkgs/container/zigcv) that has the latest opencv build compiled by zig cc compiler.
+
+### Use devbox
+We also provide a devbox config to manage dependencies and build environments.
+
+```sh
+git clone --recursive https://github.com/zigcv
+cd zigcv
+devbox init
+
+
+Checkout [devbox.json](./devbox.json) for more details.
 
 ## Demos
 
@@ -38,6 +51,13 @@ For example:
 
 ```sh
 zig build examples
+./zig-out/bin/face_detection 0
+```
+
+Or you can run the demo with the following command:
+
+```sh
+devbox run build examples
 ./zig-out/bin/face_detection 0
 ```
 
