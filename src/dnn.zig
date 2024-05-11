@@ -25,10 +25,10 @@ pub const Net = struct {
         halide = 1,
 
         /// NetBackendOpenVINO is the OpenVINO backend.
-        open_vino = 2,
+        openvino = 2,
 
         /// NetBackendOpenCV is the OpenCV backend.
-        open_cv = 3,
+        opencv = 3,
 
         /// NetBackendVKCOM is the Vulkan backend.
         vkcom = 4,
@@ -44,14 +44,7 @@ pub const Net = struct {
         /// - cuda
         /// - default
         pub fn toEnum(backend: []const u8) BackendType {
-            return switch (backend) {
-                "halide" => .halide,
-                "openvino" => .open_vino,
-                "opencv" => .open_cv,
-                "vulkan" => .vkcom,
-                "cuda" => .cuda,
-                else => .default,
-            };
+            return std.meta.stringToEnum(BackendType, backend) orelse .default;
         }
     };
 
@@ -81,17 +74,7 @@ pub const Net = struct {
         cuda_fp16 = 7,
 
         pub fn toEnum(target: []const u8) TargetType {
-            return switch (target) {
-                "fp32" => .fp32,
-                "fp16" => .fp16,
-                "vpu" => .vpu,
-                "vulkan" => .vkcom,
-                "fpga" => .fpga,
-                "cuda" => .cuda,
-                "cuda_fp16" => .cuda_fp16,
-                "cpu" => .cpu,
-                else => .cpu,
-            };
+            return std.meta.stringToEnum(TargetType, target) orelse .cpu;
         }
     };
 
