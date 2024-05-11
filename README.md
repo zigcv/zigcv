@@ -41,6 +41,7 @@ git clone --recursive https://github.com/zigcv
 cd zigcv
 devbox init
 
+```
 
 Checkout [devbox.json](./devbox.json) for more details.
 
