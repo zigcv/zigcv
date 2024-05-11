@@ -432,7 +432,7 @@ test "photo fastNlMeansDenoisingColoredMulti" {
     try testing.expectEqual(src[0].cols(), dst.cols());
 }
 
-test "photo fastNlMeansDenoisingColored" {
+test "photo fastNlMeansDenoisingColoredMultiWithParams" {
     var src: [3]Mat = undefined;
     for (&src) |*s| s.* = try Mat.initSize(20, 20, .cv8uc3);
     defer for (&src) |*s| s.deinit();
@@ -440,11 +440,11 @@ test "photo fastNlMeansDenoisingColored" {
     var dst = try Mat.init();
     defer dst.deinit();
 
-    try fastNlMeansDenoisingColored(src, &dst, 1, 1, 3, 3, 7, 21);
+    try fastNlMeansDenoisingColoredMultiWithParams(src[0..], &dst, 1, 1, 3, 3, 7, 21);
 
     try testing.expectEqual(false, dst.isEmpty());
-    try testing.expectEqual(src.rows(), dst.rows());
-    try testing.expectEqual(src.cols(), dst.cols());
+    try testing.expectEqual(src[0].rows(), dst.rows());
+    try testing.expectEqual(src[0].cols(), dst.cols());
 }
 
 test "photo MergeMertens" {
@@ -514,7 +514,7 @@ test "photo FastNlMeansDenoisingColoredMultiWithParams" {
     try testing.expectEqual(img.cols(), dst.cols());
 }
 
-test "photo fastNlMeansDenoisingColored 2" {
+test "photo fastNlMeansDenoisingColored" {
     var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
