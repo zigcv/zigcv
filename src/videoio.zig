@@ -334,7 +334,7 @@ pub const VideoCapture = struct {
             ps_fourcc.c2,
             ps_fourcc.c3,
         };
-        return std.mem.span(&result);
+        return &result;
     }
 
     /// ToCodec returns an float64 representation of FourCC bytes
