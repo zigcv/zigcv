@@ -35,8 +35,8 @@ test "core mat sizes" {
 
     const mat_size = mat.size();
 
-    for (mat_size) |size, i| {
-        try testing.expectEqual(sizes[i], @intCast(i32, size));
+    for (mat_size, 0..) |size, i| {
+        try testing.expectEqual(sizes[i], @as(i32, @intCast(size)));
     }
 
     try testing.expectEqual(@as(i32, 10 * 20 * 30), mat.total());
