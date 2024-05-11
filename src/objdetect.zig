@@ -360,24 +360,6 @@ test "objdetect HOGDescriptor" {
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());
 
-    var hog = HOGDescriptor.init();
-    defer hog.deinit();
-
-    var d: Mat = try HOGDescriptor.getDefaultPeopleDetector();
-    defer d.deinit();
-    hog.setSVMDetector(d);
-
-    var rects = try hog.detectMultiScale(img, testing.allocator);
-    defer rects.deinit();
-
-    try testing.expectEqual(@as(usize, 1), rects.items.len);
-}
-
-test "objdetect HOGDescriptor" {
-    var img = try imgcodecs.imRead("libs/gocv/images/face.jpg", .color);
-    defer img.deinit();
-    try testing.expectEqual(false, img.isEmpty());
-
     var hog = try HOGDescriptor.init();
     defer hog.deinit();
 

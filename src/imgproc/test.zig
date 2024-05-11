@@ -1573,7 +1573,7 @@ test "imgproc getAffineTransform2f" {
     try testing.expectEqual(@as(i32, 2), m.rows());
 }
 
-test "imgproc getAffineTransform2f" {
+test "imgproc getAffineTransform2f 2" {
     var src = [_]Point{
         Point.init(0, 0),
         Point.init(10, 5),

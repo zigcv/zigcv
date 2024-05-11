@@ -514,7 +514,7 @@ test "photo FastNlMeansDenoisingColoredMultiWithParams" {
     try testing.expectEqual(img.cols(), dst.cols());
 }
 
-test "photo fastNlMeansDenoisingColored" {
+test "photo fastNlMeansDenoisingColored 2" {
     var img = try imgcodecs.imRead("libs/gocv/images/face-detect.jpg", .color);
     defer img.deinit();
     try testing.expectEqual(false, img.isEmpty());

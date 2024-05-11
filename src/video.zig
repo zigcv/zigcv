@@ -461,7 +461,7 @@ test "video CalcOpticalFlow.pyrLK" {
     defer err.deinit();
 }
 
-test "video CalcOpticalFlow.pyrLK" {
+test "video CalcOpticalFlow.pyrLK with params" {
     var img1 = try imgcodecs.imRead(file_path, .color);
     defer img1.deinit();
     try testing.expectEqual(false, img1.isEmpty());
