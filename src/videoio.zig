@@ -272,14 +272,14 @@ pub const VideoCapture = struct {
     }
 
     pub fn captureFile(self: *Self, uri: []const u8) !void {
-        const c_uri = @ptrCast([*]const u8, uri);
+        const c_uri = @as([*]const u8, @ptrCast(uri));
         if (!c.VideoCapture_Open(self.ptr, c_uri)) {
             return error.VideoCaptureOpenFileError;
         }
     }
 
     pub fn captureFileWithAPI(self: *Self, uri: []const u8, api_preference: API) !void {
-        const cURI = @ptrCast([*]const u8, uri);
+        const cURI = @as([*]const u8, @ptrCast(uri));
         if (!c.VideoCapture_OpenWithAPI(self.ptr, cURI, @intFromEnum(api_preference))) {
             return error.VideoCaptureOpenFileError;
         }
@@ -325,8 +325,8 @@ pub const VideoCapture = struct {
     /// returns a string representation of FourCC bytes, i.e. the name of a codec
     pub fn getCodecString(self: Self) []const u8 {
         const fourcc_f = get(self, .fourcc);
-        const fourcc = @floatToInt(u32, fourcc_f);
-        const ps_fourcc = @bitCast(ConvertStruct, fourcc);
+        const fourcc = @as(u32, @intFromFloat(fourcc_f));
+        const ps_fourcc = @as(ConvertStruct, @bitCast(fourcc));
         const result =
             [_]u8{
             ps_fourcc.c0,
@@ -349,8 +349,8 @@ pub const VideoCapture = struct {
             .c2 = codec[2],
             .c3 = codec[3],
         };
-        const u_fourcc = @bitCast(u32, ps_fourcc);
-        return @intToFloat(f64, u_fourcc);
+        const u_fourcc = @as(u32, @bitCast(ps_fourcc));
+        return @as(f64, @floatFromInt(u_fourcc));
     }
 
     pub fn isOpened(self: Self) bool {
@@ -388,8 +388,8 @@ pub const VideoWriter = struct {
         height: i32,
         is_color: bool,
     ) void {
-        const c_name = @ptrCast([*]const u8, name);
-        const c_codec = @ptrCast([*]const u8, codec);
+        const c_name = @as([*]const u8, @ptrCast(name));
+        const c_codec = @as([*]const u8, @ptrCast(codec));
         _ = c.VideoWriter_Open(
             self.ptr,
             c_name,

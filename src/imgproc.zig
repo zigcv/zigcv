@@ -145,13 +145,13 @@ pub const HersheyFont = struct {
     },
 
     pub fn toNum(self: HersheyFont) u5 {
-        return @bitCast(u5, packed struct {
+        return @as(u5, @bitCast(packed struct {
             type: u4,
             italic: bool,
         }{
             .type = @intFromEnum(self.type),
             .italic = self.italic,
-        });
+        }));
     }
 
     comptime {
@@ -189,7 +189,7 @@ pub const InterpolationFlag = struct {
     } = .linear,
 
     pub fn toNum(self: InterpolationFlag) u5 {
-        return @bitCast(u5, packed struct {
+        return @as(u5, @bitCast(packed struct {
             type: u3,
             warp_fill_outliers: bool,
             warp_inverse_map: bool,
@@ -197,7 +197,7 @@ pub const InterpolationFlag = struct {
             .type = @intFromEnum(self.type),
             .warp_fill_outliers = self.warp_fill_outliers,
             .warp_inverse_map = self.warp_inverse_map,
-        });
+        }));
     }
 
     comptime {
@@ -285,7 +285,7 @@ pub const ThresholdType = struct {
     },
 
     pub fn toNum(self: ThresholdType) u5 {
-        return @bitCast(u5, packed struct {
+        return @as(u5, @bitCast(packed struct {
             type: u3,
             otsu: bool,
             triangle: bool,
@@ -293,7 +293,7 @@ pub const ThresholdType = struct {
             .type = @intFromEnum(self.type),
             .otsu = self.otsu,
             .triangle = self.triangle,
-        });
+        }));
     }
 
     comptime {
@@ -498,15 +498,15 @@ pub fn calcHist(mats: []Mat, chans: []i32, mask: Mat, hist: *Mat, sz: []i32, rng
     var c_mat = try Mat.toCStructs(mats);
     var c_chans = c.IntVector{
         .val = &chans[0],
-        .length = @intCast(i32, chans.len),
+        .length = @as(i32, @intCast(chans.len)),
     };
     var c_sz = c.IntVector{
-        .val = @ptrCast([*]i32, sz.ptr),
-        .length = @intCast(i32, sz.len),
+        .val = @as([*]i32, @ptrCast(sz.ptr)),
+        .length = @as(i32, @intCast(sz.len)),
     };
     var c_rng = c.FloatVector{
-        .val = @ptrCast([*]f32, rng.ptr),
-        .length = @intCast(i32, rng.len),
+        .val = @as([*]f32, @ptrCast(rng.ptr)),
+        .length = @as(i32, @intCast(rng.len)),
     };
 
     c.CalcHist(c_mat, c_chans, mask.ptr, hist.*.ptr, c_sz, c_rng, acc);
@@ -523,11 +523,11 @@ pub fn calcBackProject(mats: []Mat, chans: []i32, hist: *Mat, backProject: Mat, 
     var c_mats = try Mat.toCStructs(mats);
     var c_chans = c.IntVector{
         .val = &chans[0],
-        .length = @intCast(i32, chans.len),
+        .length = @as(i32, @intCast(chans.len)),
     };
     var c_rng = c.FloatVector{
-        .val = @ptrCast([*]f32, rng.ptr),
-        .length = @intCast(i32, rng.len),
+        .val = @as([*]f32, @ptrCast(rng.ptr)),
+        .length = @as(i32, @intCast(rng.len)),
     };
     c.CalcBackProject(c_mats, c_chans, hist.*.ptr, backProject.ptr, c_rng, uniform);
 }
@@ -719,7 +719,7 @@ pub fn fitEllipse(pts: PointVector) RotatedRect {
 pub fn minEnclosingCircle(pts: PointVector) struct { point: Point2f, radius: f32 } {
     var c_center: c.Point2f = undefined;
     var radius: f32 = undefined;
-    c.MinEnclosingCircle(pts.toC(), @ptrCast([*]c.Point2f, &c_center), @ptrCast([*]f32, &radius));
+    c.MinEnclosingCircle(pts.toC(), @as([*]c.Point2f, @ptrCast(&c_center)), @as([*]f32, @ptrCast(&radius)));
     var center: Point2f = Point2f.initFromC(c_center);
     return .{ .point = center, .radius = radius };
 }
@@ -1136,7 +1136,7 @@ pub fn polylines(img: *Mat, points: PointsVector, is_closed: bool, color: Color,
 /// http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga3d2abfcb995fd2db908c8288199dba82
 ///
 pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) Size {
-    var c_size = c.GetTextSize(@ptrCast([*]const u8, text), font_face.toNum(), font_scale, thickness);
+    var c_size = c.GetTextSize(@as([*]const u8, @ptrCast(text)), font_face.toNum(), font_scale, thickness);
     return Size.initFromC(c_size);
 }
 
@@ -1149,7 +1149,7 @@ pub fn getTextSize(text: []const u8, font_face: HersheyFont, font_scale: f64, th
 ///
 pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_scale: f64, thickness: i32) struct { size: Size, baseline: i32 } {
     var baseline: i32 = 0;
-    var c_size = c.GetTextSizeWithBaseline(@ptrCast([*]const u8, text), font_face.toNum(), font_scale, thickness, &baseline);
+    var c_size = c.GetTextSizeWithBaseline(@as([*]const u8, @ptrCast(text)), font_face.toNum(), font_scale, thickness, &baseline);
     var size = Size.initFromC(c_size);
     return .{
         .size = size,
@@ -1166,7 +1166,7 @@ pub fn getTextSizeWithBaseline(text: []const u8, font_face: HersheyFont, font_sc
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32) void {
-    c.PutText(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness);
+    c.PutText(img.*.ptr, @as([*]const u8, @ptrCast(text)), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness);
 }
 
 // PutTextWithParams draws a text string.
@@ -1178,7 +1178,7 @@ pub fn putText(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, 
 // http://docs.opencv.org/master/d6/d6e/group__imgproc__draw.html#ga5126f47f883d730f633d74f07456c576
 //
 pub fn putTextWithParams(img: *Mat, text: []const u8, org: Point, font_face: HersheyFont, font_scale: f64, color: Color, thickness: i32, line_type: LineType, bottom_left_origin: bool) void {
-    c.PutTextWithParams(img.*.ptr, @ptrCast([*]const u8, text), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness, @intFromEnum(line_type), bottom_left_origin);
+    c.PutTextWithParams(img.*.ptr, @as([*]const u8, @ptrCast(text)), org.toC(), font_face.toNum(), font_scale, color.toScalar().toC(), thickness, @intFromEnum(line_type), bottom_left_origin);
 }
 
 /// Resize resizes an image.

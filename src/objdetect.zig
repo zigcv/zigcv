@@ -36,7 +36,7 @@ pub const CascadeClassifier = struct {
     /// For further details, please see:
     /// http://docs.opencv.org/master/d1/de5/classcv_1_1CascadeClassifier.html#a1a5884c8cc749422f9eb77c2471958bc
     pub fn load(self: *Self, name: []const u8) !void {
-        const result = c.CascadeClassifier_Load(self.ptr, @ptrCast([*]const u8, name));
+        const result = c.CascadeClassifier_Load(self.ptr, @as([*]const u8, @ptrCast(name)));
         if (result == 0) {
             return error.CascadeClassifierLoadFailed;
         }
@@ -185,10 +185,10 @@ pub fn groupRectangles(rects: []const Rect, group_threshold: i32, eps: f64, allo
 
     var c_rects_array = try allocator.alloc(c.Rect, rects.len);
     defer allocator.free(c_rects_array);
-    for (rects) |rect, i| c_rects_array[i] = rect.toC();
+    for (rects, 0..) |rect, i| c_rects_array[i] = rect.toC();
     const c_rects = c.Rects{
-        .rects = @ptrCast([*]c.Rect, c_rects_array.ptr),
-        .length = @intCast(i32, c_rects_array.len),
+        .rects = @as([*]c.Rect, @ptrCast(c_rects_array.ptr)),
+        .length = @as(i32, @intCast(c_rects_array.len)),
     };
 
     const result_c_rects = c.GroupRectangles(c_rects, group_threshold, eps);
@@ -298,15 +298,15 @@ pub const QRCodeDetector = struct {
             &c_qr_codes,
         );
 
-        var decoded = try arena_allocator.alloc([]const u8, @intCast(usize, c_decoded.length));
-        var qr_codes = try arena_allocator.alloc(Mat, @intCast(usize, c_qr_codes.length));
+        var decoded = try arena_allocator.alloc([]const u8, @as(usize, @intCast(c_decoded.length)));
+        var qr_codes = try arena_allocator.alloc(Mat, @as(usize, @intCast(c_qr_codes.length)));
 
         if (result) {
-            for (decoded) |*item, i| {
+            for (decoded, 0..) |*item, i| {
                 item.* = try arena_allocator.dupe(u8, std.mem.span(c_decoded.strs[i]));
             }
 
-            for (qr_codes) |*item, i| {
+            for (qr_codes, 0..) |*item, i| {
                 item.* = try Mat.initFromC(c_qr_codes.mats[i]);
             }
         }
