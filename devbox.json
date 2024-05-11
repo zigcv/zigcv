@@ -5,16 +5,17 @@
     "zls@0.11.0",
     "opencv@4.6.0",
     "pkg-config@latest",
-    "curl@latest",
-    "unzip@latest"
+    "unzip@latest",
+    "deno@1.43.1"
   ],
   "shell": {
     "scripts": {
-      "version": "zig version",
-      "build": "zig build --verbose",
-      "test": "zig build test --verbose",
-      "fmt": "zig fmt ./**/*.zig",
-      "fmt-check": "zig fmt --check ./**/*.zig"
+      "version":         "zig version",
+      "download-models": "deno run -A ./scripts/download_models.ts",
+      "build":           "zig build --verbose",
+      "test":            "zig build test --verbose",
+      "fmt":             "zig fmt ./**/*.zig",
+      "fmt-check":       "zig fmt --check ./**/*.zig"
     }
   }
 }

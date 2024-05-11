@@ -20,14 +20,24 @@ jobs:
       - run: devbox run fmt-check
 
   test:
-    runs-on: macos-14
+    strategy:
+      matrix:
+        os: 
+          - macos-14
+          # - ubuntu-latest
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Install devbox
         uses: jetify-com/devbox-install-action@v0.9.0
-      - run: devbox run test
+      - name: Download models
+        run: devbox run download-models
+      - name: Build
+        run: devbox run build
+      - name: Test
+        run: devbox run test
 
   # deploy:
   #   permissions:

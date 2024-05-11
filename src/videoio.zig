@@ -446,17 +446,15 @@ test "videoio VideoCapture captureFileWithAPI" {
 test "videoio VideoCapture captureFile invalid file" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.captureFile(video_path ++ "4");
+    var e = vc.captureFile("not-exist-path/" ++ video_path);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
-    std.debug.print("error '{s}' is expected\n", .{"OpenCV: Couldn't read video stream from file libs/gocv/images/small.mp44"});
 }
 
 test "videoio VideoCapture captureFileWithAPI invalid file" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.captureFileWithAPI(video_path ++ "4", .any);
+    var e = vc.captureFileWithAPI("not-exist-path/" ++ video_path, .any);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
-    std.debug.print("error '{s}' is expected\n", .{"OpenCV: Couldn't read video stream from file libs/gocv/images/small.mp44"});
 }
 
 test "videoio VideoCapture openDevice unknown error" {
