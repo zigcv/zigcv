@@ -1,21 +1,22 @@
 const std = @import("std");
+const Build = std.Build;
 const ArrayList = std.ArrayList;
 const LazyPath = std.build.LazyPath;
 
-pub fn addAsPackage(exe: *std.Build.CompileStep) void {
+pub fn addAsPackage(exe: *Build.Step.Compile) void {
     addAsPackageWithCustomName(exe, "zigcv");
 }
 
-pub fn addAsPackageWithCustomName(exe: *std.Build.CompileStep, name: []const u8) void {
+pub fn addAsPackageWithCustomName(exe: *Build.Step.Compile, name: []const u8) void {
     const owner = exe.step.owner;
-    var module = std.build.createModule(owner, .{
-        .source_file = std.Build.FileSource.relative("src/main.zig"),
+    const module = std.build.createModule(owner, .{
+        .source_file = Build.FileSource.relative("src/main.zig"),
         .dependencies = &.{},
     });
     exe.addModule(name, module);
 }
 
-pub fn link(b: *std.build.Builder, exe: *std.Build.CompileStep) void {
+pub fn link(b: *Build, exe: *Build.Step.Compile) void {
     ensureSubmodules(exe);
 
     const target = exe.target;
@@ -39,7 +40,7 @@ pub fn link(b: *std.build.Builder, exe: *std.Build.CompileStep) void {
         "videoio.cpp",
     };
 
-    const cv = builder.addStaticLibrary(std.Build.StaticLibraryOptions{
+    const cv = builder.addStaticLibrary(Build.StaticLibraryOptions{
         .name = "opencv",
         .target = target,
         .optimize = mode,
