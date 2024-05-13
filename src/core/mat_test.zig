@@ -122,7 +122,7 @@ test "core mat initFromMat" {
 }
 
 test "core mat initSizeFromScalar" {
-    var s = Scalar.init(255, 105, 180, 0);
+    const s = Scalar.init(255, 105, 180, 0);
     var mat = try Mat.initSizeFromScalar(s, 2, 3, .cv8uc3);
     defer mat.deinit();
     try testing.expectEqual(false, mat.isEmpty());

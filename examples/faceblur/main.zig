@@ -3,7 +3,7 @@ const cv = @import("zigcv");
 const cv_c_api = cv.c_api;
 
 pub fn main() anyerror!void {
-    var allocator = std.heap.page_allocator;
+    const allocator = std.heap.page_allocator;
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
     const prog = args.next();

@@ -138,7 +138,7 @@ pub const IMWriteParam = struct { f: IMWriteFlag, v: i32 };
 ///
 pub fn imRead(filename: []const u8, flags: IMReadFlag) !Mat {
     try ensureFileExists(filename, true);
-    var cMat: c.Mat = c.Image_IMRead(@as([*]const u8, @ptrCast(filename)), @intFromEnum(flags));
+    const cMat: c.Mat = c.Image_IMRead(@as([*]const u8, @ptrCast(filename)), @intFromEnum(flags));
     return try Mat.initFromC(cMat);
 }
 
@@ -165,7 +165,7 @@ pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []cons
     const c_params = comptime blk: {
         const len = params.len * 2;
         var pa: [len]i32 = undefined;
-        inline for (params, 0..) |p, i| {
+        for (params, 0..) |p, i| {
             pa[2 * i] = @intFromEnum(p.f);
             pa[2 * i + 1] = p.v;
         }
@@ -192,7 +192,7 @@ pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
     if (buf.len == 0) {
         return Mat.init();
     }
-    var data = core.toByteArray(buf);
+    const data = core.toByteArray(buf);
     return try Mat.initFromC(c.Image_IMDecode(data, @intFromEnum(flags)));
 }
 
@@ -205,7 +205,7 @@ pub fn imDecode(buf: []u8, flags: IMReadFlag) !Mat {
 ///
 pub fn imEncode(file_ext: FileExt, img: Mat, allocator: std.mem.Allocator) !std.ArrayList(u8) {
     var c_vector: STDVector = undefined;
-    var cvp = &c_vector;
+    const cvp = &c_vector;
     STDVector.init(cvp);
     defer STDVector.deinit(cvp);
     c.Image_IMEncode(@as([*]const u8, @ptrCast(file_ext.toString())), img.ptr, cvp);
@@ -232,7 +232,7 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
     const c_params = comptime blk: {
         const len = params.len * 2;
         var pa: [len]i32 = undefined;
-        inline for (params, 0..) |p, i| {
+        for (params, 0..) |p, i| {
             pa[2 * i] = @intFromEnum(p.f);
             pa[2 * i + 1] = p.v;
         }
@@ -242,7 +242,7 @@ pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const 
         };
     };
     var c_vector: STDVector = undefined;
-    var cvp = &c_vector;
+    const cvp = &c_vector;
     STDVector.init(cvp);
     defer STDVector.deinit(cvp);
     c.Image_IMEncode_WithParams(@as([*]const u8, @ptrCast(file_ext.toString())), img.ptr, c_params, cvp);
@@ -269,7 +269,7 @@ test "imgcodecs imread" {
 }
 
 test "imgcodecs imread not found error" {
-    var e = imRead("not-exist-path/" ++ face_detect_img_path, .color);
+    const e = imRead("not-exist-path/" ++ face_detect_img_path, .color);
     try testing.expectError(error.FileNotFound, e);
 }
 
@@ -320,7 +320,7 @@ test "imgcodecs imdecode jpg" {
     var img_file = try std.fs.cwd().openFile(img_filename, .{});
     const img_stat = try std.fs.cwd().statFile(img_filename);
     defer img_file.close();
-    var content = try img_file.reader().readAllAlloc(
+    const content = try img_file.reader().readAllAlloc(
         testing.allocator,
         img_stat.size,
     );
@@ -336,7 +336,7 @@ test "imgcodecs imdecode png" {
     var img_file = try std.fs.cwd().openFile(img_filename, .{});
     const img_stat = try std.fs.cwd().statFile(img_filename);
     defer img_file.close();
-    var content = try img_file.reader().readAllAlloc(
+    const content = try img_file.reader().readAllAlloc(
         testing.allocator,
         img_stat.size,
     );
@@ -352,7 +352,7 @@ test "imgcodecs imdecode webp" {
     var img_file = try std.fs.cwd().openFile(img_filename, .{});
     const img_stat = try std.fs.cwd().statFile(img_filename);
     defer img_file.close();
-    var content = try img_file.reader().readAllAlloc(
+    const content = try img_file.reader().readAllAlloc(
         testing.allocator,
         img_stat.size,
     );

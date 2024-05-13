@@ -781,7 +781,7 @@ pub fn drawMatches(
         .dmatches = @as([*]c.DMatch, @ptrCast(c_matches1to2_array.ptr)),
     };
 
-    var c_matches_mask = core.toByteArray(matches_mask);
+    const c_matches_mask = core.toByteArray(matches_mask);
     c.DrawMatches(
         img1.toC(),
         c_keypoints1,

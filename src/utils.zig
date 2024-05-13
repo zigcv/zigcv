@@ -80,6 +80,6 @@ pub fn downloadFile(url: []const u8, dir: []const u8, allocator: std.mem.Allocat
 }
 
 test "ensureNotNull" {
-    var ptr: ?*u8 = null;
+    const ptr: ?*u8 = null;
     try std.testing.expectError(error.AllocationError, ensurePtrNotNull(ptr));
 }

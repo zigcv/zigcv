@@ -298,8 +298,8 @@ pub const QRCodeDetector = struct {
             &c_qr_codes,
         );
 
-        var decoded = try arena_allocator.alloc([]const u8, @as(usize, @intCast(c_decoded.length)));
-        var qr_codes = try arena_allocator.alloc(Mat, @as(usize, @intCast(c_qr_codes.length)));
+        const decoded = try arena_allocator.alloc([]const u8, @as(usize, @intCast(c_decoded.length)));
+        const qr_codes = try arena_allocator.alloc(Mat, @as(usize, @intCast(c_qr_codes.length)));
 
         if (result) {
             for (decoded, 0..) |*item, i| {
@@ -442,7 +442,7 @@ test "objdetect QRCodeDetector" {
     var qr = try Mat.init();
     defer qr.deinit();
 
-    var res = detector.detect(img, &bbox);
+    const res = detector.detect(img, &bbox);
     try testing.expectEqual(true, res);
 
     const res2 = detector.decode(img, bbox, &qr);
@@ -464,7 +464,7 @@ test "objdetect Multi QRCodeDetector" {
     var qr = try Mat.init();
     defer qr.deinit();
 
-    var res = detector.detectMulti(img, &mbox);
+    const res = detector.detectMulti(img, &mbox);
     try testing.expectEqual(true, res);
     try testing.expectEqual(@as(i32, 2), mbox.rows());
 

@@ -439,35 +439,35 @@ test "videoio VideoCapture captureFileWithAPI" {
     defer vc.deinit();
     try vc.captureFileWithAPI(video_path, .any);
 
-    var backend = vc.get(.backend);
+    const backend = vc.get(.backend);
     try testing.expect(@as(f64, @intFromEnum(VideoCapture.API.any)) != backend);
 }
 
 test "videoio VideoCapture captureFile invalid file" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.captureFile("not-exist-path/" ++ video_path);
+    const e = vc.captureFile("not-exist-path/" ++ video_path);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
 }
 
 test "videoio VideoCapture captureFileWithAPI invalid file" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.captureFileWithAPI("not-exist-path/" ++ video_path, .any);
+    const e = vc.captureFileWithAPI("not-exist-path/" ++ video_path, .any);
     try testing.expectError(error.VideoCaptureOpenFileError, e);
 }
 
 test "videoio VideoCapture openDevice unknown error" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.openDevice(std.math.maxInt(i32));
+    const e = vc.openDevice(std.math.maxInt(i32));
     try testing.expectError(error.VideoCaptureOpenDeviceError, e);
 }
 
 test "videoio VideoCapture openDeviceWithAPI unknown error" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.openDeviceWithAPI(std.math.maxInt(i32), .any);
+    const e = vc.openDeviceWithAPI(std.math.maxInt(i32), .any);
     try testing.expectError(error.VideoCaptureOpenDeviceError, e);
 }
 
@@ -491,7 +491,7 @@ test "videoio VideoCapture toCodec" {
 test "videoio VideoCapture toCodec failed" {
     var vc = try VideoCapture.init();
     defer vc.deinit();
-    var e = vc.toCodec("123");
+    const e = vc.toCodec("123");
     try testing.expectError(error.InvalidCodec, e);
 }
 

@@ -136,7 +136,7 @@ pub const Fisheye = struct {
         new_size: Size,
         fov_scale: f64,
     ) !Mat {
-        var mat = try Mat.init();
+        const mat = try Mat.init();
         _ = c.Fisheye_EstimateNewCameraMatrixForUndistortRectify(
             k.toC(),
             d.toC(),
@@ -310,7 +310,7 @@ pub fn drawChessboardCorners(
 /// For further details, please see:
 /// https://docs.opencv.org/master/d9/d0c/group__calib3d.html#gad767faff73e9cbd8b9d92b955b50062d
 pub fn estimateAffinePartial2D(from: Point2fVector, to: Point2fVector) !Mat {
-    var ptr = c.EstimateAffinePartial2D(from.toC(), to.toC());
+    const ptr = c.EstimateAffinePartial2D(from.toC(), to.toC());
     return try Mat.initFromC(ptr);
 }
 
@@ -319,7 +319,7 @@ pub fn estimateAffinePartial2D(from: Point2fVector, to: Point2fVector) !Mat {
 /// For further details, please see:
 /// https://docs.opencv.org/4.0.0/d9/d0c/group__calib3d.html#ga27865b1d26bac9ce91efaee83e94d4dd
 pub fn estimateAffine2D(from: Point2fVector, to: Point2fVector) !Mat {
-    var ptr = c.EstimateAffine2D(from.toC(), to.toC());
+    const ptr = c.EstimateAffine2D(from.toC(), to.toC());
     return try Mat.initFromC(ptr);
 }
 
@@ -342,7 +342,7 @@ pub fn estimateAffine2DWithParams(
     confidence: f64,
     refine_iters: usize,
 ) !Mat {
-    var ptr = c.EstimateAffine2DWithParams(
+    const ptr = c.EstimateAffine2DWithParams(
         from.toC(),
         to.toC(),
         inliers.toC(),
@@ -435,7 +435,7 @@ test "calib3d fisheye undistortImageWithParams" {
     k_new.set(f64, 0, 0, 0.4 * k.get(f64, 0, 0));
     k_new.set(f64, 1, 1, 0.4 * k.get(f64, 1, 1));
 
-    var size = core.Size.init(dst.rows(), dst.cols());
+    const size = core.Size.init(dst.rows(), dst.cols());
 
     Fisheye.undistortImageWithParams(img, &dst, k, d, k_new, size);
     try testing.expectEqual(false, dst.isEmpty());
@@ -473,7 +473,7 @@ test "calib3d initUndistortRectifyMap getOptimalNewCameraMatrixWithParams" {
     d.set(f64, 0, 2, -2.62985819e-03);
     d.set(f64, 0, 3, 2.05841873e-04);
     d.set(f64, 0, 4, -2.35021914e-02);
-    var res = try getOptimalNewCameraMatrixWithParams(
+    const res = try getOptimalNewCameraMatrixWithParams(
         k,
         d,
         Size.init(img.rows(), img.cols()),
@@ -696,8 +696,8 @@ test "calib3d calibrateCamera" {
     var corners = try Mat.init();
     defer corners.deinit();
 
-    var size = Size.init(4, 6);
-    var found = findChessboardCorners(img, size, &corners, .{});
+    const size = Size.init(4, 6);
+    const found = findChessboardCorners(img, size, &corners, .{});
     try testing.expectEqual(true, found);
     try testing.expectEqual(false, corners.isEmpty());
 

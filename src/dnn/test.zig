@@ -69,7 +69,7 @@ fn checkNet(net: *Net, allocator: std.mem.Allocator) !void {
 
     try testing.expectEqual(@as(usize, 142), lnames.items.len);
 
-    var err_happend = false;
+    const err_happend = false;
     try testing.expectEqualStrings("conv1/relu_7x7", lnames.items[1]);
     var cs = [_][]const u8{"prob"};
     var prob = try net.forwardLayers(&cs, allocator);
@@ -114,7 +114,7 @@ test "dnn read net from memory" {
     var model_file = try std.fs.cwd().openFile(caffe_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(caffe_model_file);
     defer model_file.close();
-    var model = try model_file.reader().readAllAlloc(
+    const model = try model_file.reader().readAllAlloc(
         test_allocator,
         m_stat.size,
     );
@@ -123,7 +123,7 @@ test "dnn read net from memory" {
     var config_file = try std.fs.cwd().openFile(caffe_prototext_file, .{});
     const c_stat = try std.fs.cwd().statFile(caffe_prototext_file);
     defer config_file.close();
-    var config = try config_file.reader().readAllAlloc(
+    const config = try config_file.reader().readAllAlloc(
         test_allocator,
         c_stat.size,
     );
@@ -187,7 +187,7 @@ test "dnn read caffe memory" {
     var model_file = try std.fs.cwd().openFile(caffe_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(caffe_model_file);
     defer model_file.close();
-    var model = try model_file.reader().readAllAlloc(
+    const model = try model_file.reader().readAllAlloc(
         test_allocator,
         m_stat.size,
     );
@@ -196,7 +196,7 @@ test "dnn read caffe memory" {
     var config_file = try std.fs.cwd().openFile(caffe_prototext_file, .{});
     const c_stat = try std.fs.cwd().statFile(caffe_prototext_file);
     defer config_file.close();
-    var config = try config_file.reader().readAllAlloc(
+    const config = try config_file.reader().readAllAlloc(
         test_allocator,
         c_stat.size,
     );
@@ -276,7 +276,7 @@ test "dnn read tensorflow memory" {
     var model_file = try std.fs.cwd().openFile(tensorflow_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(tensorflow_model_file);
     defer model_file.close();
-    var model = try model_file.reader().readAllAlloc(
+    const model = try model_file.reader().readAllAlloc(
         test_allocator,
         m_stat.size,
     );
@@ -334,7 +334,7 @@ test "dnn read onnx memory" {
     var model_file = try std.fs.cwd().openFile(onnx_model_file, .{});
     const m_stat = try std.fs.cwd().statFile(onnx_model_file);
     defer model_file.close();
-    var model = try model_file.reader().readAllAlloc(
+    const model = try model_file.reader().readAllAlloc(
         test_allocator,
         m_stat.size,
     );
@@ -399,7 +399,7 @@ test "dnn blob initFromImage Size" {
     );
     defer blob.deinit();
 
-    var sz = (try blob.getSize()).toArray();
+    const sz = (try blob.getSize()).toArray();
 
     try testing.expectEqual(@as(f64, 1), sz[0]);
     try testing.expectEqual(@as(f64, 3), sz[1]);
@@ -429,7 +429,7 @@ test "dnn blob initFromImages" {
     );
     defer blob.deinit();
 
-    var sz = (try blob.getSize()).toArray();
+    const sz = (try blob.getSize()).toArray();
     try testing.expectEqual(@as(f64, 2), sz[0]);
     try testing.expectEqual(@as(f64, 3), sz[1]);
     try testing.expectEqual(@as(f64, 25), sz[2]);
