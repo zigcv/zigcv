@@ -1,7 +1,7 @@
 const std = @import("std");
 const Build = std.Build;
 const ArrayList = std.ArrayList;
-const LazyPath = std.build.LazyPath;
+const LazyPath = Build.LazyPath;
 
 pub fn addAsPackage(exe: *Build.Step.Compile) void {
     addAsPackageWithCustomName(exe, "zigcv");
@@ -9,18 +9,18 @@ pub fn addAsPackage(exe: *Build.Step.Compile) void {
 
 pub fn addAsPackageWithCustomName(exe: *Build.Step.Compile, name: []const u8) void {
     const owner = exe.step.owner;
-    const module = std.build.createModule(owner, .{
-        .source_file = Build.FileSource.relative("src/main.zig"),
-        .dependencies = &.{},
+    const module = Build.createModule(owner, .{
+        .root_source_file = .{ .path = "src/main.zig" },
     });
-    exe.addModule(name, module);
+    exe.root_module.addImport(name, module);
 }
 
 pub fn link(b: *Build, exe: *Build.Step.Compile) void {
     ensureSubmodules(exe);
 
-    const target = exe.target;
-    const mode = exe.optimize;
+    const module = exe.root_module;
+    const target = module.resolved_target.?;
+    const optimize = module.optimize.?;
     const builder = exe.step.owner;
 
     const go_src_files = .{
@@ -43,7 +43,7 @@ pub fn link(b: *Build, exe: *Build.Step.Compile) void {
     const cv = builder.addStaticLibrary(Build.StaticLibraryOptions{
         .name = "opencv",
         .target = target,
-        .optimize = mode,
+        .optimize = optimize,
     });
 
     inline for (go_src_files) |file| {
@@ -61,12 +61,14 @@ pub fn link(b: *Build, exe: *Build.Step.Compile) void {
     linkToOpenCV(exe);
 }
 
-fn linkToOpenCV(exe: *std.build.CompileStep) void {
-    const target_os = exe.target.toTarget().os.tag;
+fn linkToOpenCV(exe: *Build.Step.Compile) void {
+    const module = exe.root_module;
+    const target = module.resolved_target.?;
+    const os_tag = target.result.os.tag;
 
     exe.addIncludePath(go_src_dir);
     exe.addIncludePath(zig_src_dir);
-    switch (target_os) {
+    switch (os_tag) {
         .windows => {
             exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include" });
             exe.addIncludePath(.{ .path = "c:/msys64/mingw64/include/c++/12.2.0" });
@@ -92,19 +94,20 @@ fn linkToOpenCV(exe: *std.build.CompileStep) void {
 }
 
 pub const contrib = struct {
-    pub fn addAsPackage(exe: *std.build.LibExeObjStep) void {
+    pub fn addAsPackage(exe: *Build.LibExeObjStep) void {
         @This().addAsPackageWithCutsomName(exe, "zigcv_contrib");
     }
 
-    pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u8) void {
+    pub fn addAsPackageWithCutsomName(exe: *Build.LibExeObjStep, name: []const u8) void {
         exe.addPackagePath(name, .{ .path = "src/contrib/main.zig" });
     }
 
-    pub fn link(b: *std.build.Builder, exe: *std.build.LibExeObjStep) void {
+    pub fn link(b: *Build.Builder, exe: *Build.LibExeObjStep) void {
         ensureSubmodules(exe);
 
-        const target = exe.target;
-        const optimize = exe.optimize;
+        const module = exe.root_module;
+        const target = module.resolved_target.?;
+        const optimize = module.optimize.?;
         const builder = exe.step.owner;
 
         const contrib_dir = b.pathJoin(.{ go_src_dir.getPath(b), "contrib/" });
@@ -143,19 +146,20 @@ pub const contrib = struct {
 };
 
 pub const cuda = struct {
-    pub fn addAsPackage(exe: *std.build.LibExeObjStep) void {
+    pub fn addAsPackage(exe: *Build.LibExeObjStep) void {
         @This().addAsPackageWithCutsomName(exe, "zigcv_cuda");
     }
 
-    pub fn addAsPackageWithCutsomName(exe: *std.build.LibExeObjStep, name: []const u8) void {
+    pub fn addAsPackageWithCutsomName(exe: *Build.LibExeObjStep, name: []const u8) void {
         exe.addPackagePath(name, .{ .path = "src/cuda/main.zig" });
     }
 
-    pub fn link(b: *std.build.Builder, exe: *std.build.LibExeObjStep) void {
+    pub fn link(b: *Build.Builder, exe: *Build.LibExeObjStep) void {
         ensureSubmodules(exe);
 
-        const target = exe.target;
-        const mode = exe.build_mode;
+        const module = exe.root_module;
+        const target = module.resolved_target.?;
+        const optimize = module.optimize.?;
         const builder = exe.step.owner;
 
         const cuda_dir = b.pathJoin(&.{ go_src_dir.getPath(builder), "cuda/" });
@@ -174,7 +178,7 @@ pub const cuda = struct {
 
         const cv_cuda = builder.addStaticLibrary("opencv_cuda");
         cv_cuda.setTarget(target);
-        cv_cuda.setBuildMode(mode);
+        cv_cuda.setBuildMode(optimize);
         cv_cuda.force_pic = true;
         for (cuda_files) |file| {
             const c_path = b.pathJoin(&.{ cuda_dir, file });
@@ -192,7 +196,7 @@ pub const cuda = struct {
 };
 
 var ensure_submodule: bool = false;
-fn ensureSubmodules(exe: *std.build.LibExeObjStep) void {
+fn ensureSubmodules(exe: *Build.Step.Compile) void {
     const b = exe.step.owner;
     if (!ensure_submodule) {
         exe.step.dependOn(&b.addSystemCommand(&.{ "git", "submodule", "update", "--init", "--recursive" }).step);

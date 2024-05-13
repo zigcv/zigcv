@@ -1,7 +1,9 @@
 const std = @import("std");
+const Build = std.Build;
 const LazyPath = std.build.LazyPath;
 const zigcv = @import("libs.zig");
-pub fn build(b: *std.build.Builder) void {
+
+pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const mode = b.standardOptimizeOption(.{});
 
