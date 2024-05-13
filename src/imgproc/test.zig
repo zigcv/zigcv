@@ -162,9 +162,9 @@ test "imgproc min enclosing circle" {
     const radius = res.radius;
     const point = res.point;
 
-    try testing.expect(@fabs(@as(f64, radius) - expected_radius) <= epsilon);
-    try testing.expect(@fabs(@as(f64, point.x) - expected_x) <= epsilon);
-    try testing.expect(@fabs(@as(f64, point.y) - expected_y) <= epsilon);
+    try testing.expect(@abs(@as(f64, radius) - expected_radius) <= epsilon);
+    try testing.expect(@abs(@as(f64, point.x) - expected_x) <= epsilon);
+    try testing.expect(@abs(@as(f64, point.y) - expected_y) <= epsilon);
 }
 
 test "imgproc cvtColor" {
@@ -380,8 +380,8 @@ test "imgproc pyrdown" {
 
     imgproc.pyrDown(img, &dst, Size.init(dst.cols(), dst.rows()), .{});
     try testing.expectEqual(false, dst.isEmpty());
-    try testing.expect(@fabs(@as(f64, @floatFromInt((img.cols() - 2 * dst.cols())))) < 2.0);
-    try testing.expect(@fabs(@as(f64, @floatFromInt((img.rows() - 2 * dst.rows())))) < 2.0);
+    try testing.expect(@abs(@as(f64, @floatFromInt((img.cols() - 2 * dst.cols())))) < 2.0);
+    try testing.expect(@abs(@as(f64, @floatFromInt((img.rows() - 2 * dst.rows())))) < 2.0);
 }
 
 test "imgproc pyrup" {
@@ -394,8 +394,8 @@ test "imgproc pyrup" {
 
     imgproc.pyrUp(img, &dst, Size.init(dst.cols(), dst.rows()), .{});
     try testing.expectEqual(false, dst.isEmpty());
-    try testing.expect(@fabs(@as(f64, @floatFromInt((2 * img.cols() - dst.cols())))) < 2.0);
-    try testing.expect(@fabs(@as(f64, @floatFromInt((2 * img.rows() - dst.rows())))) < 2.0);
+    try testing.expect(@abs(@as(f64, @floatFromInt((2 * img.cols() - dst.cols())))) < 2.0);
+    try testing.expect(@abs(@as(f64, @floatFromInt((2 * img.rows() - dst.rows())))) < 2.0);
 }
 
 test "imgproc boxPoints" {
@@ -1648,8 +1648,8 @@ test "imgproc findHomography" {
         while (row < 3) : (row += 1) {
             var col: usize = 0;
             while (col < 3) : (col += 1) {
-                if (@fabs(m.get(f64, row, col) - m2.get(f64, row, col)) > 0.002) {
-                    try testing.expectEqual(@as(f64, 0), @fabs((m.get(f64, row, col) - m2.get(f64, row, col))));
+                if (@abs(m.get(f64, row, col) - m2.get(f64, row, col)) > 0.002) {
+                    try testing.expectEqual(@as(f64, 0), @abs((m.get(f64, row, col) - m2.get(f64, row, col))));
                 }
             }
         }
