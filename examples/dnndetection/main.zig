@@ -38,7 +38,7 @@ pub fn main() anyerror!void {
     const prog = args.next();
     const device_id_char = args.next() orelse {
         std.log.err("usage: {s} [cameraID]", .{prog.?});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
     args.deinit();
 
@@ -63,13 +63,13 @@ pub fn main() anyerror!void {
     // try downloadFile(config_url, cache_dir, allocator);
     var net = cv.Net.readNet(model_path, config_path) catch |err| {
         std.debug.print("Error: {}\n", .{err});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
     defer net.deinit();
 
     if (net.isEmpty()) {
         std.debug.print("Error: could not load model\n", .{});
-        std.os.exit(1);
+        std.posix.exit(1);
     }
 
     net.setPreferableBackend(.default);
@@ -82,7 +82,7 @@ pub fn main() anyerror!void {
     while (true) {
         webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
-            std.os.exit(1);
+            std.posix.exit(1);
         };
         if (img.isEmpty()) {
             continue;

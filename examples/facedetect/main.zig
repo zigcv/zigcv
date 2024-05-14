@@ -8,7 +8,7 @@ pub fn main() anyerror!void {
     const prog = args.next();
     const device_id_char = args.next() orelse {
         std.log.err("usage: {s} [cameraID]", .{prog.?});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
     args.deinit();
 
@@ -34,14 +34,14 @@ pub fn main() anyerror!void {
 
     classifier.load("./libs/gocv/data/haarcascade_frontalface_default.xml") catch {
         std.debug.print("no xml", .{});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
 
     const blue = cv.Color{ .b = 255 };
     while (true) {
         webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
-            std.os.exit(1);
+            std.posix.exit(1);
         };
         if (img.isEmpty()) {
             continue;

@@ -9,7 +9,7 @@ pub fn main() anyerror!void {
     const prog = args.next();
     const device_id_char = args.next() orelse {
         std.log.err("usage: {s} [cameraID]", .{prog.?});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
     const device_id = try std.fmt.parseUnsigned(c_int, device_id_char, 10);
 
@@ -33,14 +33,14 @@ pub fn main() anyerror!void {
 
     classifier.load("./libs/gocv/data/haarcascade_frontalface_default.xml") catch {
         std.debug.print("no xml", .{});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
 
     const size = cv.Size{ .width = 75, .height = 75 };
     while (true) {
         webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
-            std.os.exit(1);
+            std.posix.exit(1);
         };
         if (img.isEmpty()) {
             continue;

@@ -7,7 +7,7 @@ pub fn main() anyerror!void {
     const prog = args.next();
     const device_id_char = args.next() orelse {
         std.log.err("usage: {s} [cameraID]", .{prog.?});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
     args.deinit();
 

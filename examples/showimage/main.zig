@@ -8,7 +8,7 @@ pub fn main() anyerror!void {
     const prog = args.next();
     const img_PATH = args.next() orelse {
         std.log.err("usage: {s} [image_PATH]", .{prog.?});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
 
     // open display window

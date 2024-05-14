@@ -19,7 +19,7 @@ pub fn main() anyerror!void {
     while (true) {
         webcam.read(&img) catch {
             std.debug.print("capture failed", .{});
-            std.os.exit(1);
+            std.posix.exit(1);
         };
 
         window.imShow(img);
