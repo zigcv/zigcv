@@ -481,21 +481,21 @@ test "dnn nmsboxes" {
 
     img.convertTo(&img, .cv32fc1);
 
-    comptime var bboxes = [_]Rect{
+    const bboxes = comptime [5]Rect{
         Rect.init(53, 47, 589 - 53, 451 - 47),
         Rect.init(118, 54, 618 - 118, 450 - 54),
         Rect.init(53, 66, 605 - 53, 480 - 66),
         Rect.init(111, 65, 630 - 111, 480 - 65),
         Rect.init(156, 51, 640 - 156, 480 - 51),
     };
-    comptime var scores = [_]f32{ 0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726 };
+    const scores = comptime [5]f32{ 0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726 };
     const score_threshold: f32 = 0.5;
     const nms_threshold: f32 = 0.4;
     const max_index: usize = 1;
 
-    var indices = try dnn.nmsBoxes(
-        bboxes[0..],
-        scores[0..],
+    const indices = try dnn.nmsBoxes(
+        @constCast(bboxes[0..]),
+        @constCast(scores[0..]),
         score_threshold,
         nms_threshold,
         max_index,
@@ -513,14 +513,14 @@ test "dnn nmsboxesWithParams" {
 
     img.convertTo(&img, .cv32fc1);
 
-    comptime var bboxes = [_]Rect{
+    const bboxes = comptime [5]Rect{
         Rect.init(53, 47, 589 - 53, 451 - 47),
         Rect.init(118, 54, 618 - 118, 450 - 54),
         Rect.init(53, 66, 605 - 53, 480 - 66),
         Rect.init(111, 65, 630 - 111, 480 - 65),
         Rect.init(156, 51, 640 - 156, 480 - 51),
     };
-    comptime var scores = [_]f32{ 0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726 };
+    const scores = comptime [5]f32{ 0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726 };
     const score_threshold: f32 = 0.5;
     const nms_threshold: f32 = 0.4;
     const max_index: usize = 1;
@@ -528,8 +528,8 @@ test "dnn nmsboxesWithParams" {
     const top_k: i32 = 0;
 
     var indices = try dnn.nmsBoxesWithParams(
-        bboxes[0..],
-        scores[0..],
+        @constCast(bboxes[0..]),
+        @constCast(scores[0..]),
         score_threshold,
         nms_threshold,
         eta,

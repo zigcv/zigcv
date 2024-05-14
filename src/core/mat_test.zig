@@ -28,7 +28,7 @@ test "core mat size" {
 }
 
 test "core mat sizes" {
-    comptime var sizes = [3]i32{ 10, 20, 30 };
+    var sizes = comptime [3]i32{ 10, 20, 30 };
     const mat_type = Mat.MatType.cv8sc1;
     var mat = try Mat.initSizes(&sizes, mat_type);
     defer mat.deinit();

@@ -13,14 +13,25 @@ test "show version" {
 
     const version = openCVVersion();
 
-    const actual_version = (std.ChildProcess.exec(.{
-        .allocator = allocator,
-        .argv = &.{ "pkg-config", "--modversion", "opencv4" },
-    }) catch {
-        return;
-    }).stdout;
+    var child_process =
+        std.ChildProcess.init(
+        &.{ "pkg-config", "--modversion", "opencv4" },
+        allocator,
+    );
 
-    defer allocator.free(actual_version);
+    _ = try child_process.spawnAndWait();
+
+    var stdout = std.ArrayList(u8).init(allocator);
+    var stderr = std.ArrayList(u8).init(allocator);
+
+    defer {
+        stdout.deinit();
+        stderr.deinit();
+    }
+
+    try child_process.collectOutput(&stdout, &stderr, 100);
+
+    const actual_version = try stdout.toOwnedSlice();
 
     try testing.expectEqual(parseFloat(f32, actual_version), parseFloat(f32, version));
 }

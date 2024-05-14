@@ -446,7 +446,7 @@ test "imgproc boxPoints" {
 }
 
 test "imgproc areaRect" {
-    comptime var src = [_]Point{
+    const src = [_]Point{
         Point.init(0, 2),
         Point.init(2, 0),
         Point.init(4, 2),
@@ -464,7 +464,7 @@ test "imgproc areaRect" {
 }
 
 test "imgproc fitEllipse" {
-    comptime var src = [_]Point{
+    const src = [_]Point{
         Point.init(1, 1),
         Point.init(0, 1),
         Point.init(0, 2),
@@ -542,7 +542,7 @@ test "imgproc polygonTest" {
         .{ .name = "On the polygon - measure=true", .thickness = 1, .point = Point.init(10, 10), .result = 0.0, .measure = true },
     };
 
-    comptime var pts = [_]Point{
+    const pts = [_]Point{
         Point.init(10, 10),
         Point.init(10, 80),
         Point.init(80, 80),
@@ -1216,10 +1216,10 @@ test "imgproc calcHist" {
     var mask = try Mat.init();
     defer mask.deinit();
     var m = [1]Mat{img};
-    comptime var chans = [1]i32{0};
-    comptime var size = [1]i32{256};
-    comptime var rng = [2]f32{ 0.0, 256.0 };
-    try imgproc.calcHist(&m, &chans, mask, &dst, &size, &rng, false);
+    const chans = comptime [_]i32{0};
+    const size = comptime [_]i32{256};
+    const rng = comptime [_]f32{ 0.0, 256.0 };
+    try imgproc.calcHist(&m, @constCast(&chans), mask, &dst, @constCast(&size), @constCast(&rng), false);
     try testing.expectEqual(false, dst.isEmpty());
     try testing.expectEqual(@as(i32, 256), dst.rows());
     try testing.expectEqual(@as(i32, 1), dst.cols());
@@ -1240,12 +1240,12 @@ test "imgproc compareHist" {
     defer mask.deinit();
 
     var m = [1]Mat{img};
-    comptime var chans = [1]i32{0};
-    comptime var size = [1]i32{256};
-    comptime var rng = [2]f32{ 0.0, 256.0 };
-    try imgproc.calcHist(&m, &chans, mask, &hist1, &size, &rng, false);
+    const chans = [1]i32{0};
+    const size = [1]i32{256};
+    const rng = [2]f32{ 0.0, 256.0 };
+    try imgproc.calcHist(&m, @constCast(&chans), mask, &hist1, @constCast(&size), @constCast(&rng), false);
     try testing.expectEqual(false, hist1.isEmpty());
-    try imgproc.calcHist(&m, &chans, mask, &hist2, &size, &rng, false);
+    try imgproc.calcHist(&m, @constCast(&chans), mask, &hist2, @constCast(&size), @constCast(&rng), false);
     try testing.expectEqual(false, hist2.isEmpty());
 
     const dist = imgproc.compareHist(hist1, hist2, .correl);

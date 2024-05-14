@@ -162,19 +162,20 @@ pub fn imWrite(filename: []const u8, img: Mat) !void {
 /// https://docs.opencv.org/4.6.0/d8/d6a/group__imgcodecs__flags.html
 ///
 pub fn imWriteWithParams(filename: []const u8, img: Mat, comptime params: []const IMWriteParam) !void {
-    const c_params = comptime blk: {
+    var v = comptime blk: {
         const len = params.len * 2;
         var pa: [len]i32 = undefined;
         for (params, 0..) |p, i| {
             pa[2 * i] = @intFromEnum(p.f);
             pa[2 * i + 1] = p.v;
         }
-        break :blk c.IntVector{
-            .val = @as([*]i32, @ptrCast(&pa)),
-            .length = len,
-        };
+        break :blk pa;
     };
-    const result = c.Image_IMWrite_WithParams(@as([*]const u8, @ptrCast(filename)), img.ptr, c_params);
+    const c_params: c.IntVector = .{
+        .val = @ptrCast(&v),
+        .length = v.len,
+    };
+    const result = c.Image_IMWrite_WithParams(@ptrCast(filename), img.ptr, c_params);
     if (!result) {
         return error.IMWriteFailed;
     }
@@ -229,23 +230,24 @@ pub fn imEncode(file_ext: FileExt, img: Mat, allocator: std.mem.Allocator) !std.
 /// http://docs.opencv.org/master/d4/da8/group__imgcodecs.html#ga461f9ac09887e47797a54567df3b8b63
 ///
 pub fn imEncodeWithParams(file_ext: FileExt, img: Mat, comptime params: []const IMWriteParam, allocator: std.mem.Allocator) !std.ArrayList(u8) {
-    const c_params = comptime blk: {
+    var v = comptime blk: {
         const len = params.len * 2;
         var pa: [len]i32 = undefined;
         for (params, 0..) |p, i| {
             pa[2 * i] = @intFromEnum(p.f);
             pa[2 * i + 1] = p.v;
         }
-        break :blk c.IntVector{
-            .val = @as([*]i32, @ptrCast(&pa)),
-            .length = len,
-        };
+        break :blk pa;
+    };
+    const c_params: c.IntVector = .{
+        .val = @ptrCast(&v),
+        .length = v.len,
     };
     var c_vector: STDVector = undefined;
     const cvp = &c_vector;
     STDVector.init(cvp);
     defer STDVector.deinit(cvp);
-    c.Image_IMEncode_WithParams(@as([*]const u8, @ptrCast(file_ext.toString())), img.ptr, c_params, cvp);
+    c.Image_IMEncode_WithParams(@ptrCast(file_ext.toString()), img.ptr, c_params, cvp);
     const data = STDVector.data(cvp);
     const len = STDVector.len(cvp);
     var buf = try std.ArrayList(u8).initCapacity(allocator, len);
